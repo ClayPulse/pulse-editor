@@ -24,4 +24,8 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .view-layout {
+    @apply w-full h-full flex flex-col items-start p-3 justify-between rounded-2xl bg-default;
+  }
 }
