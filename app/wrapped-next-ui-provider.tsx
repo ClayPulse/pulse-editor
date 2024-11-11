@@ -10,7 +10,7 @@ export function WrappedNextUIProvider({
   children: React.ReactNode;
 }) {
   return (
-    <NextUIProvider>
+    <NextUIProvider className="h-full w-full">
       <ThemeProvider attribute="class">
         {children}
       </ThemeProvider>

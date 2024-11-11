@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Stage as StageType } from "konva/lib/Stage";
+import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
 
-export default function Canvas() {
+export default function Canvas({}: {}) {
   const [tool, setTool] = useState("pen");
   const [lines, setLines] = useState<{ tool: string; points: number[] }[]>([]);
   const isDrawing = useRef(false);
@@ -30,18 +31,60 @@ export default function Canvas() {
     lastLine.points = lastLine.points.concat([point.x, point.y]);
 
     // replace last
-    lines.splice(lines.length - 1, 1, lastLine);
-    setLines(lines.concat());
+    const newLines = lines.slice(0, lines.length - 1).concat([lastLine]);
+    setLines(newLines);
   };
 
-  const handleDrawEnd = () => {
+  // function cropStage(stage: StageType) {
+  //   const stageWidth = stage.width();
+  //   const stageHeight = stage.height();
+  //   const buffer = 100;
+  //   const dataURL = stage.toDataURL({
+  //     x: buffer,
+  //     y: buffer,
+  //     width: stageWidth - buffer * 2,
+  //     height: stageHeight - buffer * 2,
+  //   });
+  //   const link = document.createElement("a");
+  //   link.href = dataURL;
+  //   link.download = "image.png";
+  //   link.click();
+  //   link.remove();
+  // }
+
+  const handleDrawEnd = (e: any) => {
     isDrawing.current = false;
+    // Save the cropped image
+    const stage = e.target.getStage();
+    // cropStage(stage);
   };
+
+  const divRef = useRef<HTMLDivElement>(null);
+
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(0);
+
+  const getDimension = () => {
+    if (divRef.current) {
+      setCanvasWidth(divRef.current.offsetWidth);
+      setCanvasHeight(divRef.current.offsetHeight);
+      console.log(divRef.current.offsetWidth, divRef.current.offsetHeight);
+    }
+  };
+
+  useEffect(() => {
+    getDimension();
+    window.addEventListener("resize", getDimension);
+    return () => {
+      window.removeEventListener("resize", getDimension);
+    };
+  }, []);
+
   return (
-    <div className="absolute h-screen w-screen">
+    <div className="absolute h-full w-full" ref={divRef}>
       <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
+        width={canvasWidth}
+        height={canvasHeight}
         onMouseDown={handleDrawStart}
         onMousemove={handleDrawMove}
         onMouseup={handleDrawEnd}
@@ -50,7 +93,7 @@ export default function Canvas() {
         onTouchEnd={handleDrawEnd}
       >
         <Layer>
-          <Text text="Just start drawing" x={5} y={30} />
+          <Text text="Just start drawing" x={500} y={300} />
           {lines.map((line, i) => (
             <Line
               key={i}
@@ -68,6 +111,7 @@ export default function Canvas() {
         </Layer>
       </Stage>
       <select
+        className="absolute left-0 top-0"
         value={tool}
         onChange={(e) => {
           setTool(e.target.value);
