@@ -1,18 +1,28 @@
 "use client";
 
-import { Stage as StageType } from "konva/lib/Stage";
+import { DrawnLine } from "@/lib/interface";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
 
-export default function Canvas({}: {}) {
+export default function Canvas({
+  onLineFinished,
+}: {
+    onLineFinished: (lines: DrawnLine) => void;
+}) {
   const [tool, setTool] = useState("pen");
-  const [lines, setLines] = useState<{ tool: string; points: number[] }[]>([]);
+  const [lines, setLines] = useState<DrawnLine[]>([]);
   const isDrawing = useRef(false);
+
+  const stageRef = useRef<any>(null);
+  const lastLineRef = useRef<DrawnLine | null>(null);
 
   const handleDrawStart = (e: any) => {
     isDrawing.current = true;
-    const pos = e.target.getStage().getPointerPosition();
-    setLines([...lines, { tool, points: [pos.x, pos.y] }]);
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    const newLine = { tool, points: [pos.x, pos.y] };
+    stageRef.current = stage;
+    lastLineRef.current = newLine;
   };
 
   const handleDrawMove = (e: any) => {
@@ -24,14 +34,17 @@ export default function Canvas({}: {}) {
     // Prevent scrolling on touch devices
     e.evt.preventDefault();
 
-    const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    const lastLine = lines[lines.length - 1];
+    const point = stageRef.current.getPointerPosition();
     // add point
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
+    lastLineRef.current!.points = lastLineRef.current!.points.concat([
+      point.x,
+      point.y,
+    ]);
 
     // replace last
-    const newLines = lines.slice(0, lines.length - 1).concat([lastLine]);
+    const newLines = lines
+      .slice(0, lines.length - 1)
+      .concat([lastLineRef.current!]);
     setLines(newLines);
   };
 
@@ -53,10 +66,13 @@ export default function Canvas({}: {}) {
   // }
 
   const handleDrawEnd = (e: any) => {
+    setLines([...lines, lastLineRef.current!]);
     isDrawing.current = false;
     // Save the cropped image
-    const stage = e.target.getStage();
+    // const stage = e.target.getStage();
     // cropStage(stage);
+    stageRef.current = null;
+    lastLineRef.current = null;
   };
 
   const divRef = useRef<HTMLDivElement>(null);
@@ -68,7 +84,6 @@ export default function Canvas({}: {}) {
     if (divRef.current) {
       setCanvasWidth(divRef.current.offsetWidth);
       setCanvasHeight(divRef.current.offsetHeight);
-      console.log(divRef.current.offsetWidth, divRef.current.offsetHeight);
     }
   };
 
@@ -81,7 +96,7 @@ export default function Canvas({}: {}) {
   }, []);
 
   return (
-    <div className="absolute h-full w-full" ref={divRef}>
+    <div className="h-full w-full" ref={divRef}>
       <Stage
         width={canvasWidth}
         height={canvasHeight}

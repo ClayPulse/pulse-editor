@@ -26,6 +26,10 @@ body {
   }
 
   .view-layout {
-    @apply w-full h-full flex flex-col items-start p-3 justify-between rounded-2xl bg-default;
+    @apply flex h-full w-full flex-col items-start justify-between rounded-2xl bg-default p-3;
+  }
+
+  .toolbar-layout {
+    @apply relative flex h-10 w-fit  rounded-full bg-default px-4 py-1;
   }
 }
