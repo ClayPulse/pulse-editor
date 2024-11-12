@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* @import "./preflight.css"; */
 
 :root {
   --background: #ffffff;
@@ -20,6 +21,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -30,6 +37,6 @@ body {
   }
 
   .toolbar-layout {
-    @apply relative flex h-10 w-fit  rounded-full bg-default px-4 py-1;
+    @apply relative flex h-10 w-fit rounded-full bg-default px-4 py-1;
   }
 }

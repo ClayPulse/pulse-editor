@@ -7,7 +7,7 @@ import { Stage, Layer, Line, Text } from "react-konva";
 export default function Canvas({
   onLineFinished,
 }: {
-    onLineFinished: (lines: DrawnLine) => void;
+  onLineFinished: (lines: DrawnLine) => void;
 }) {
   const [tool, setTool] = useState("pen");
   const [lines, setLines] = useState<DrawnLine[]>([]);
@@ -84,6 +84,7 @@ export default function Canvas({
     if (divRef.current) {
       setCanvasWidth(divRef.current.offsetWidth);
       setCanvasHeight(divRef.current.offsetHeight);
+      console.log(divRef.current.scrollWidth, divRef.current.scrollHeight);
     }
   };
 
@@ -125,7 +126,7 @@ export default function Canvas({
           ))}
         </Layer>
       </Stage>
-      <select
+      {/* <select
         className="absolute left-0 top-0"
         value={tool}
         onChange={(e) => {
@@ -134,7 +135,7 @@ export default function Canvas({
       >
         <option value="pen">Pen</option>
         <option value="eraser">Eraser</option>
-      </select>
+      </select> */}
     </div>
   );
 }

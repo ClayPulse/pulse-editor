@@ -39,27 +39,33 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <Menu onMenuStateChange={onMenuStateChange} />
-      <div className="relative flex w-full flex-grow">
-        <div className="flex h-full w-full flex-col items-center p-2">
-          <CodeEditorView
-            width="600px"
-            height="400px"
-            ref={codeEditorRef}
-            content={content}
-          />
-
-          <Button
-            onClick={() => {
-              // codeEditorRef.current?.setValue(`console.log("Hello, World!")`);
-            }}
-          >
-            Click
-          </Button>
+    <div className="h-full overflow-x-hidden">
+      <div className="flex min-h-fit w-full flex-col">
+        <div className="fixed z-10 h-fit w-full">
+          <Menu onMenuStateChange={onMenuStateChange} />
         </div>
-        <div className="absolute left-0 top-0 h-full w-full">
-          <CanvasEditor onLineFinished={addLine} />
+        <div className="relative mt-14 flex w-full flex-grow ">
+          <div className="flex w-full flex-col items-center p-2">
+            <CodeEditorView
+              width="600px"
+              height="4000px"
+              ref={codeEditorRef}
+              content={content}
+            />
+
+            <Button
+              onClick={() => {
+                // codeEditorRef.current?.setValue(`console.log("Hello, World!")`);
+              }}
+            >
+              Click
+            </Button>
+          </div>
+          {menuStates.isDrawingMode && (
+            <div className="absolute left-0 top-0 h-full w-full">
+              <CanvasEditor onLineFinished={addLine} />
+            </div>
+          )}
         </div>
       </div>
     </div>
