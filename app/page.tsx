@@ -2,7 +2,6 @@
 
 import CanvasEditor from "@/components/canvas-editor";
 import Menu from "@/components/menu";
-import MenuToolbar from "@/components/toolbars/menu-toolbar";
 import CodeEditorView, {
   CodeEditorViewRef,
 } from "@/components/views/code-editor-view";
@@ -38,14 +37,24 @@ export default function Home() {
       });
   }, []);
 
+  useEffect(() => {
+    // reset lines when drawing mode is off
+    if (!menuStates.isDrawingMode) {
+      setLines([]);
+    }
+  }, [menuStates]);
+
   return (
     <div className="h-full overflow-x-hidden">
       <div className="flex min-h-fit w-full flex-col">
         <div className="fixed z-10 h-fit w-full">
           <Menu onMenuStateChange={onMenuStateChange} />
         </div>
-        <div className="relative mt-14 flex w-full flex-grow ">
-          <div className="flex w-full flex-col items-center p-2">
+        <div className="relative mt-14 flex w-full flex-grow">
+          <div
+            className="flex w-full flex-col items-center bg-background p-2"
+            id="editor-content"
+          >
             <CodeEditorView
               width="600px"
               height="4000px"

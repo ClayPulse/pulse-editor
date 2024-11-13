@@ -5,7 +5,6 @@ import MenuToolbar from "./toolbars/menu-toolbar";
 import { useEffect, useState } from "react";
 import { Button, Switch } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
-import html2canvas from "html2canvas";
 
 export default function Menu({
   onMenuStateChange,
@@ -21,7 +20,7 @@ export default function Menu({
   }, [menuStates]);
 
   return (
-    <div className={"relative w-full p-2 h-fit"}>
+    <div className={"relative h-fit w-full p-2"}>
       <AnimatePresence>
         {menuStates.isDrawingMode && (
           <motion.div
@@ -31,19 +30,6 @@ export default function Menu({
             transition={{ duration: 0.25 }}
             className="absolute left-0 top-0 z-0 flex h-full w-full items-center justify-end space-x-2 bg-default-400 p-2"
           >
-            <Button
-              onClick={() => {
-                html2canvas(document.body).then((canvas) => {
-                  const image = canvas.toDataURL("image/png");
-                  const a = document.createElement("a");
-                  a.href = image;
-                  a.download = "screenshot.png";
-                  a.click();
-                });
-              }}
-            >
-              Screen shot
-            </Button>
             <Switch>Use Image Recognition</Switch>
             <Button>Advanced Interaction</Button>
           </motion.div>

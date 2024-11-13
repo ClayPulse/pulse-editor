@@ -1,6 +1,9 @@
 export interface DrawnLine {
   tool: string;
-  points: number[];
+  points: {
+    x: number;
+    y: number;
+  }[];
 }
 
 export interface SelectionInformation {
