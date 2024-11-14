@@ -45,16 +45,11 @@ const CodeEditorView = forwardRef(
 
     useImperativeHandle(ref, () => ({
       getSelectionInformation: (line: DrawnLine): SelectionInformation => {
-        const points = line.points;
-        const lineStart = points[0];
-        const colStart = points[1];
-        const lineEnd = points[points.length - 2];
-        const colEnd = points[points.length - 1];
         return {
-          lineStart,
-          lineEnd,
-          colStart,
-          colEnd,
+          lineStart: 0,
+          lineEnd: 0,
+          colStart: 0,
+          colEnd: 0,
         };
       },
     }));
