@@ -10,11 +10,16 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
 import { canvas } from "framer-motion/client";
+import { recognizeText } from "@/lib/ocr";
 
 export default function Canvas({
   onLineFinished,
+  isDrawHulls,
+  isDownloadClip,
 }: {
   onLineFinished: (lines: DrawnLine) => void;
+  isDrawHulls: boolean;
+  isDownloadClip: boolean;
 }) {
   const [tool, setTool] = useState("pen");
   const [lines, setLines] = useState<DrawnLine[]>([]);
@@ -22,6 +27,36 @@ export default function Canvas({
 
   const stageRef = useRef<any>(null);
   const lastLineRef = useRef<DrawnLine | null>(null);
+
+  const divRef = useRef<HTMLDivElement>(null);
+
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(0);
+  const { resolvedTheme } = useTheme();
+
+  const editorCanvasRef = useRef<any>(null);
+
+  const [isCanvasReady, setIsCanvasReady] = useState(false);
+
+  useEffect(() => {
+    /* Set dimension */
+    function getDimension() {
+      if (divRef.current) {
+        setCanvasWidth(divRef.current.offsetWidth);
+        setCanvasHeight(divRef.current.offsetHeight);
+      }
+    }
+    getDimension();
+    window.addEventListener("resize", getDimension);
+
+    renderEditorCanvas().then(() => {
+      setIsCanvasReady(true);
+    });
+
+    return () => {
+      window.removeEventListener("resize", getDimension);
+    };
+  }, []);
 
   function createCanvasLayer(canvas: HTMLCanvasElement, stage: StageType) {
     const image = new window.Image();
@@ -55,11 +90,12 @@ export default function Canvas({
     link.remove();
   }
 
-  function clipAndSaveConvexHull(
+  function clipConvexHull(
     stage: StageType,
     canvas: HTMLCanvasElement,
     line: DrawnLine,
-  ) {
+    isDrawHulls: boolean,
+  ): string {
     // Run convex hull algorithm to get the bounding box
     const points = line.points;
     const hulls = convexHull(
@@ -67,20 +103,22 @@ export default function Canvas({
     );
 
     /* Visualize a new Line object with the hull points */
-    const hullLine = new Konva.Line({
-      points: hulls.flatMap((point) => [point.x, point.y]),
-      stroke: "#00ff00",
-      strokeWidth: 5,
-      tension: 0.5,
-      lineCap: "round",
-      lineJoin: "round",
-      closed: true,
-    });
-    // Add the hull line to the stage
-    const layer = new Konva.Layer();
-    layer.add(hullLine);
-    stage.add(layer);
-    stage.draw();
+    if (isDrawHulls) {
+      const hullLine = new Konva.Line({
+        points: hulls.flatMap((point) => [point.x, point.y]),
+        stroke: "#00ff00",
+        strokeWidth: 5,
+        tension: 0.5,
+        lineCap: "round",
+        lineJoin: "round",
+        closed: true,
+      });
+      // Add the hull line to the stage
+      const layer = new Konva.Layer();
+      layer.add(hullLine);
+      stage.add(layer);
+      stage.draw();
+    }
 
     // Create a new canvas layer
     const canvasLayer = createCanvasLayer(canvas, stage);
@@ -106,53 +144,83 @@ export default function Canvas({
     const maxX = Math.max(...validPoints.map((point) => point.x));
     const maxY = Math.max(...validPoints.map((point) => point.y));
 
-    // Save the clipped layer
+    // Get the clipped layer
     const dataURL = canvasLayer.toDataURL({
       x: minX,
       y: minY,
       width: maxX - minX,
       height: maxY - minY,
     });
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = "image.png";
-    link.click();
-    link.remove();
+    return dataURL;
   }
 
-  function cropStage(stage: StageType, line: DrawnLine) {
+  async function clipDrawnRegion(
+    stage: StageType,
+    canvas: HTMLCanvasElement,
+    line: DrawnLine,
+    isDrawHulls: boolean,
+    isDownloadClip: boolean,
+  ): Promise<string> {
+    const imageData = clipConvexHull(stage, canvas, line, isDrawHulls);
+
+    if (isDownloadClip) {
+      // Download the cropped image
+      const link = document.createElement("a");
+      link.href = imageData;
+      link.download = "image.png";
+      link.click();
+      link.remove();
+    }
+
+    return imageData;
+  }
+
+  async function renderEditorCanvas() {
+    /* Render the code editor content and add to layer*/
+
     const editorContent = document.getElementById("editor-content");
     if (!editorContent) {
-      alert("No content to screenshot");
-      return;
+      throw new Error("Editor content not found");
     }
 
     // Convert the editor content to a canvas using html2canvas
-    html2canvas(editorContent)
-      .then((canvas) => {
-        // Add the rendered canvas to the stage
-        const layer = createCanvasLayer(canvas, stage);
-        stage.add(layer);
-        layer.moveToBottom();
-        stage.draw();
+    const canvas = await html2canvas(editorContent);
+    // Add the rendered canvas to the stage
+    const stage = stageRef.current;
+    const layer = createCanvasLayer(canvas, stage);
+    stage.add(layer);
+    layer.moveToBottom();
+    stage.draw();
 
-        return canvas;
-      })
-      .then((canvas) => {
-        // Save the full editor stage
-        // saveStage(stage);
+    // Set the editor canvas
+    editorCanvasRef.current = canvas;
+  }
 
-        // Clip drawn line and save the convex hull
-        clipAndSaveConvexHull(stage, canvas, line);
-      });
+  async function clipAndExtract(line: DrawnLine) {
+    const helper = () => {
+      // Save the cropped image
+      clipDrawnRegion(
+        stageRef.current,
+        editorCanvasRef.current,
+        line,
+        isDrawHulls,
+        isDownloadClip,
+      )
+        // Recognize the text from the cropped image
+        .then((imageData) => recognizeText(imageData))
+        .then((text) => {
+          console.log(text);
+        });
+    };
+
+    helper();
   }
 
   const handleDrawStart = (e: any) => {
     isDrawing.current = true;
-    const stage = e.target.getStage();
+    const stage = stageRef.current;
     const pos = stage.getPointerPosition();
     const newLine = { tool, points: [pos.x, pos.y] };
-    stageRef.current = stage;
     lastLineRef.current = newLine;
   };
 
@@ -183,44 +251,22 @@ export default function Canvas({
     if (!lastLineRef.current) {
       return;
     }
-
     setLines([...lines, lastLineRef.current]);
     isDrawing.current = false;
-    // Save the cropped image
-    const stage = e.target.getStage();
-    cropStage(stage, lastLineRef.current!);
-    onLineFinished(lastLineRef.current!);
+
+    // Run this in background without blocking the UI
+    clipAndExtract(lastLineRef.current);
+
+    onLineFinished(lastLineRef.current);
 
     // Reset the stage and last line
-    stageRef.current = null;
     lastLineRef.current = null;
   };
-
-  const divRef = useRef<HTMLDivElement>(null);
-
-  const [canvasWidth, setCanvasWidth] = useState(0);
-  const [canvasHeight, setCanvasHeight] = useState(0);
-
-  const getDimension = () => {
-    if (divRef.current) {
-      setCanvasWidth(divRef.current.offsetWidth);
-      setCanvasHeight(divRef.current.offsetHeight);
-    }
-  };
-
-  useEffect(() => {
-    getDimension();
-    window.addEventListener("resize", getDimension);
-    return () => {
-      window.removeEventListener("resize", getDimension);
-    };
-  }, []);
-
-  const { resolvedTheme } = useTheme();
 
   return (
     <div className="h-full w-full" ref={divRef}>
       <Stage
+        ref={stageRef}
         width={canvasWidth}
         height={canvasHeight}
         onMouseDown={handleDrawStart}
@@ -231,14 +277,14 @@ export default function Canvas({
         onTouchEnd={handleDrawEnd}
         style={{
           // Get cursor based on theme
-          cursor:
-            resolvedTheme === "light"
+          cursor: !isCanvasReady
+            ? "wait"
+            : resolvedTheme === "light"
               ? "url(/pencil-light.png) 0 24, auto"
               : "url(/pencil-dark.png) 0 24, auto",
         }}
       >
         <Layer>
-          <Text text="Just start drawing" x={500} y={300} />
           {lines.map((line, i) => (
             <Line
               key={i}

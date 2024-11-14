@@ -6,12 +6,22 @@ import { useMemo } from "react";
 
 export default function CanvasEditor({
   onLineFinished,
+  isDownloadClip,
+  isDrawHulls,
 }: {
   onLineFinished: (lines: DrawnLine) => void;
+  isDownloadClip: boolean;
+  isDrawHulls: boolean;
 }) {
   const Canvas = useMemo(
     () => dynamic(() => import("@/components/canvas"), { ssr: false }),
     [],
   );
-  return <Canvas onLineFinished={onLineFinished} />;
+  return (
+    <Canvas
+      onLineFinished={onLineFinished}
+      isDownloadClip={isDownloadClip}
+      isDrawHulls={isDrawHulls}
+    />
+  );
 }

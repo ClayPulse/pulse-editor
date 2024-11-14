@@ -15,4 +15,6 @@ export interface SelectionInformation {
 
 export interface MenuStates {
   isDrawingMode: boolean;
+  isDrawHulls: boolean;
+  isDownloadClip: boolean;
 }

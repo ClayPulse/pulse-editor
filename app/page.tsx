@@ -17,13 +17,11 @@ export default function Home() {
 
   const [lines, setLines] = useState<DrawnLine[]>([]);
 
-  const [menuStates, setMenuStates] = useState({
+  const [menuStates, setMenuStates] = useState<MenuStates>({
     isDrawingMode: false,
+    isDrawHulls: true,
+    isDownloadClip: false,
   });
-
-  function onMenuStateChange(menuStates: MenuStates) {
-    setMenuStates(menuStates);
-  }
 
   function addLine(line: DrawnLine) {
     setLines([...lines, line]);
@@ -48,7 +46,7 @@ export default function Home() {
     <div className="h-full overflow-x-hidden">
       <div className="flex min-h-fit w-full flex-col">
         <div className="fixed z-10 h-fit w-full">
-          <Menu onMenuStateChange={onMenuStateChange} />
+          <Menu menuStates={menuStates} setMenuStates={setMenuStates} />
         </div>
         <div className="relative mt-14 flex w-full flex-grow">
           <div
@@ -72,7 +70,11 @@ export default function Home() {
           </div>
           {menuStates.isDrawingMode && (
             <div className="absolute left-0 top-0 h-full w-full">
-              <CanvasEditor onLineFinished={addLine} />
+              <CanvasEditor
+                onLineFinished={addLine}
+                isDownloadClip={menuStates.isDownloadClip}
+                isDrawHulls={menuStates.isDrawHulls}
+              />
             </div>
           )}
         </div>

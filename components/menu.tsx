@@ -7,17 +7,12 @@ import { Button, Switch } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Menu({
-  onMenuStateChange,
+  menuStates,
+  setMenuStates,
 }: {
-  onMenuStateChange: (menuStates: MenuStates) => void;
+  menuStates: MenuStates;
+  setMenuStates: (menuStates: MenuStates) => void;
 }) {
-  const [menuStates, setMenuStates] = useState({
-    isDrawingMode: false,
-  });
-
-  useEffect(() => {
-    onMenuStateChange(menuStates);
-  }, [menuStates]);
 
   return (
     <div className={"relative h-fit w-full p-2"}>
