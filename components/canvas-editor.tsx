@@ -5,10 +5,12 @@ import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
 export default function CanvasEditor({
+  editorCanvas,
   onLineFinished,
   isDownloadClip,
   isDrawHulls,
 }: {
+  editorCanvas: HTMLCanvasElement | null;
   onLineFinished: (lines: DrawnLine) => void;
   isDownloadClip: boolean;
   isDrawHulls: boolean;
@@ -22,6 +24,7 @@ export default function CanvasEditor({
       onLineFinished={onLineFinished}
       isDownloadClip={isDownloadClip}
       isDrawHulls={isDrawHulls}
+      editorCanvas={editorCanvas}
     />
   );
 }

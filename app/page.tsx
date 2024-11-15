@@ -7,6 +7,7 @@ import CodeEditorView, {
 } from "@/components/views/code-editor-view";
 import { DrawnLine, MenuStates } from "@/lib/interface";
 import { Button, Divider } from "@nextui-org/react";
+import html2canvas from "html2canvas";
 import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
@@ -22,10 +23,9 @@ export default function Home() {
     isDrawHulls: true,
     isDownloadClip: false,
   });
-
-  function addLine(line: DrawnLine) {
-    setLines([...lines, line]);
-  }
+  const [editorCanvas, setEditorCanvas] = useState<HTMLCanvasElement | null>(
+    null,
+  );
 
   useEffect(() => {
     fetch("/test.tsx")
@@ -39,8 +39,24 @@ export default function Home() {
     // reset lines when drawing mode is off
     if (!menuStates.isDrawingMode) {
       setLines([]);
+    } else {
+      // Get editor canvas
+      const editorContent = document.getElementById("editor-content");
+      if (!editorContent) {
+        throw new Error("Editor content not found");
+      }
+
+      // Convert the editor content to a canvas using html2canvas
+      html2canvas(editorContent).then((canvas) => {
+        // Set the canvas to the state
+        setEditorCanvas(canvas);
+      });
     }
   }, [menuStates]);
+
+  function addLine(line: DrawnLine) {
+    setLines([...lines, line]);
+  }
 
   return (
     <div className="h-full overflow-x-hidden">
@@ -74,6 +90,7 @@ export default function Home() {
                 onLineFinished={addLine}
                 isDownloadClip={menuStates.isDownloadClip}
                 isDrawHulls={menuStates.isDrawHulls}
+                editorCanvas={editorCanvas}
               />
             </div>
           )}

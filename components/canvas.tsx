@@ -13,10 +13,12 @@ import { canvas } from "framer-motion/client";
 import { recognizeText } from "@/lib/ocr";
 
 export default function Canvas({
+  editorCanvas,
   onLineFinished,
   isDrawHulls,
   isDownloadClip,
 }: {
+  editorCanvas: HTMLCanvasElement | null;
   onLineFinished: (lines: DrawnLine) => void;
   isDrawHulls: boolean;
   isDownloadClip: boolean;
@@ -49,14 +51,30 @@ export default function Canvas({
     getDimension();
     window.addEventListener("resize", getDimension);
 
-    renderEditorCanvas().then(() => {
-      setIsCanvasReady(true);
-    });
-
     return () => {
       window.removeEventListener("resize", getDimension);
     };
   }, []);
+
+  useEffect(() => {
+    async function renderEditorCanvas(canvas: HTMLCanvasElement) {
+      /* Render the code editor content and add to layer*/
+      const stage = stageRef.current;
+      const layer = createCanvasLayer(canvas, stage);
+      stage.add(layer);
+      layer.moveToBottom();
+      stage.draw();
+
+      // Set the editor canvas
+      editorCanvasRef.current = canvas;
+    }
+
+    if (editorCanvas) {
+      renderEditorCanvas(editorCanvas).then(() => {
+        setIsCanvasReady(true);
+      });
+    }
+  }, [editorCanvas]);
 
   function createCanvasLayer(canvas: HTMLCanvasElement, stage: StageType) {
     const image = new window.Image();
@@ -173,27 +191,6 @@ export default function Canvas({
     }
 
     return imageData;
-  }
-
-  async function renderEditorCanvas() {
-    /* Render the code editor content and add to layer*/
-
-    const editorContent = document.getElementById("editor-content");
-    if (!editorContent) {
-      throw new Error("Editor content not found");
-    }
-
-    // Convert the editor content to a canvas using html2canvas
-    const canvas = await html2canvas(editorContent);
-    // Add the rendered canvas to the stage
-    const stage = stageRef.current;
-    const layer = createCanvasLayer(canvas, stage);
-    stage.add(layer);
-    layer.moveToBottom();
-    stage.draw();
-
-    // Set the editor canvas
-    editorCanvasRef.current = canvas;
   }
 
   async function clipAndExtract(line: DrawnLine) {
