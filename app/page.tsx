@@ -26,6 +26,7 @@ export default function Home() {
   const [editorCanvas, setEditorCanvas] = useState<HTMLCanvasElement | null>(
     null,
   );
+  const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   useEffect(() => {
     fetch("/test.tsx")
@@ -39,6 +40,7 @@ export default function Home() {
     // reset lines when drawing mode is off
     if (!menuStates.isDrawingMode) {
       setLines([]);
+      setIsCanvasReady(false);
     } else {
       // Get editor canvas
       const editorContent = document.getElementById("editor-content");
@@ -50,6 +52,7 @@ export default function Home() {
       html2canvas(editorContent).then((canvas) => {
         // Set the canvas to the state
         setEditorCanvas(canvas);
+        setIsCanvasReady(true);
       });
     }
   }, [menuStates]);
@@ -64,7 +67,13 @@ export default function Home() {
         <div className="fixed z-10 h-fit w-full">
           <Menu menuStates={menuStates} setMenuStates={setMenuStates} />
         </div>
-        <div className="relative mt-14 flex w-full flex-grow">
+        <div
+          className="relative mt-14 flex w-full flex-grow"
+          style={{
+            cursor:
+              menuStates.isDrawingMode && !isCanvasReady ? "wait" : "auto",
+          }}
+        >
           <div
             className="flex w-full flex-col items-center bg-background p-2"
             id="editor-content"

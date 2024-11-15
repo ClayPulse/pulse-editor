@@ -22,7 +22,7 @@ export default function Menu({
             initial={{ y: -56 }}
             animate={{ y: 0 }}
             exit={{ y: -56 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.1 }}
             className="absolute left-0 top-0 z-0 flex h-full w-full items-center justify-end space-x-2 bg-default-400 p-2"
           >
             <Switch>Use Image Recognition</Switch>

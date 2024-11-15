@@ -38,8 +38,6 @@ export default function Canvas({
 
   const editorCanvasRef = useRef<any>(null);
 
-  const [isCanvasReady, setIsCanvasReady] = useState(false);
-
   useEffect(() => {
     /* Set dimension */
     function getDimension() {
@@ -57,7 +55,7 @@ export default function Canvas({
   }, []);
 
   useEffect(() => {
-    async function renderEditorCanvas(canvas: HTMLCanvasElement) {
+    function renderEditorCanvas(canvas: HTMLCanvasElement) {
       /* Render the code editor content and add to layer*/
       const stage = stageRef.current;
       const layer = createCanvasLayer(canvas, stage);
@@ -70,9 +68,7 @@ export default function Canvas({
     }
 
     if (editorCanvas) {
-      renderEditorCanvas(editorCanvas).then(() => {
-        setIsCanvasReady(true);
-      });
+      renderEditorCanvas(editorCanvas)
     }
   }, [editorCanvas]);
 
@@ -261,7 +257,16 @@ export default function Canvas({
   };
 
   return (
-    <div className="h-full w-full" ref={divRef}>
+    <div
+      className="h-full w-full"
+      ref={divRef}
+      style={{
+        // Get cursor based on theme
+        cursor: resolvedTheme === "light"
+            ? "url(/pencil-light.png) 0 24, auto"
+            : "url(/pencil-dark.png) 0 24, auto",
+      }}
+    >
       <Stage
         ref={stageRef}
         width={canvasWidth}
@@ -272,14 +277,6 @@ export default function Canvas({
         onTouchStart={handleDrawStart}
         onTouchMove={handleDrawMove}
         onTouchEnd={handleDrawEnd}
-        style={{
-          // Get cursor based on theme
-          cursor: !isCanvasReady
-            ? "wait"
-            : resolvedTheme === "light"
-              ? "url(/pencil-light.png) 0 24, auto"
-              : "url(/pencil-dark.png) 0 24, auto",
-        }}
       >
         <Layer>
           {lines.map((line, i) => (
