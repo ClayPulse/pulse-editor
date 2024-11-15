@@ -28,6 +28,8 @@ export default function Home() {
   );
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
+  const menuHeight = 14;
+
   useEffect(() => {
     fetch("/test.tsx")
       .then((res) => res.text())
@@ -57,18 +59,25 @@ export default function Home() {
     }
   }, [menuStates]);
 
-  function addLine(line: DrawnLine) {
+  function onLineFinished(line: DrawnLine) {
     setLines([...lines, line]);
+    // Get editor canvas
+    const editorContent = document.getElementById("editor-content");
+    if (!editorContent) {
+      throw new Error("Editor content not found");
+    }
+    const parentBoundingRect = editorContent.getBoundingClientRect();
+    codeEditorRef.current?.getSelectionInformation(line, parentBoundingRect);
   }
 
   return (
     <div className="h-full overflow-x-hidden">
       <div className="flex min-h-fit w-full flex-col">
-        <div className="fixed z-10 h-fit w-full">
+        <div className={`fixed z-10 h-${menuHeight} w-full`}>
           <Menu menuStates={menuStates} setMenuStates={setMenuStates} />
         </div>
         <div
-          className="relative mt-14 flex w-full flex-grow"
+          className={`relative mt-${menuHeight} flex w-full flex-grow`}
           style={{
             cursor:
               menuStates.isDrawingMode && !isCanvasReady ? "wait" : "auto",
@@ -96,7 +105,7 @@ export default function Home() {
           {menuStates.isDrawingMode && (
             <div className="absolute left-0 top-0 h-full w-full">
               <CanvasEditor
-                onLineFinished={addLine}
+                onLineFinished={onLineFinished}
                 isDownloadClip={menuStates.isDownloadClip}
                 isDrawHulls={menuStates.isDrawHulls}
                 editorCanvas={editorCanvas}

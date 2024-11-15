@@ -23,7 +23,6 @@ export default function Canvas({
   isDrawHulls: boolean;
   isDownloadClip: boolean;
 }) {
-  const [tool, setTool] = useState("pen");
   const [lines, setLines] = useState<DrawnLine[]>([]);
   const isDrawing = useRef(false);
 
@@ -68,7 +67,7 @@ export default function Canvas({
     }
 
     if (editorCanvas) {
-      renderEditorCanvas(editorCanvas)
+      renderEditorCanvas(editorCanvas);
     }
   }, [editorCanvas]);
 
@@ -213,7 +212,7 @@ export default function Canvas({
     isDrawing.current = true;
     const stage = stageRef.current;
     const pos = stage.getPointerPosition();
-    const newLine = { tool, points: [pos.x, pos.y] };
+    const newLine = { points: [pos.x, pos.y] };
     lastLineRef.current = newLine;
   };
 
@@ -262,7 +261,8 @@ export default function Canvas({
       ref={divRef}
       style={{
         // Get cursor based on theme
-        cursor: resolvedTheme === "light"
+        cursor:
+          resolvedTheme === "light"
             ? "url(/pencil-light.png) 0 24, auto"
             : "url(/pencil-dark.png) 0 24, auto",
       }}
@@ -288,9 +288,7 @@ export default function Canvas({
               tension={0.5}
               lineCap="round"
               lineJoin="round"
-              globalCompositeOperation={
-                line.tool === "eraser" ? "destination-out" : "source-over"
-              }
+              globalCompositeOperation={"source-over"}
             />
           ))}
         </Layer>

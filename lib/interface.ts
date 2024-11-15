@@ -1,5 +1,4 @@
 export interface DrawnLine {
-  tool: string;
   points: {
     x: number;
     y: number;

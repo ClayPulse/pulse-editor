@@ -1,7 +1,16 @@
 "use client";
 
-import ReactCodeMirror, { EditorView } from "@uiw/react-codemirror";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import ReactCodeMirror, {
+  EditorView,
+  ReactCodeMirrorRef,
+} from "@uiw/react-codemirror";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { javascript } from "@codemirror/lang-javascript";
 import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
@@ -16,25 +25,28 @@ export interface CodeEditorViewProps {
 }
 
 export interface CodeEditorViewRef {
-  getSelectionInformation: (line: DrawnLine) => SelectionInformation;
+  getSelectionInformation: (
+    line: DrawnLine,
+    parentBoundingRect: DOMRect,
+  ) => SelectionInformation;
 }
 
 const CodeEditorView = forwardRef(
   (props: CodeEditorViewProps, ref: React.Ref<CodeEditorViewRef>) => {
     /* Set editor content */
     const [value, setValue] = useState<string | undefined>(undefined);
-    const onChange = (value: string) => {
-      setValue(value);
-    };
+
+    /* Set up theme */
+    const [theme, setTheme] = useState(vscodeDark);
+    const { resolvedTheme } = useTheme();
+    const cmRef = useRef<ReactCodeMirrorRef>(null);
+
     useEffect(() => {
       if (props.content) {
         setValue(props.content);
       }
     }, [props.content]);
 
-    /* Set up theme */
-    const [theme, setTheme] = useState(vscodeDark);
-    const { resolvedTheme } = useTheme();
     useEffect(() => {
       if (resolvedTheme === "dark") {
         setTheme(vscodeDark);
@@ -43,8 +55,26 @@ const CodeEditorView = forwardRef(
       }
     }, [resolvedTheme]);
 
+    // When the cmRef component is mounted, get the bounding box of the editor
+    // and set it to the state
+
     useImperativeHandle(ref, () => ({
-      getSelectionInformation: (line: DrawnLine): SelectionInformation => {
+      getSelectionInformation: (
+        line: DrawnLine,
+        parentBoundingRect: DOMRect,
+      ): SelectionInformation => {
+        const boundingRect =
+          cmRef.current?.editor?.getBoundingClientRect() as DOMRect;
+
+        const normalizedBoundingRect = normalizeBoundingRect(
+          boundingRect,
+          parentBoundingRect,
+        );
+        console.log(normalizedBoundingRect, line);
+
+        const isInRect = isLineInRect(line, normalizedBoundingRect);
+        console.log("isInRect", isInRect);
+
         return {
           lineStart: 0,
           lineEnd: 0,
@@ -54,11 +84,67 @@ const CodeEditorView = forwardRef(
       },
     }));
 
+    function onChange(value: string) {
+      setValue(value);
+    }
+
+    function normalizeBoundingRect(
+      rect: DOMRect,
+      parentRect: DOMRect,
+    ): DOMRect {
+      // Get the relative position of the child element
+      const x = rect.x - parentRect.x;
+      const y = rect.y - parentRect.y;
+
+      const normalized: DOMRect = {
+        x,
+        y,
+        width: rect.width,
+        height: rect.height,
+        top: y,
+        right: x + rect.width,
+        bottom: y + rect.height,
+        left: x,
+        toJSON: function () {
+          return {
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height,
+            top: this.top,
+            right: this.right,
+            bottom: this.bottom,
+            left: this.left,
+          };
+        },
+      };
+
+      return normalized;
+    }
+
+    function isLineInRect(line: DrawnLine, boundingRect: DOMRect) {
+      // Check if the line is within the bounding box
+      let isInRect = false;
+      line.points.forEach((point) => {
+        if (
+          point.x >= boundingRect.x &&
+          point.x <= boundingRect.x + boundingRect.width &&
+          point.y >= boundingRect.y &&
+          point.y <= boundingRect.y + boundingRect.height
+        ) {
+          isInRect = true;
+        }
+      });
+
+      return isInRect;
+    }
+
     return (
       <ViewLayout width={props.width} height={props.height}>
         <div className="h-full w-full overflow-hidden rounded-lg bg-content2">
           {value ? (
             <ReactCodeMirror
+              ref={cmRef}
               value={value}
               onChange={onChange}
               extensions={[javascript({ jsx: true })]}
