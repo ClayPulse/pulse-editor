@@ -1,34 +1,18 @@
 "use client";
 
-import ReactCodeMirror, {
-  EditorView,
-  ReactCodeMirrorRef,
-} from "@uiw/react-codemirror";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import ReactCodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { useEffect, useRef, useState } from "react";
 import { javascript } from "@codemirror/lang-javascript";
 import ViewLayout from "./layout";
-import {
-  vscodeDark,
-  vscodeLight,
-  vscodeDarkStyle,
-  vscodeLightStyle,
-} from "@uiw/codemirror-theme-vscode";
+import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
 import { Progress } from "@nextui-org/react";
-import { DrawnLine, SelectionInformation } from "@/lib/interface";
+import { DrawnLine, DrawingInformation } from "@/lib/interface";
 import CanvasEditor from "../canvas-editor";
 import html2canvas from "html2canvas";
 import { isLineInRect, normalizeBoundingRect } from "@/lib/bounding-box-helper";
 
 import React from "react";
-import { Decoration, keymap, WidgetType } from "@codemirror/view";
-import { StateField, StateEffect } from "@codemirror/state";
 import { createRoot } from "react-dom/client";
 
 export default function CodeEditorView({
@@ -58,55 +42,7 @@ export default function CodeEditorView({
 
   const [lines, setLines] = useState<DrawnLine[]>([]);
 
-  class CanvasWidget extends WidgetType {
-    editorCanvas: HTMLCanvasElement;
-    offsetX: number;
-    theme: string;
-
-    constructor(
-      editorCanvas: HTMLCanvasElement,
-      offsetX: number,
-      theme: string,
-    ) {
-      super();
-      this.editorCanvas = editorCanvas;
-      this.offsetX = offsetX;
-      this.theme = theme;
-    }
-
-    getCanvas(editorCanvas: HTMLCanvasElement, theme: string) {
-      return (
-        <div
-          className="absolute left-0 top-0"
-          style={{
-            height: cmRef.current?.view?.contentDOM.offsetHeight,
-            width: cmRef.current?.view?.contentDOM.offsetWidth,
-          }}
-        >
-          <CanvasEditor
-            onLineFinished={onLineFinished}
-            isDownloadClip={isDownloadClip ?? false}
-            isDrawHulls={isDrawHulls ?? false}
-            editorCanvas={editorCanvas}
-            theme={theme}
-          />
-        </div>
-      );
-    }
-
-    toDOM() {
-      const container = document.createElement("div");
-      container.id = "canvas-widget";
-      container.style.position = "absolute";
-      container.style.left = this.offsetX + "px";
-
-      const root = createRoot(container);
-      const canvas = this.getCanvas(this.editorCanvas, this.theme);
-      root.render(canvas);
-
-      return container;
-    }
-  }
+  const drawingInformationMap = new Map<DrawnLine, DrawingInformation>();
 
   useEffect(() => {
     if (content) {
@@ -151,7 +87,6 @@ export default function CodeEditorView({
 
     // Get the background color of the editor
     const background = window.getComputedStyle(editor).backgroundColor;
-    console.log("background", background);
 
     // Convert the editor content to a canvas using html2canvas
     html2canvas(editorContent, {
@@ -174,39 +109,58 @@ export default function CodeEditorView({
          instead of injecting into its DOM. */
       // Add the canvas to the editor content
 
-      const widget = new CanvasWidget(
-        canvas,
-        editorContent.getBoundingClientRect().left -
-          scroller.getBoundingClientRect().left,
-        resolvedTheme ?? "light",
+      scroller.appendChild(
+        getCanvasDOM(
+          editorContent.getBoundingClientRect().left -
+            scroller.getBoundingClientRect().left,
+          canvas,
+          resolvedTheme ?? "light",
+        ),
       );
-      console.log(canvas);
-      scroller.appendChild(widget.toDOM());
     });
-
-    console.log(editorContent.offsetHeight, editorContent.offsetWidth);
-  }, [isDrawingMode, setIsCanvasReady]);
+  }, [isDrawingMode, resolvedTheme]);
 
   // When the cmRef component is mounted, get the bounding box of the editor
   // and set it to the state
 
-  function getSelectionInformation(
+  function getDrawingLocation(
     line: DrawnLine,
-    parentBoundingRect: DOMRect,
-  ): SelectionInformation | null {
-    const boundingRect =
-      cmRef.current?.editor?.getBoundingClientRect() as DOMRect;
+  ): {
+    lineStart: number;
+    lineEnd: number;
+  } {
+    const points = line.points;
+    const pointsY = points
+      .map((point) => point.y)
+      .filter((point) => typeof point === "number");
 
-    const normalizedBoundingRect = normalizeBoundingRect(
-      boundingRect,
-      parentBoundingRect,
-    );
+    const minY = Math.min(...pointsY);
+    const maxY = Math.max(...pointsY);
+
+    const editorContent = cmRef.current?.view?.contentDOM;
+    if (!editorContent) {
+      throw new Error("Editor content not found");
+    }
+
+    // Go through each line and column to find the start and end
+    console.log("minY", minY);
+    console.log("maxY", maxY);
+    const cmView = cmRef.current?.view;
+    const cmState = cmRef.current?.state;
+
+    const lineStartBlock = cmView?.lineBlockAtHeight(minY);
+    const lineStart = lineStartBlock
+      ? (cmState?.doc.lineAt(lineStartBlock.from).number ?? -1)
+      : -1;
+    
+    const lineEndBlock = cmView?.lineBlockAtHeight(maxY);
+    const lineEnd = lineEndBlock
+      ? (cmState?.doc.lineAt(lineEndBlock.from).number ?? -1)
+      : -1;
 
     return {
-      lineStart: 0,
-      lineEnd: 0,
-      colStart: 0,
-      colEnd: 0,
+      lineStart: lineStart,
+      lineEnd: lineEnd,
     };
   }
 
@@ -214,19 +168,61 @@ export default function CodeEditorView({
     setValue(value);
   }
 
-  function onLineFinished(line: DrawnLine) {
+  function onTextExtracted(line: DrawnLine, text: string) {
     setLines([...lines, line]);
-    // Get editor canvas
+
+    // Get location information
     const editorContent = cmRef.current?.view?.contentDOM;
     if (!editorContent) {
       throw new Error("Editor content not found");
     }
-    const parentBoundingRect = editorContent.getBoundingClientRect();
-    const selection = getSelectionInformation(line, parentBoundingRect);
+    const location = getDrawingLocation(line);
 
-    if (selection) {
-      console.log(selection);
+    const newInfo: DrawingInformation = {
+      lineStart: location.lineStart,
+      lineEnd: location.lineEnd,
+      text,
+    };
+
+    drawingInformationMap.set(line, newInfo);
+    console.log(newInfo);
+  }
+
+  function getCanvasDOM(
+    offsetX: number,
+    editorCanvas: HTMLCanvasElement,
+    theme: string,
+  ) {
+    function getCanvas(editorCanvas: HTMLCanvasElement, theme: string) {
+      return (
+        <div
+          className="absolute left-0 top-0"
+          style={{
+            height: cmRef.current?.view?.contentDOM.offsetHeight,
+            width: cmRef.current?.view?.contentDOM.offsetWidth,
+          }}
+        >
+          <CanvasEditor
+            onTextExtracted={onTextExtracted}
+            isDownloadClip={isDownloadClip ?? false}
+            isDrawHulls={isDrawHulls ?? false}
+            editorCanvas={editorCanvas}
+            theme={theme}
+          />
+        </div>
+      );
     }
+
+    const container = document.createElement("div");
+    container.id = "canvas-widget";
+    container.style.position = "absolute";
+    container.style.left = offsetX + "px";
+
+    const root = createRoot(container);
+    const canvas = getCanvas(editorCanvas, theme);
+    root.render(canvas);
+
+    return container;
   }
 
   return (

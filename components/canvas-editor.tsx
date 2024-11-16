@@ -6,13 +6,13 @@ import { useMemo } from "react";
 
 export default function CanvasEditor({
   editorCanvas,
-  onLineFinished,
+  onTextExtracted,
   isDownloadClip,
   isDrawHulls,
   theme,
 }: {
   editorCanvas: HTMLCanvasElement | null;
-  onLineFinished: (lines: DrawnLine) => void;
+  onTextExtracted: (line:DrawnLine, text: string) => void;
   isDownloadClip: boolean;
   isDrawHulls: boolean;
   theme: string;
@@ -23,7 +23,7 @@ export default function CanvasEditor({
   );
   return (
     <Canvas
-      onLineFinished={onLineFinished}
+      onTextExtracted={onTextExtracted}
       isDownloadClip={isDownloadClip}
       isDrawHulls={isDrawHulls}
       editorCanvas={editorCanvas}

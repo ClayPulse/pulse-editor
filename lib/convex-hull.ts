@@ -1,4 +1,4 @@
-type Point = { x: number; y: number };
+export type Point = { x: number; y: number };
 
 /**
  * Function to calculate the cross product of two vectors

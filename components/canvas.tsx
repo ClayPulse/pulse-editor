@@ -1,6 +1,6 @@
 "use client";
 
-import { convexHull } from "@/lib/convex-hull";
+import { convexHull, Point } from "@/lib/convex-hull";
 import { DrawnLine } from "@/lib/interface";
 import Konva from "konva";
 import { Stage as StageType } from "konva/lib/Stage";
@@ -12,13 +12,13 @@ import { downloadImage } from "@/lib/image-helper";
 
 export default function Canvas({
   editorCanvas,
-  onLineFinished,
+  onTextExtracted,
   isDrawHulls,
   isDownloadClip,
   theme,
 }: {
   editorCanvas: HTMLCanvasElement | null;
-  onLineFinished: (lines: DrawnLine) => void;
+  onTextExtracted: (line: DrawnLine, text: string) => void;
   isDrawHulls: boolean;
   isDownloadClip: boolean;
   theme: string;
@@ -128,34 +128,8 @@ export default function Canvas({
     link.remove();
   }
 
-  function clipConvexHull(
-    stage: StageType,
-    line: DrawnLine,
-    isDrawHulls: boolean,
-  ): string {
-    // Run convex hull algorithm to get the bounding box
+  function clipLinePath(line: DrawnLine): string {
     const points = line.points;
-    const hulls = convexHull(
-      points.map((point) => ({ x: point.x, y: point.y })),
-    );
-
-    /* Visualize a new Line object with the hull points */
-    if (isDrawHulls) {
-      const hullLine = new Konva.Line({
-        points: hulls.flatMap((point) => [point.x, point.y]),
-        stroke: "#00ff00",
-        strokeWidth: 5,
-        tension: 0.5,
-        lineCap: "round",
-        lineJoin: "round",
-        closed: true,
-      });
-      // Add the hull line to the stage
-      const layer = new Konva.Layer();
-      layer.add(hullLine);
-      stage.add(layer);
-      stage.draw();
-    }
 
     if (!canvasLayer.current) {
       throw new Error("Canvas layer not found");
@@ -164,16 +138,16 @@ export default function Canvas({
     canvasLayer.current.clipFunc((ctx) => {
       ctx.save();
       ctx.beginPath();
-      ctx.moveTo(hulls[0].x, hulls[0].y);
-      for (let i = 1; i < hulls.length; i++) {
-        ctx.lineTo(hulls[i].x, hulls[i].y);
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
       }
       ctx.closePath();
       ctx.clip();
     });
 
     // Calculate the bounding box height and width
-    const validPoints = hulls.filter(
+    const validPoints = points.filter(
       (point) => typeof point.x === "number" && typeof point.y === "number",
     );
     const minX = Math.min(...validPoints.map((point) => point.x));
@@ -191,31 +165,17 @@ export default function Canvas({
     return dataURL;
   }
 
-  async function clipDrawnRegion(
-    stage: StageType,
-    line: DrawnLine,
-    isDrawHulls: boolean,
-    isDownloadClip: boolean,
-  ): Promise<string> {
-    const imageData = clipConvexHull(stage, line, isDrawHulls);
-
-    if (isDownloadClip) {
-      // Download the cropped image
-      downloadImage(imageData);
-    }
-
-    return imageData;
-  }
-
   async function clipAndExtract(line: DrawnLine) {
     if (editorCanvas) {
-      // Save the cropped image
-      clipDrawnRegion(stageRef.current, line, isDrawHulls, isDownloadClip)
-        // Recognize the text from the cropped image
-        .then((imageData) => recognizeText(imageData))
-        .then((text) => {
-          console.log(text);
-        });
+      const imageData = clipLinePath(line);
+
+      if (isDownloadClip) {
+        // Download the cropped image
+        downloadImage(imageData);
+      }
+
+      const text = await recognizeText(imageData);
+      return text;
     } else {
       throw new Error("Editor canvas not found");
     }
@@ -260,9 +220,34 @@ export default function Canvas({
     isDrawing.current = false;
 
     // Run this in background without blocking the UI
-    clipAndExtract(lastLineRef.current);
+    const points = lastLineRef.current.points;
+    const copied = [...points];
+    const hulls = convexHull(copied as Point[]);
 
-    onLineFinished(lastLineRef.current);
+    // The bounding line connecting the hull points
+    const convexEnvelope: DrawnLine = { points: hulls };
+    clipAndExtract(convexEnvelope).then((text) => {
+      onTextExtracted(convexEnvelope, text);
+    });
+
+    /* Visualize a new Line object with the hull points */
+    if (isDrawHulls) {
+      const hullLine = new Konva.Line({
+        points: hulls.flatMap((point) => [point.x, point.y]),
+        stroke: "#00ff00",
+        strokeWidth: 5,
+        tension: 0.5,
+        lineCap: "round",
+        lineJoin: "round",
+        closed: true,
+      });
+      // Add the hull line to the stage
+      const stage = stageRef.current;
+      const layer = new Konva.Layer();
+      layer.add(hullLine);
+      stage.add(layer);
+      stage.draw();
+    }
 
     // Reset the stage and last line
     lastLineRef.current = null;

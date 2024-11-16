@@ -5,11 +5,10 @@ export interface DrawnLine {
   }[];
 }
 
-export interface SelectionInformation {
+export interface DrawingInformation {
   lineStart: number;
   lineEnd: number;
-  colStart: number;
-  colEnd: number;
+  text: string;
 }
 
 export interface MenuStates {
