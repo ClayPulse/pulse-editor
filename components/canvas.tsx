@@ -2,14 +2,11 @@
 
 import { convexHull } from "@/lib/convex-hull";
 import { DrawnLine } from "@/lib/interface";
-import html2canvas from "html2canvas";
 import Konva from "konva";
 import { Stage as StageType } from "konva/lib/Stage";
-import { Layer as LayerType } from "konva/lib/Layer";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
-import { canvas } from "framer-motion/client";
 import { recognizeText } from "@/lib/ocr";
 
 export default function Canvas({
@@ -17,11 +14,13 @@ export default function Canvas({
   onLineFinished,
   isDrawHulls,
   isDownloadClip,
+  theme,
 }: {
   editorCanvas: HTMLCanvasElement | null;
   onLineFinished: (lines: DrawnLine) => void;
   isDrawHulls: boolean;
   isDownloadClip: boolean;
+  theme: string;
 }) {
   const [lines, setLines] = useState<DrawnLine[]>([]);
   const isDrawing = useRef(false);
@@ -33,9 +32,8 @@ export default function Canvas({
 
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [canvasHeight, setCanvasHeight] = useState(0);
-  const { resolvedTheme } = useTheme();
 
-  const editorCanvasRef = useRef<any>(null);
+  const canvasLayer = useRef<Konva.Layer | null>(null);
 
   useEffect(() => {
     /* Set dimension */
@@ -54,24 +52,44 @@ export default function Canvas({
   }, []);
 
   useEffect(() => {
-    function renderEditorCanvas(canvas: HTMLCanvasElement) {
-      /* Render the code editor content and add to layer*/
-      const stage = stageRef.current;
-      const layer = createCanvasLayer(canvas, stage);
-      stage.add(layer);
-      layer.moveToBottom();
-      stage.draw();
-
-      // Set the editor canvas
-      editorCanvasRef.current = canvas;
+    if (editorCanvas && canvasWidth > 0 && canvasHeight > 0) {
+      // Get the canvas layer
+      canvasLayer.current = createCanvasLayer(
+        editorCanvas,
+        canvasWidth,
+        canvasHeight,
+      );
     }
+  }, [editorCanvas, canvasWidth, canvasHeight]);
 
-    if (editorCanvas) {
-      renderEditorCanvas(editorCanvas);
-    }
-  }, [editorCanvas]);
+  /* Actually no need to draw the canvas as the clip 
+     is directly operated on canvas, instead of stage. */
+  // useEffect(() => {
+  //   function renderEditorCanvas(canvas: HTMLCanvasElement) {
+  //     /* Render the code editor content and add to layer*/
+  //     const stage = stageRef.current;
+  //     const layer = createCanvasLayer(canvas, stage);
+  //     stage.add(layer);
+  //     layer.moveToBottom();
+  //     stage.draw();
 
-  function createCanvasLayer(canvas: HTMLCanvasElement, stage: StageType) {
+  //     console.log("Editor canvas rendered. Stage:", stage);
+  //   }
+
+  //   if (editorCanvas) {
+  //     console.log("Rendering editor canvas");
+  //     renderEditorCanvas(editorCanvas);
+  //   } else {
+  //     console.log("Editor canvas not found");
+  //   }
+  // }, [editorCanvas]);
+
+  function createCanvasLayer(
+    canvas: HTMLCanvasElement,
+    width: number,
+    height: number,
+  ) {
+    console.log("Creating canvas layer:", width, height);
     const image = new window.Image();
     image.src = canvas.toDataURL();
 
@@ -79,8 +97,8 @@ export default function Canvas({
       image,
       x: 0,
       y: 0,
-      width: stage.width(),
-      height: stage.height(),
+      width: width,
+      height: height,
     });
 
     const layer = new Konva.Layer();
@@ -105,7 +123,6 @@ export default function Canvas({
 
   function clipConvexHull(
     stage: StageType,
-    canvas: HTMLCanvasElement,
     line: DrawnLine,
     isDrawHulls: boolean,
   ): string {
@@ -133,11 +150,11 @@ export default function Canvas({
       stage.draw();
     }
 
-    // Create a new canvas layer
-    const canvasLayer = createCanvasLayer(canvas, stage);
-
+    if (!canvasLayer.current) {
+      throw new Error("Canvas layer not found");
+    }
     // Add the clip function to canvasLayer
-    canvasLayer.clipFunc((ctx) => {
+    canvasLayer.current.clipFunc((ctx) => {
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(hulls[0].x, hulls[0].y);
@@ -158,7 +175,7 @@ export default function Canvas({
     const maxY = Math.max(...validPoints.map((point) => point.y));
 
     // Get the clipped layer
-    const dataURL = canvasLayer.toDataURL({
+    const dataURL = canvasLayer.current.toDataURL({
       x: minX,
       y: minY,
       width: maxX - minX,
@@ -169,12 +186,11 @@ export default function Canvas({
 
   async function clipDrawnRegion(
     stage: StageType,
-    canvas: HTMLCanvasElement,
     line: DrawnLine,
     isDrawHulls: boolean,
     isDownloadClip: boolean,
   ): Promise<string> {
-    const imageData = clipConvexHull(stage, canvas, line, isDrawHulls);
+    const imageData = clipConvexHull(stage, line, isDrawHulls);
 
     if (isDownloadClip) {
       // Download the cropped image
@@ -189,23 +205,17 @@ export default function Canvas({
   }
 
   async function clipAndExtract(line: DrawnLine) {
-    const helper = () => {
+    if (editorCanvas) {
       // Save the cropped image
-      clipDrawnRegion(
-        stageRef.current,
-        editorCanvasRef.current,
-        line,
-        isDrawHulls,
-        isDownloadClip,
-      )
+      clipDrawnRegion(stageRef.current, line, isDrawHulls, isDownloadClip)
         // Recognize the text from the cropped image
         .then((imageData) => recognizeText(imageData))
         .then((text) => {
           console.log(text);
         });
-    };
-
-    helper();
+    } else {
+      throw new Error("Editor canvas not found");
+    }
   }
 
   const handleDrawStart = (e: any) => {
@@ -262,7 +272,7 @@ export default function Canvas({
       style={{
         // Get cursor based on theme
         cursor:
-          resolvedTheme === "light"
+          theme === "light"
             ? "url(/pencil-light.png) 0 24, auto"
             : "url(/pencil-dark.png) 0 24, auto",
       }}
@@ -293,16 +303,6 @@ export default function Canvas({
           ))}
         </Layer>
       </Stage>
-      {/* <select
-        className="absolute left-0 top-0"
-        value={tool}
-        onChange={(e) => {
-          setTool(e.target.value);
-        }}
-      >
-        <option value="pen">Pen</option>
-        <option value="eraser">Eraser</option>
-      </select> */}
     </div>
   );
 }

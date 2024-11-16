@@ -9,11 +9,13 @@ export default function CanvasEditor({
   onLineFinished,
   isDownloadClip,
   isDrawHulls,
+  theme,
 }: {
   editorCanvas: HTMLCanvasElement | null;
   onLineFinished: (lines: DrawnLine) => void;
   isDownloadClip: boolean;
   isDrawHulls: boolean;
+  theme: string;
 }) {
   const Canvas = useMemo(
     () => dynamic(() => import("@/components/canvas"), { ssr: false }),
@@ -25,6 +27,7 @@ export default function CanvasEditor({
       isDownloadClip={isDownloadClip}
       isDrawHulls={isDrawHulls}
       editorCanvas={editorCanvas}
+      theme={theme}
     />
   );
 }
