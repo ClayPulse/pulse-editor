@@ -13,7 +13,12 @@ import {
 } from "react";
 import { javascript } from "@codemirror/lang-javascript";
 import ViewLayout from "./layout";
-import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
+import {
+  vscodeDark,
+  vscodeLight,
+  vscodeDarkStyle,
+  vscodeLightStyle,
+} from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
 import { Progress } from "@nextui-org/react";
 import { DrawnLine, SelectionInformation } from "@/lib/interface";
@@ -130,15 +135,29 @@ export default function CodeEditorView({
       return;
     }
     // Get editor canvas
+    const scroller = cmRef.current?.view?.scrollDOM;
+    if (!scroller) {
+      throw new Error("Scroller not found");
+    }
     const editorContent = cmRef.current?.view?.contentDOM;
     if (!editorContent) {
       throw new Error("Editor content not found");
     }
 
+    const editor = document.getElementsByClassName("cm-editor")[0];
+    if (!editor) {
+      throw new Error("Editor not found");
+    }
+
+    // Get the background color of the editor
+    const background = window.getComputedStyle(editor).backgroundColor;
+    console.log("background", background);
+
     // Convert the editor content to a canvas using html2canvas
     html2canvas(editorContent, {
       windowWidth: editorContent.offsetWidth,
       windowHeight: editorContent.offsetHeight,
+      backgroundColor: background,
     }).then((canvas) => {
       // Set the canvas to the state
       setIsCanvasReady(true);
@@ -154,15 +173,14 @@ export default function CodeEditorView({
          A better way to do this is to make a CodeMirror decoration
          instead of injecting into its DOM. */
       // Add the canvas to the editor content
-      const scroller = document.getElementsByClassName("cm-scroller")[0];
-      const content = document.getElementsByClassName("cm-content")[0];
+
       const widget = new CanvasWidget(
         canvas,
-        content.getBoundingClientRect().left -
+        editorContent.getBoundingClientRect().left -
           scroller.getBoundingClientRect().left,
         resolvedTheme ?? "light",
       );
-      console.log(canvas)
+      console.log(canvas);
       scroller.appendChild(widget.toDOM());
     });
 
@@ -183,7 +201,6 @@ export default function CodeEditorView({
       boundingRect,
       parentBoundingRect,
     );
-
 
     return {
       lineStart: 0,

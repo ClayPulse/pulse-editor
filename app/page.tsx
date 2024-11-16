@@ -12,7 +12,7 @@ export default function Home() {
   const [menuStates, setMenuStates] = useState<MenuStates>({
     isDrawingMode: false,
     isDrawHulls: true,
-    isDownloadClip: true,
+    isDownloadClip: false,
   });
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 

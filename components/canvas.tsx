@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
 import { recognizeText } from "@/lib/ocr";
+import { downloadImage } from "@/lib/image-helper";
 
 export default function Canvas({
   editorCanvas,
@@ -63,7 +64,10 @@ export default function Canvas({
   }, [editorCanvas, canvasWidth, canvasHeight]);
 
   /* Actually no need to draw the canvas as the clip 
-     is directly operated on canvas, instead of stage. */
+     is directly operated on canvas, instead of stage. 
+     
+     The following code can be used for visualizing 
+     the canvas for debug purposes. */
   // useEffect(() => {
   //   function renderEditorCanvas(canvas: HTMLCanvasElement) {
   //     /* Render the code editor content and add to layer*/
@@ -92,6 +96,9 @@ export default function Canvas({
     console.log("Creating canvas layer:", width, height);
     const image = new window.Image();
     image.src = canvas.toDataURL();
+
+    // Check canvas image rendering
+    // downloadImage(image.src);
 
     const konvaImage = new Konva.Image({
       image,
@@ -194,11 +201,7 @@ export default function Canvas({
 
     if (isDownloadClip) {
       // Download the cropped image
-      const link = document.createElement("a");
-      link.href = imageData;
-      link.download = "image.png";
-      link.click();
-      link.remove();
+      downloadImage(imageData);
     }
 
     return imageData;
