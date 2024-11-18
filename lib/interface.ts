@@ -15,4 +15,15 @@ export interface MenuStates {
   isDrawingMode: boolean;
   isDrawHulls: boolean;
   isDownloadClip: boolean;
+  isRecording: boolean;
+}
+
+export interface CodeCompletionInstruction {
+  text?: string;
+  audio?: Blob;
+}
+
+export interface CodeCompletionResult {
+  text: string;
+  audio?: Blob;
 }

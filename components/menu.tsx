@@ -2,7 +2,6 @@
 
 import { MenuStates } from "@/lib/interface";
 import MenuToolbar from "./toolbars/menu-toolbar";
-import { useEffect, useState } from "react";
 import { Button, Switch } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 

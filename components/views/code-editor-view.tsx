@@ -10,10 +10,14 @@ import { Progress } from "@nextui-org/react";
 import { DrawnLine, DrawingInformation } from "@/lib/interface";
 import CanvasEditor from "../canvas-editor";
 import html2canvas from "html2canvas";
-import { isLineInRect, normalizeBoundingRect } from "@/lib/canvas/bounding-box-helper";
+import {
+  isLineInRect,
+  normalizeBoundingRect,
+} from "@/lib/canvas/bounding-box-helper";
 
 import React from "react";
 import { createRoot } from "react-dom/client";
+import useRecorder from "@/lib/hooks/use-recorder";
 
 export default function CodeEditorView({
   width,
@@ -43,6 +47,8 @@ export default function CodeEditorView({
   const [lines, setLines] = useState<DrawnLine[]>([]);
 
   const drawingInformationMap = new Map<DrawnLine, DrawingInformation>();
+
+  const { startRecording, stopRecording, audioData } = useRecorder();
 
   useEffect(() => {
     if (content) {
@@ -123,9 +129,7 @@ export default function CodeEditorView({
   // When the cmRef component is mounted, get the bounding box of the editor
   // and set it to the state
 
-  function getDrawingLocation(
-    line: DrawnLine,
-  ): {
+  function getDrawingLocation(line: DrawnLine): {
     lineStart: number;
     lineEnd: number;
   } {
@@ -152,7 +156,7 @@ export default function CodeEditorView({
     const lineStart = lineStartBlock
       ? (cmState?.doc.lineAt(lineStartBlock.from).number ?? -1)
       : -1;
-    
+
     const lineEndBlock = cmView?.lineBlockAtHeight(maxY);
     const lineEnd = lineEndBlock
       ? (cmState?.doc.lineAt(lineEndBlock.from).number ?? -1)
@@ -186,6 +190,9 @@ export default function CodeEditorView({
 
     drawingInformationMap.set(line, newInfo);
     console.log(newInfo);
+
+    // Start code completion
+    startRecording();
   }
 
   function getCanvasDOM(

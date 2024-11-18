@@ -1,13 +1,41 @@
-import { BaseLanguageModel } from "@langchain/core/language_models/base";
-import { DrawingInformation } from "../interface";
+import {
+  CodeCompletionInstruction,
+  CodeCompletionResult,
+  DrawingInformation,
+} from "../interface";
+import { BaseLLM } from "../llm/llm";
+import { BaseSTT } from "../stt/stt";
+import { BaseTTS } from "../tts/tts";
 
-async function predictText2Text(
-  model: BaseLanguageModel,
+export async function predictCodeCompletion(
+  stt: BaseSTT | undefined,
+  llm: BaseLLM,
+  tts: BaseTTS | undefined,
   file: string,
   drawingInformation: DrawingInformation,
-  instruction: string,
-): Promise<string> {
-  const prompt = `\
+  instruction: CodeCompletionInstruction,
+): Promise<CodeCompletionResult> {
+  let llmInstruction;
+  if (instruction.text) {
+    llmInstruction = instruction.text;
+  } else if (stt && instruction.audio) {
+    const sttResult = await stt.generate(instruction.audio);
+    llmInstruction = sttResult;
+  } else if (stt) {
+    throw new Error(
+      "Both stt and instruction.audio must be provided. Are you missing the instruction audio?",
+    );
+  } else if (instruction.audio) {
+    throw new Error(
+      "Both stt and instruction.audio must be provided. Are you missing the STT model?",
+    );
+  } else {
+    throw new Error(
+      "Either instruction.text or instruction.audio must be provided.",
+    );
+  }
+
+  const llmPrompt = `\
 You are a helpful code copilot who is helping a developer to code. \
 You must review the code and complete instruction from the developer. \
 The information about the current line and focused text are given along with the full \
@@ -25,7 +53,7 @@ ${file}
 
 After reviewing the code, the developer has given you the following instruction:
 \`\`\`
-${instruction}
+${llmInstruction}
 \`\`\`
 
 Finally, you must return a JSON containing the code completion in the following format:
@@ -35,14 +63,15 @@ Finally, you must return a JSON containing the code completion in the following 
 }
 \`\`\`
 `;
-  return await model.invoke(prompt);
-}
+  const llmResult = await llm.generate(llmPrompt);
 
-async function predictText2Speech(text: string): Promise<Blob> {
-  return new Blob();
-}
+  let ttsResult = undefined;
+  if (tts) {
+    ttsResult = await tts.generate(llmResult);
+  }
 
-async function predictSpeech2Text(audioBase64: Blob): Promise<string> {
-  return "audio";
+  return {
+    text: llmResult,
+    audio: ttsResult,
+  };
 }
-
