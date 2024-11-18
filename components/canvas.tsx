@@ -1,14 +1,14 @@
 "use client";
 
-import { convexHull, Point } from "@/lib/convex-hull";
+import { convexHull, Point } from "@/lib/canvas/convex-hull";
 import { DrawnLine } from "@/lib/interface";
 import Konva from "konva";
 import { Stage as StageType } from "konva/lib/Stage";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
-import { recognizeText } from "@/lib/ocr";
-import { downloadImage } from "@/lib/image-helper";
+import { recognizeText } from "@/lib/image-processing/ocr";
+import { downloadImage } from "@/lib/image-processing/image-helper";
 
 export default function Canvas({
   editorCanvas,

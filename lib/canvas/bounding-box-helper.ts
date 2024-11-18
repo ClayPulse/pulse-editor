@@ -1,4 +1,4 @@
-import { DrawnLine } from "./interface";
+import { DrawnLine } from "../interface";
 
 export function normalizeBoundingRect(rect: DOMRect, parentRect: DOMRect): DOMRect {
   // Get the relative position of the child element

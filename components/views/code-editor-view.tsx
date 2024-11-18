@@ -10,7 +10,7 @@ import { Progress } from "@nextui-org/react";
 import { DrawnLine, DrawingInformation } from "@/lib/interface";
 import CanvasEditor from "../canvas-editor";
 import html2canvas from "html2canvas";
-import { isLineInRect, normalizeBoundingRect } from "@/lib/bounding-box-helper";
+import { isLineInRect, normalizeBoundingRect } from "@/lib/canvas/bounding-box-helper";
 
 import React from "react";
 import { createRoot } from "react-dom/client";
