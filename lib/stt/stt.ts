@@ -1,6 +1,4 @@
 import OpenAI from "openai";
-import fs from "fs";
-import path from "path";
 
 export class BaseSTT {
   // The model object
@@ -19,26 +17,6 @@ export class BaseSTT {
   async generate(audio: Blob): Promise<string> {
     return await this.generateFunc(this.model, audio);
   }
-}
-
-async function createReadStreamFromBlob(blob: Blob) {
-  const tempFilePath = path.join(__dirname, "temp-audio-file.wav");
-
-  // Convert Blob to Buffer
-  const buffer = await blob.arrayBuffer();
-
-  // Write the buffer to a temporary file
-  fs.writeFileSync(tempFilePath, Buffer.from(buffer));
-
-  // Create a readable stream from the file
-  const readStream = fs.createReadStream(tempFilePath);
-
-  // Clean up the temporary file when done
-  readStream.on("close", () => {
-    fs.unlinkSync(tempFilePath);
-  });
-
-  return readStream;
 }
 
 export function getModelSTT(

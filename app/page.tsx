@@ -2,6 +2,7 @@
 
 import Menu from "@/components/menu";
 import CodeEditorView from "@/components/views/code-editor-view";
+import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { MenuStates } from "@/lib/interface";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
@@ -24,10 +25,6 @@ export default function Home() {
   const [sttModel, setSttModel] = useState<BaseSTT | undefined>(undefined);
   const [llmModel, setLlmModel] = useState<BaseLLM | undefined>(undefined);
 
-  // const sttModel = getModelSTT(apiKey!, "openai", "whisper-1");
-
-  // const llmModel = getModelLLM(apiKey!, "openai", "gpt-4o-mini", 0.7);
-
   const vad = useMicVAD({
     startOnLoad: false,
     ortConfig(ort) {
@@ -43,10 +40,13 @@ export default function Home() {
         console.log("STT result:\n", sttResult);
         llmModel?.generate(sttResult).then((llmResult) => {
           console.log("LLM result:\n", llmResult);
+          alert("LLM result:\n" + llmResult);
         });
       });
     },
   });
+
+  const { getValue, setValue } = useLocalStorage();
 
   useEffect(() => {
     fetch("/test.tsx")
@@ -54,6 +54,12 @@ export default function Home() {
       .then((text) => {
         setContent(text);
       });
+
+    // Try get api key from local storage
+    const apiKey = getValue<string>("apiKey");
+    if (apiKey) {
+      setApiKey(apiKey);
+    }
   }, []);
 
   useEffect(() => {
@@ -80,7 +86,10 @@ export default function Home() {
         <Input
           placeholder="OpenAI API key"
           value={apiKey}
-          onValueChange={(value) => setApiKey(value)}
+          onValueChange={(value) => {
+            setApiKey(value);
+            setValue("apiKey", value);
+          }}
         />
       </div>
       <div
