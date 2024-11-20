@@ -32,8 +32,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen antialiased`}
       >
         <WrappedNextUIProvider>
-          <Toaster />
-          <MenuStatesContextProvider>{children}</MenuStatesContextProvider>
+          <MenuStatesContextProvider>
+            <Toaster />
+            {children}
+          </MenuStatesContextProvider>
         </WrappedNextUIProvider>
       </body>
     </html>

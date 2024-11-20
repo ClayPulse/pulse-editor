@@ -18,7 +18,7 @@ export default function CanvasEditor({
   theme: string;
 }) {
   const Canvas = useMemo(
-    () => dynamic(() => import("@/components/canvas"), { ssr: false }),
+    () => dynamic(() => import("@/components/canvas/canvas"), { ssr: false }),
     [],
   );
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Menu from "@/components/menu";
-import CodeEditorView from "@/components/views/code-editor-view";
+import CodeEditorView from "@/components/editor-views/code-editor-view";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
@@ -14,7 +14,6 @@ export default function Home() {
   const [content, setContent] = useState<string | undefined>(undefined);
 
   const [isCanvasReady, setIsCanvasReady] = useState(false);
-  // const [apiKey, setApiKey] = useState<string | undefined>(undefined);
   const [sttModel, setSttModel] = useState<BaseSTT | undefined>(undefined);
   const [llmModel, setLlmModel] = useState<BaseLLM | undefined>(undefined);
 

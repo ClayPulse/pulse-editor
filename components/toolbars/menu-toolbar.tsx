@@ -10,7 +10,6 @@ import {
   Switch,
 } from "@nextui-org/react";
 import ToolbarLayout from "./layout";
-import { MenuStates } from "@/lib/interface";
 import IconPen from "../icons/pen";
 import IconComment from "../icons/comment";
 import IconErase from "../icons/erase";
@@ -19,11 +18,9 @@ import IconSpeaker from "../icons/speaker";
 import IconAgent from "../icons/agent";
 import IconApps from "../icons/apps";
 import IconSettings from "../icons/settings";
-import { LLMProviderOption, llmProviderOptions } from "@/lib/llm/options";
-import { useEffect, useState } from "react";
-import { STTProviderOption, sttProviderOptions } from "@/lib/stt/options";
+import { llmProviderOptions } from "@/lib/llm/options";
+import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
-import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 
 function SettingPopover() {

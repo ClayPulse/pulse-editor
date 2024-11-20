@@ -8,7 +8,7 @@ import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
 import { Progress } from "@nextui-org/react";
 import { DrawnLine, DrawingInformation } from "@/lib/interface";
-import CanvasEditor from "../canvas-editor";
+import CanvasEditor from "../canvas/canvas-editor";
 import html2canvas from "html2canvas";
 import {
   isLineInRect,
