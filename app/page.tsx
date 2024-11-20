@@ -2,26 +2,19 @@
 
 import Menu from "@/components/menu";
 import CodeEditorView from "@/components/views/code-editor-view";
-import { useLocalStorage } from "@/lib/hooks/use-local-storage";
+import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
-import { MenuStates } from "@/lib/interface";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { Input } from "@nextui-org/react";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Home() {
   // get file from /test.tsx
   const [content, setContent] = useState<string | undefined>(undefined);
 
-  const [menuStates, setMenuStates] = useState<MenuStates>({
-    isDrawingMode: false,
-    isDrawHulls: true,
-    isDownloadClip: false,
-    isRecording: false,
-  });
   const [isCanvasReady, setIsCanvasReady] = useState(false);
-  const [apiKey, setApiKey] = useState<string | undefined>(undefined);
+  // const [apiKey, setApiKey] = useState<string | undefined>(undefined);
   const [sttModel, setSttModel] = useState<BaseSTT | undefined>(undefined);
   const [llmModel, setLlmModel] = useState<BaseLLM | undefined>(undefined);
 
@@ -36,17 +29,18 @@ export default function Home() {
       const wavBuffer = utils.encodeWAV(audio);
       const blob = new Blob([wavBuffer], { type: "audio/wav" });
       console.log("Speech end\n", blob);
+      console.log(sttModel, llmModel);
       sttModel?.generate(blob).then((sttResult) => {
         console.log("STT result:\n", sttResult);
         llmModel?.generate(sttResult).then((llmResult) => {
           console.log("LLM result:\n", llmResult);
-          alert("LLM result:\n" + llmResult);
+          toast("Agent:\n" + llmResult);
         });
       });
     },
   });
 
-  const { getValue, setValue } = useLocalStorage();
+  const { menuStates } = useMenuStatesContext();
 
   useEffect(() => {
     fetch("/test.tsx")
@@ -54,48 +48,63 @@ export default function Home() {
       .then((text) => {
         setContent(text);
       });
-
-    // Try get api key from local storage
-    const apiKey = getValue<string>("apiKey");
-    if (apiKey) {
-      setApiKey(apiKey);
-    }
   }, []);
 
+  // Load models
   useEffect(() => {
-    if (menuStates.isRecording) {
+    if (menuStates?.settings) {
+      if (
+        menuStates.settings.sttAPIKey &&
+        menuStates.settings.sttProvider &&
+        menuStates.settings.sttModel
+      ) {
+        const model = getModelSTT(
+          menuStates.settings.sttAPIKey,
+          menuStates.settings.sttProvider,
+          menuStates.settings.sttModel,
+        );
+        setSttModel(model);
+      } else {
+        toast.error("Please set STT Provider, Model and API key in settings");
+      }
+      if (
+        menuStates.settings.llmAPIKey &&
+        menuStates.settings.llmProvider &&
+        menuStates.settings.llmModel
+      ) {
+        const model = getModelLLM(
+          menuStates.settings.llmAPIKey,
+          menuStates.settings.llmProvider,
+          menuStates.settings.llmModel,
+          0.85,
+        );
+        setLlmModel(model);
+      } else {
+        toast.error("Please set LLM Provider, Model and API key in settings");
+      }
+    }
+  }, [menuStates]);
+
+  // Toggle recording
+  useEffect(() => {
+    if (menuStates?.isRecording) {
       vad.start();
     } else {
       vad.stop();
     }
   }, [menuStates, vad]);
 
-  useEffect(() => {
-    if (apiKey) {
-      setSttModel(getModelSTT(apiKey, "openai", "whisper-1"));
-      setLlmModel(getModelLLM(apiKey, "openai", "gpt-4o-mini", 0.7));
-    }
-  }, [apiKey]);
+  useEffect(() => {}, [menuStates]);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
       <div className={`fixed z-10 h-14 w-full`}>
-        <Menu menuStates={menuStates} setMenuStates={setMenuStates} />
-      </div>
-      <div className="mt-14 h-4 w-80 px-2">
-        <Input
-          placeholder="OpenAI API key"
-          value={apiKey}
-          onValueChange={(value) => {
-            setApiKey(value);
-            setValue("apiKey", value);
-          }}
-        />
+        <Menu />
       </div>
       <div
         className={`mt-14 flex min-h-0 w-full flex-grow`}
         style={{
-          cursor: menuStates.isDrawingMode && !isCanvasReady ? "wait" : "auto",
+          cursor: menuStates?.isDrawingMode && !isCanvasReady ? "wait" : "auto",
         }}
       >
         <div className="flex w-full flex-col items-center bg-background p-2">
@@ -103,9 +112,9 @@ export default function Home() {
             width="600px"
             height="100%"
             content={content}
-            isDrawingMode={menuStates.isDrawingMode}
-            isDownloadClip={menuStates.isDownloadClip}
-            isDrawHulls={menuStates.isDrawHulls}
+            isDrawingMode={menuStates?.isDrawingMode}
+            isDownloadClip={menuStates?.isDownloadClip}
+            isDrawHulls={menuStates?.isDrawHulls}
             setIsCanvasReady={setIsCanvasReady}
           />
         </div>

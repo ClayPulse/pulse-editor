@@ -24,7 +24,7 @@ export class BaseLLM {
 
 export function getModelLLM(
   apiKey: string,
-  provider: "openai" | "anthropic" | "togetherai" | "local",
+  provider: string,
   modelName: string,
   temperature: number,
 ): BaseLLM {

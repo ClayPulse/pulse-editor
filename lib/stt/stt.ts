@@ -21,7 +21,7 @@ export class BaseSTT {
 
 export function getModelSTT(
   apiKey: string,
-  provider: "openai",
+  provider: string,
   modelName: string,
   voiceName?: string,
 ): BaseSTT {

@@ -1,22 +1,17 @@
 "use client";
 
-import { MenuStates } from "@/lib/interface";
 import MenuToolbar from "./toolbars/menu-toolbar";
 import { Button, Switch } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
+import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 
-export default function Menu({
-  menuStates,
-  setMenuStates,
-}: {
-  menuStates: MenuStates;
-  setMenuStates: (menuStates: MenuStates) => void;
-}) {
+export default function Menu() {
+  const { menuStates } = useMenuStatesContext();
 
   return (
     <div className={"relative h-fit w-full p-2"}>
       <AnimatePresence>
-        {menuStates.isDrawingMode && (
+        {menuStates?.isDrawingMode && (
           <motion.div
             initial={{ y: -56 }}
             animate={{ y: 0 }}
@@ -29,7 +24,7 @@ export default function Menu({
           </motion.div>
         )}
       </AnimatePresence>
-      <MenuToolbar menuStates={menuStates} setMenuStates={setMenuStates} />
+      <MenuToolbar />
     </div>
   );
 }

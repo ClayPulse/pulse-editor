@@ -1,3 +1,30 @@
+export interface MenuStates {
+  isDrawingMode: boolean;
+  isDrawHulls: boolean;
+  isDownloadClip: boolean;
+  isRecording: boolean;
+
+  // Settings
+  settings?: Settings;
+}
+
+export interface Settings {
+  sttProvider?: string;
+  llmProvider?: string;
+  ttsProvider?: string;
+
+  sttModel?: string;
+  llmModel?: string;
+  ttsModel?: string;
+
+  sttAPIKey?: string;
+  llmAPIKey?: string;
+  ttsAPIKey?: string;
+
+  isUsePassword?: boolean;
+  ttl?: number;
+}
+
 export interface DrawnLine {
   points: {
     x: number;
@@ -9,13 +36,6 @@ export interface DrawingInformation {
   lineStart: number;
   lineEnd: number;
   text: string;
-}
-
-export interface MenuStates {
-  isDrawingMode: boolean;
-  isDrawHulls: boolean;
-  isDownloadClip: boolean;
-  isRecording: boolean;
 }
 
 export interface CodeCompletionInstruction {
