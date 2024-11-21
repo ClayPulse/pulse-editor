@@ -2,11 +2,17 @@
 
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { MenuStates, Settings } from "@/lib/interface";
-import { createContext, useEffect, useState } from "react";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 
 interface MenuStatesContextType {
   menuStates: MenuStates;
-  setMenuStates: (newMenuStates: MenuStates) => void;
+  setMenuStates: Dispatch<SetStateAction<MenuStates>>;
 }
 
 export const MenuStatesContext = createContext<
@@ -31,27 +37,35 @@ export default function MenuStatesContextProvider({
     // Load settings from local storage
     const loadedSettings: Settings = {};
 
-    const STTProvider = getValue<string>("sttProvider");
-    const LLMProvider = getValue<string>("llmProvider");
-    const TTSProvider = getValue<string>("ttsProvider");
-    const STTModel = getValue<string>("sttModel");
-    const LLMModel = getValue<string>("llmModel");
-    const TTSModel = getValue<string>("ttsModel");
-    const STTAPIKey = getValue<string>("sttAPIKey");
-    const LLMAPIKey = getValue<string>("llmAPIKey");
-    const TTSAPIKey = getValue<string>("ttsAPIKey");
+    const sttProvider = getValue<string>("sttProvider");
+    const llmProvider = getValue<string>("llmProvider");
+    const ttsProvider = getValue<string>("ttsProvider");
+    const sttModel = getValue<string>("sttModel");
+    const llmModel = getValue<string>("llmModel");
+    const ttsModel = getValue<string>("ttsModel");
     const isUsePassword = getValue<boolean>("isUsePassword");
+    const isPasswordSet = getValue<boolean>("isPasswordSet");
 
-    loadedSettings.sttProvider = STTProvider ?? undefined;
-    loadedSettings.llmProvider = LLMProvider ?? undefined;
-    loadedSettings.ttsProvider = TTSProvider ?? undefined;
-    loadedSettings.sttModel = STTModel ?? undefined;
-    loadedSettings.llmModel = LLMModel ?? undefined;
-    loadedSettings.ttsModel = TTSModel ?? undefined;
-    loadedSettings.sttAPIKey = STTAPIKey ?? undefined;
-    loadedSettings.llmAPIKey = LLMAPIKey ?? undefined;
-    loadedSettings.ttsAPIKey = TTSAPIKey ?? undefined;
+    loadedSettings.sttProvider = sttProvider ?? undefined;
+    loadedSettings.llmProvider = llmProvider ?? undefined;
+    loadedSettings.ttsProvider = ttsProvider ?? undefined;
+    loadedSettings.sttModel = sttModel ?? undefined;
+    loadedSettings.llmModel = llmModel ?? undefined;
+    loadedSettings.ttsModel = ttsModel ?? undefined;
     loadedSettings.isUsePassword = isUsePassword ?? undefined;
+    loadedSettings.isPasswordSet = isPasswordSet ?? undefined;
+
+    // Only load API keys here if password is not set.
+    // If password is set, API keys will be loaded after password is entered.
+    if (!isPasswordSet) {
+      const sttAPIKey = getValue<string>("sttAPIKey");
+      const llmAPIKey = getValue<string>("llmAPIKey");
+      const ttsAPIKey = getValue<string>("ttsAPIKey");
+      loadedSettings.sttAPIKey = sttAPIKey ?? undefined;
+      loadedSettings.llmAPIKey = llmAPIKey ?? undefined;
+      loadedSettings.ttsAPIKey = ttsAPIKey ?? undefined;
+    }
+
 
     setMenuStates((prev) => ({
       ...prev,
@@ -64,4 +78,7 @@ export default function MenuStatesContextProvider({
       {children}
     </MenuStatesContext.Provider>
   );
+}
+function getValue<T>(arg0: string) {
+  throw new Error("Function not implemented.");
 }

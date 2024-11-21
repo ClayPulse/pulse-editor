@@ -22,6 +22,8 @@ export interface Settings {
   ttsAPIKey?: string;
 
   isUsePassword?: boolean;
+  isPasswordSet?: boolean;
+  password?: string;
   ttl?: number;
 }
 

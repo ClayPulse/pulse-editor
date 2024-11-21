@@ -8,6 +8,7 @@ import {
   Select,
   SelectItem,
   Switch,
+  Tooltip,
 } from "@nextui-org/react";
 import ToolbarLayout from "./layout";
 import IconPen from "../icons/pen";
@@ -22,9 +23,11 @@ import { llmProviderOptions } from "@/lib/llm/options";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import { useState } from "react";
 
 function SettingPopover() {
   const { menuStates, updateMenuStates } = useMenuStatesContext();
+  const [isOpen, setIsOpen] = useState(false);
 
   // const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -32,7 +35,13 @@ function SettingPopover() {
   //   setIsPasswordVisible(!isPasswordVisible);
 
   return (
-    <Popover showArrow={true} placement="bottom" backdrop="opaque">
+    <Popover
+      showArrow={true}
+      placement="bottom"
+      backdrop="opaque"
+      isOpen={isOpen}
+      onOpenChange={(open) => setIsOpen(open)}
+    >
       <PopoverTrigger>
         <Button
           isIconOnly
@@ -123,22 +132,33 @@ function SettingPopover() {
                     </SelectItem>
                   )}
                 </Select>
-                <Input
-                  label="API Key"
-                  size="md"
-                  isRequired
-                  value={menuStates?.settings?.sttAPIKey ?? ""}
-                  onValueChange={(value) => {
-                    const settings = menuStates?.settings ?? {};
-                    updateMenuStates({
-                      settings: {
-                        ...settings,
-                        sttAPIKey: value,
-                      },
-                    });
-                  }}
-                  isDisabled={!menuStates?.settings?.sttProvider}
-                />
+                <Tooltip
+                  content={
+                    <p>
+                      Please disable password to edit API Key. <br />
+                      You can enable password again after editing API keys.
+                    </p>
+                  }
+                  isDisabled={!menuStates?.settings?.isUsePassword}
+                >
+                  <Input
+                    label="API Key"
+                    size="md"
+                    isRequired
+                    value={menuStates?.settings?.sttAPIKey ?? ""}
+                    onValueChange={(value) => {
+                      const settings = menuStates?.settings ?? {};
+                      updateMenuStates({
+                        settings: {
+                          ...settings,
+                          sttAPIKey: value,
+                        },
+                      });
+                    }}
+                    isDisabled={!menuStates?.settings?.sttProvider}
+                    isReadOnly={menuStates?.settings?.isUsePassword}
+                  />
+                </Tooltip>
               </div>
             </div>
             <Divider />
@@ -218,22 +238,33 @@ function SettingPopover() {
                     </SelectItem>
                   )}
                 </Select>
-                <Input
-                  label="API Key"
-                  size="md"
-                  isRequired
-                  value={menuStates?.settings?.llmAPIKey ?? ""}
-                  onValueChange={(value) => {
-                    const settings = menuStates?.settings ?? {};
-                    updateMenuStates({
-                      settings: {
-                        ...settings,
-                        llmAPIKey: value,
-                      },
-                    });
-                  }}
-                  isDisabled={!menuStates?.settings?.llmProvider}
-                />
+                <Tooltip
+                  content={
+                    <p>
+                      Please disable password to edit API Key. <br />
+                      You can enable password again after editing API keys.
+                    </p>
+                  }
+                  isDisabled={!menuStates?.settings?.isUsePassword}
+                >
+                  <Input
+                    label="API Key"
+                    size="md"
+                    isRequired
+                    value={menuStates?.settings?.llmAPIKey ?? ""}
+                    onValueChange={(value) => {
+                      const settings = menuStates?.settings ?? {};
+                      updateMenuStates({
+                        settings: {
+                          ...settings,
+                          llmAPIKey: value,
+                        },
+                      });
+                    }}
+                    isDisabled={!menuStates?.settings?.llmProvider}
+                    isReadOnly={menuStates?.settings?.isUsePassword}
+                  />
+                </Tooltip>
               </div>
             </div>
             <Divider />
@@ -313,22 +344,33 @@ function SettingPopover() {
                     </SelectItem>
                   )}
                 </Select>
-                <Input
-                  label="API Key"
-                  size="md"
-                  isRequired
-                  value={menuStates?.settings?.ttsAPIKey ?? ""}
-                  onValueChange={(value) => {
-                    const settings = menuStates?.settings ?? {};
-                    updateMenuStates({
-                      settings: {
-                        ...settings,
-                        ttsAPIKey: value,
-                      },
-                    });
-                  }}
-                  isDisabled={!menuStates?.settings?.ttsProvider}
-                />
+                <Tooltip
+                  content={
+                    <p>
+                      Please disable password to edit API Key. <br />
+                      You can enable password again after editing API keys.
+                    </p>
+                  }
+                  isDisabled={!menuStates?.settings?.isUsePassword}
+                >
+                  <Input
+                    label="API Key"
+                    size="md"
+                    isRequired
+                    value={menuStates?.settings?.ttsAPIKey ?? ""}
+                    onValueChange={(value) => {
+                      const settings = menuStates?.settings ?? {};
+                      updateMenuStates({
+                        settings: {
+                          ...settings,
+                          ttsAPIKey: value,
+                        },
+                      });
+                    }}
+                    isDisabled={!menuStates?.settings?.ttsProvider}
+                    isReadOnly={menuStates?.settings?.isUsePassword}
+                  />
+                </Tooltip>
               </div>
             </div>
             <Divider />
@@ -341,42 +383,28 @@ function SettingPopover() {
               password to encrypt the API tokens as a temporary workaround.
             </p>
             <Switch
-              checked={menuStates?.settings?.isUsePassword}
-              onChange={() => {
-                const newValue = !menuStates?.settings?.isUsePassword;
-                const settings = menuStates?.settings ?? {};
-                updateMenuStates({
-                  settings: {
-                    ...settings,
-                    isUsePassword: newValue,
-                  },
-                });
+              isSelected={menuStates?.settings?.isUsePassword ?? false}
+              onChange={(e) => {
+                const newValue = e.target.checked;
+                if (newValue) {
+                  setIsOpen(false);
+                  const settings = menuStates?.settings ?? {};
+                  updateMenuStates({
+                    settings: {
+                      ...settings,
+                      isUsePassword: newValue,
+                    },
+                  });
+                } else {
+                  // Reset all settings
+                  updateMenuStates({
+                    settings: undefined,
+                  });
+                }
               }}
             >
               Encrypt API tokens with password
             </Switch>
-            {/* <Input
-              isDisabled={!isUsePassword}
-              label="Password"
-              variant="bordered"
-              placeholder="Enter your password"
-              endContent={
-                <button
-                  className="focus:outline-none"
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  aria-label="toggle password visibility"
-                >
-                  {isPasswordVisible ? (
-                    <EyeSlashFilledIcon className="pointer-events-none text-2xl text-default-400" />
-                  ) : (
-                    <EyeFilledIcon className="pointer-events-none text-2xl text-default-400" />
-                  )}
-                </button>
-              }
-              type={isPasswordVisible ? "text" : "password"}
-              className="max-w-xs"
-            /> */}
           </div>
         </div>
       </PopoverContent>
@@ -392,7 +420,7 @@ export default function MenuToolbar() {
       <Button
         isIconOnly
         className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-        onClick={() => {
+        onPress={() => {
           if (menuStates) {
             updateMenuStates({ isDrawingMode: !menuStates.isDrawingMode });
           }
@@ -418,7 +446,7 @@ export default function MenuToolbar() {
       <Button
         isIconOnly
         className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-        onClick={() => {
+        onPress={() => {
           if (menuStates) {
             updateMenuStates({ isRecording: !menuStates.isRecording });
           }

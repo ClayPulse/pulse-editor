@@ -7,7 +7,7 @@ export interface StoredValue<T> {
 // Custom hook for handling localStorage with expiration
 export function useLocalStorage() {
   // Function to get the value
-  function getValue<T>(key: string): T | null {
+  function getValue<T>(key: string): T | undefined {
     const itemStr = localStorage.getItem(key);
     if (itemStr) {
       const item: StoredValue<T> = JSON.parse(itemStr);
@@ -16,11 +16,11 @@ export function useLocalStorage() {
       // If the item has expired, remove it and return the initial value
       if (now.getTime() > item.expiry) {
         localStorage.removeItem(key);
-        return null;
+        return undefined;
       }
       return item.value;
     }
-    return null;
+    return undefined;
   }
 
   // Function to save the value with expiry
@@ -30,6 +30,12 @@ export function useLocalStorage() {
     // Set default expiration time to 24 hours
     ttl: number = 24 * 60 * 60 * 1000,
   ) {
+    // Clear the item if the value is not defined
+    if (!value) {
+      localStorage.removeItem(key);
+      return;
+    }
+
     const now = new Date();
     const item: StoredValue<T> = {
       value,

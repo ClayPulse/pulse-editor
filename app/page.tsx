@@ -8,6 +8,7 @@ import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import PasswordScreen from "@/components/password-screen";
 
 export default function Home() {
   // get file from /test.tsx
@@ -40,6 +41,8 @@ export default function Home() {
   });
 
   const { menuStates } = useMenuStatesContext();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     fetch("/test.tsx")
@@ -93,10 +96,19 @@ export default function Home() {
     }
   }, [menuStates, vad]);
 
-  useEffect(() => {}, [menuStates]);
+  // Open PasswordScreen if password is set
+  useEffect(() => {
+    if (
+      menuStates?.settings?.isUsePassword &&
+      !menuStates?.settings?.password
+    ) {
+      setIsOpen(true);
+    }
+  }, [menuStates]);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
+      <PasswordScreen isOpen={isOpen} setIsOpen={setIsOpen} />
       <div className={`fixed z-10 h-14 w-full`}>
         <Menu />
       </div>
