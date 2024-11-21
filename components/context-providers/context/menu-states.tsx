@@ -45,6 +45,7 @@ export default function MenuStatesContextProvider({
     const ttsModel = getValue<string>("ttsModel");
     const isUsePassword = getValue<boolean>("isUsePassword");
     const isPasswordSet = getValue<boolean>("isPasswordSet");
+    const ttl = getValue<number>("ttl");
 
     loadedSettings.sttProvider = sttProvider ?? undefined;
     loadedSettings.llmProvider = llmProvider ?? undefined;
@@ -54,6 +55,7 @@ export default function MenuStatesContextProvider({
     loadedSettings.ttsModel = ttsModel ?? undefined;
     loadedSettings.isUsePassword = isUsePassword ?? undefined;
     loadedSettings.isPasswordSet = isPasswordSet ?? undefined;
+    loadedSettings.ttl = ttl ?? undefined;
 
     // Only load API keys here if password is not set.
     // If password is set, API keys will be loaded after password is entered.

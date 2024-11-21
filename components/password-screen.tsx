@@ -120,9 +120,9 @@ export default function PasswordScreen({
                     ? encrypt(settings.ttsAPIKey, password)
                     : undefined;
                   // Save to local storage
-                  setValue("sttAPIKey", sttAPIKey);
-                  setValue("llmAPIKey", llmAPIKey);
-                  setValue("ttsAPIKey", ttsAPIKey);
+                  setValue("sttAPIKey", sttAPIKey, settings.ttl);
+                  setValue("llmAPIKey", llmAPIKey, settings.ttl);
+                  setValue("ttsAPIKey", ttsAPIKey, settings.ttl);
                 } else {
                   // Decrypt API tokens
                   const encryptedSttAPIKey = getValue<string>("sttAPIKey");

@@ -24,15 +24,12 @@ import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 function SettingPopover() {
   const { menuStates, updateMenuStates } = useMenuStatesContext();
   const [isOpen, setIsOpen] = useState(false);
-
-  // const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
-  // const togglePasswordVisibility = () =>
-  //   setIsPasswordVisible(!isPasswordVisible);
+  const [ttl, setTTL] = useState<string>("14");
 
   return (
     <Popover
@@ -405,6 +402,43 @@ function SettingPopover() {
             >
               Encrypt API tokens with password
             </Switch>
+            <p className="text-small text-foreground">
+              The API tokens are saved for the duration of the TTL (Time To
+              Live) days. After the TTL, the API tokens will be deleted when the
+              app opens next time. Set -1 to keep the tokens indefinitely.
+            </p>
+            <Input
+              label="TTL (in days)"
+              size="md"
+              isRequired
+              defaultValue="14"
+              value={ttl}
+              onValueChange={(value) => {
+                setTTL(value);
+
+                let days = 14;
+
+                days = parseInt(value);
+                console.log("days", days);
+
+                // Reset to default if invalid
+                if (days < -1) {
+                  days = 14;
+                }
+                else if (Number.isNaN(days)) {
+                  days = 14;
+                  toast.error("Invalid input. Using default 14 days.");
+                }
+
+                const settings = menuStates?.settings ?? {};
+                updateMenuStates({
+                  settings: {
+                    ...settings,
+                    ttl: days === -1 ? -1 : days * 86400000,
+                  },
+                });
+              }}
+            />
           </div>
         </div>
       </PopoverContent>

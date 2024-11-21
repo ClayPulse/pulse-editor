@@ -13,8 +13,12 @@ export function useLocalStorage() {
       const item: StoredValue<T> = JSON.parse(itemStr);
       const now = new Date();
 
+      // If the expiry is -1, it means the item never expires
+      if (item.expiry === -1) {
+        return item.value;
+      }
       // If the item has expired, remove it and return the initial value
-      if (now.getTime() > item.expiry) {
+      else if (now.getTime() > item.expiry) {
         localStorage.removeItem(key);
         return undefined;
       }
@@ -27,8 +31,8 @@ export function useLocalStorage() {
   function setValue<T>(
     key: string,
     value: T,
-    // Set default expiration time to 24 hours
-    ttl: number = 24 * 60 * 60 * 1000,
+    // Set default expiration time to forever
+    ttl: number = -1,
   ) {
     // Clear the item if the value is not defined
     if (!value) {
@@ -37,10 +41,12 @@ export function useLocalStorage() {
     }
 
     const now = new Date();
+    const time = now.getTime();
     const item: StoredValue<T> = {
       value,
-      expiry: now.getTime() + ttl, // Set expiration time
+      expiry: ttl === -1 ? -1 : time + ttl,
     };
+    console.log(time);
     localStorage.setItem(key, JSON.stringify(item));
   }
 

@@ -23,14 +23,14 @@ export default function useMenuStatesContext() {
           const sttAPIKey = updatedStates.settings.sttAPIKey;
           const llmAPIKey = updatedStates.settings.llmAPIKey;
           const ttsAPIKey = updatedStates.settings.ttsAPIKey;
-          setValue("sttAPIKey", sttAPIKey);
-          setValue("llmAPIKey", llmAPIKey);
-          setValue("ttsAPIKey", ttsAPIKey);
+          setValue("sttAPIKey", sttAPIKey, updatedStates.settings.ttl);
+          setValue("llmAPIKey", llmAPIKey, updatedStates.settings.ttl);
+          setValue("ttsAPIKey", ttsAPIKey, updatedStates.settings.ttl);
         }
 
         // Save settings to local storage
         const settings = updatedStates.settings;
-        setValue("sttProvider", settings.sttProvider);
+        setValue("sttProvider", settings.sttProvider, -1);
         setValue("llmProvider", settings.llmProvider);
         setValue("ttsProvider", settings.ttsProvider);
         setValue("sttModel", settings.sttModel);
@@ -38,6 +38,7 @@ export default function useMenuStatesContext() {
         setValue("ttsModel", settings.ttsModel);
         setValue("isUsePassword", settings.isUsePassword);
         setValue("isPasswordSet", settings.isPasswordSet);
+        setValue("ttl", settings.ttl);
       } else {
         // Reset all settings
         setValue("sttProvider", undefined);
@@ -51,6 +52,7 @@ export default function useMenuStatesContext() {
         setValue("ttsAPIKey", undefined);
         setValue("isUsePassword", undefined);
         setValue("isPasswordSet", undefined);
+        setValue("ttl", undefined);
       }
 
       context.setMenuStates(updatedStates);
