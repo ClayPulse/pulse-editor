@@ -7,7 +7,7 @@ import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
 import { Progress } from "@nextui-org/react";
-import { DrawnLine, DrawingInformation } from "@/lib/interface";
+import { DrawnLine, SelectionInformation, ViewDocument } from "@/lib/interface";
 import CanvasEditor from "../canvas/canvas-editor";
 import html2canvas from "html2canvas";
 
@@ -18,43 +18,57 @@ export default function CodeEditorView({
   viewId,
   width,
   height,
-  content,
+  url,
   isDrawingMode = false,
   isDownloadClip = false,
   isDrawHulls = false,
   setIsCanvasReady,
-  setViewDrawingInformationListMap,
+  onViewDocumentChange,
 }: {
   viewId: string;
   width?: string;
   height?: string;
-  content?: string;
+  url?: string;
   isDrawingMode?: boolean;
   isDownloadClip?: boolean;
   isDrawHulls?: boolean;
   setIsCanvasReady: (isReady: boolean) => void;
-  setViewDrawingInformationListMap: (
+  onViewDocumentChange: (
     viewId: string,
-    infoList: DrawingInformation[],
+    viewDocument: ViewDocument | undefined,
   ) => void;
 }) {
-  /* Set editor content */
-  const [value, setValue] = useState<string | undefined>(undefined);
-
   /* Set up theme */
   const [theme, setTheme] = useState(vscodeDark);
   const { resolvedTheme } = useTheme();
   const cmRef = useRef<ReactCodeMirrorRef>(null);
 
-  const [drawingInformationList, setDrawingInformationList] = useState<
-    DrawingInformation[]
-  >([]);
+  /* Set editor content */
+  const [viewDocument, setViewDocument] = useState<ViewDocument | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
-    if (content) {
-      setValue(content);
+    if (url) {
+      fetch(url)
+        .then((res) => res.text())
+        .then((text) => {
+          const viewId = "1";
+
+          // Init a new viewDocument
+          const viewDocument: ViewDocument = {
+            fileContent: text,
+            filePath: url,
+            selections: [],
+          };
+          setViewDocument(viewDocument);
+        });
     }
-  }, [content]);
+  }, [url]);
+
+  useEffect(() => {
+    onViewDocumentChange(viewId, viewDocument);
+  }, [onViewDocumentChange, viewDocument]);
 
   useEffect(() => {
     if (resolvedTheme === "dark") {
@@ -67,7 +81,17 @@ export default function CodeEditorView({
   useEffect(() => {
     // reset drawing info when drawing mode is off
     if (!isDrawingMode) {
-      setDrawingInformationList([]);
+      setViewDocument((prev) => {
+        // Return undefined if viewDocument is not set
+        if (!prev) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          selections: [],
+        };
+      });
       setIsCanvasReady(false);
       const canvasWidget = document.getElementById("canvas-widget");
       if (canvasWidget) {
@@ -126,10 +150,6 @@ export default function CodeEditorView({
     });
   }, [isDrawingMode, resolvedTheme]);
 
-  useEffect(() => {
-    setViewDrawingInformationListMap(viewId, drawingInformationList);
-  }, [drawingInformationList, setViewDrawingInformationListMap]);
-
   // When the cmRef component is mounted, get the bounding box of the editor
   // and set it to the state
 
@@ -170,8 +190,18 @@ export default function CodeEditorView({
     };
   }
 
-  function onChange(value: string) {
-    setValue(value);
+  function onContentChange(value: string) {
+    setViewDocument((prev) => {
+      // Return undefined if viewDocument is not set
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        fileContent: value,
+      };
+    });
   }
 
   const onTextExtracted = useCallback((line: DrawnLine, text: string) => {
@@ -182,16 +212,23 @@ export default function CodeEditorView({
     }
     const location = getDrawingLocation(line);
 
-    const newInfo: DrawingInformation = {
+    const newInfo: SelectionInformation = {
       lineStart: location.lineStart,
       lineEnd: location.lineEnd,
       text,
     };
 
-    setDrawingInformationList((prev: DrawingInformation[]) => [
-      ...prev,
-      newInfo,
-    ]);
+    setViewDocument((prev) => {
+      // Return undefined if viewDocument is not set
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        selections: [...prev.selections, newInfo],
+      };
+    });
   }, []);
 
   function getCanvasDOM(
@@ -234,11 +271,11 @@ export default function CodeEditorView({
   return (
     <ViewLayout width={width} height={height}>
       <div className="relative h-full w-full overflow-hidden rounded-lg bg-content2">
-        {value ? (
+        {viewDocument?.fileContent ? (
           <ReactCodeMirror
             ref={cmRef}
-            value={value}
-            onChange={onChange}
+            value={viewDocument?.fileContent}
+            onChange={onContentChange}
             extensions={[javascript({ jsx: true })]}
             theme={theme}
             height="100%"

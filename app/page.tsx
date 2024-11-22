@@ -9,17 +9,14 @@ import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
-import { DrawingInformation } from "@/lib/interface";
+import { SelectionInformation, ViewDocument } from "@/lib/interface";
 import { predictCodeCompletion } from "@/lib/agent/code-copilot";
 import { BaseTTS } from "@/lib/tts/tts";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
-  const drawingInformationListMap = useRef<Map<string, DrawingInformation[]>>(
-    new Map(),
-  );
-  const viewContentMap = useRef<Map<string, string>>(new Map());
+  const viewDocumentMap = useRef<Map<string, ViewDocument>>(new Map());
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
   const llmModelRef = useRef<BaseLLM | undefined>(undefined);
@@ -44,8 +41,8 @@ export default function Home() {
         sttModelRef.current,
         llmModelRef.current,
         ttsModelRef.current,
-        viewContentMap.current.get("1") || "",
-        drawingInformationListMap.current.get("1") || [],
+        viewDocumentMap.current.get("1")?.fileContent || "",
+        viewDocumentMap.current.get("1")?.selections || [],
         {
           audio: blob,
         },
@@ -58,15 +55,6 @@ export default function Home() {
   const { menuStates } = useMenuStatesContext();
 
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    fetch("/test.tsx")
-      .then((res) => res.text())
-      .then((text) => {
-        const viewId = "1";
-        viewContentMap.current.set(viewId, text);
-      });
-  }, []);
 
   // Load models
   useEffect(() => {
@@ -122,16 +110,14 @@ export default function Home() {
     }
   }, [menuStates]);
 
-  const setViewDrawingInformationListMap = useCallback(
-    (viewId: string, infoList: DrawingInformation[]) => {
-      if (!drawingInformationListMap.current.has(viewId)) {
-        drawingInformationListMap.current.set(viewId, []);
+  const onViewDocumentChange = useCallback(
+    (viewId: string, viewDocument: ViewDocument | undefined) => {
+      if (!viewDocument) {
+        return viewDocumentMap.current.delete(viewId);
       }
-      drawingInformationListMap.current.set(viewId, infoList);
-      console.log(
-        "Drawing information processed",
-        drawingInformationListMap.current,
-      );
+
+      viewDocumentMap.current.set(viewId, viewDocument);
+      console.log("Selection information processed", viewDocumentMap.current);
     },
     [],
   );
@@ -153,12 +139,12 @@ export default function Home() {
             viewId="1"
             width="600px"
             height="100%"
-            content={viewContentMap.current.get("1")}
+            url="/test.tsx"
             isDrawingMode={menuStates?.isDrawingMode}
             isDownloadClip={menuStates?.isDownloadClip}
             isDrawHulls={menuStates?.isDrawHulls}
             setIsCanvasReady={setIsCanvasReady}
-            setViewDrawingInformationListMap={setViewDrawingInformationListMap}
+            onViewDocumentChange={onViewDocumentChange}
           />
         </div>
       </div>

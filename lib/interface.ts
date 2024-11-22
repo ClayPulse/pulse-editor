@@ -34,7 +34,7 @@ export interface DrawnLine {
   }[];
 }
 
-export interface DrawingInformation {
+export interface SelectionInformation {
   lineStart: number;
   lineEnd: number;
   text: string;
@@ -48,4 +48,10 @@ export interface CodeCompletionInstruction {
 export interface CodeCompletionResult {
   text: string;
   audio?: Blob;
+}
+
+export interface ViewDocument {
+  fileContent: string;
+  filePath: string;
+  selections: SelectionInformation[];
 }

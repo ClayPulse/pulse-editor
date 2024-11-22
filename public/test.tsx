@@ -55,6 +55,7 @@ const CodeEditorView = forwardRef(
               height: "100%",
             }}
           />
+          {/* \n */}
         </div>
       </ViewLayout>
     );
