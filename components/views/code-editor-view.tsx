@@ -1,7 +1,7 @@
 "use client";
 
 import ReactCodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { javascript } from "@codemirror/lang-javascript";
 import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
@@ -10,16 +10,12 @@ import { Progress } from "@nextui-org/react";
 import { DrawnLine, DrawingInformation } from "@/lib/interface";
 import CanvasEditor from "../canvas/canvas-editor";
 import html2canvas from "html2canvas";
-import {
-  isLineInRect,
-  normalizeBoundingRect,
-} from "@/lib/canvas/bounding-box-helper";
 
 import React from "react";
 import { createRoot } from "react-dom/client";
-import useRecorder from "@/lib/hooks/use-recorder";
 
 export default function CodeEditorView({
+  viewId,
   width,
   height,
   content,
@@ -27,7 +23,9 @@ export default function CodeEditorView({
   isDownloadClip = false,
   isDrawHulls = false,
   setIsCanvasReady,
+  setViewDrawingInformationListMap,
 }: {
+  viewId: string;
   width?: string;
   height?: string;
   content?: string;
@@ -35,6 +33,10 @@ export default function CodeEditorView({
   isDownloadClip?: boolean;
   isDrawHulls?: boolean;
   setIsCanvasReady: (isReady: boolean) => void;
+  setViewDrawingInformationListMap: (
+    viewId: string,
+    infoList: DrawingInformation[],
+  ) => void;
 }) {
   /* Set editor content */
   const [value, setValue] = useState<string | undefined>(undefined);
@@ -44,11 +46,9 @@ export default function CodeEditorView({
   const { resolvedTheme } = useTheme();
   const cmRef = useRef<ReactCodeMirrorRef>(null);
 
-  const [lines, setLines] = useState<DrawnLine[]>([]);
-
-  const drawingInformationMap = new Map<DrawnLine, DrawingInformation>();
-
-  const { startRecording, stopRecording, audioData } = useRecorder();
+  const [drawingInformationList, setDrawingInformationList] = useState<
+    DrawingInformation[]
+  >([]);
 
   useEffect(() => {
     if (content) {
@@ -65,9 +65,9 @@ export default function CodeEditorView({
   }, [resolvedTheme]);
 
   useEffect(() => {
-    // reset lines when drawing mode is off
+    // reset drawing info when drawing mode is off
     if (!isDrawingMode) {
-      setLines([]);
+      setDrawingInformationList([]);
       setIsCanvasReady(false);
       const canvasWidget = document.getElementById("canvas-widget");
       if (canvasWidget) {
@@ -126,6 +126,10 @@ export default function CodeEditorView({
     });
   }, [isDrawingMode, resolvedTheme]);
 
+  useEffect(() => {
+    setViewDrawingInformationListMap(viewId, drawingInformationList);
+  }, [drawingInformationList, setViewDrawingInformationListMap]);
+
   // When the cmRef component is mounted, get the bounding box of the editor
   // and set it to the state
 
@@ -147,8 +151,6 @@ export default function CodeEditorView({
     }
 
     // Go through each line and column to find the start and end
-    console.log("minY", minY);
-    console.log("maxY", maxY);
     const cmView = cmRef.current?.view;
     const cmState = cmRef.current?.state;
 
@@ -172,9 +174,7 @@ export default function CodeEditorView({
     setValue(value);
   }
 
-  function onTextExtracted(line: DrawnLine, text: string) {
-    setLines([...lines, line]);
-
+  const onTextExtracted = useCallback((line: DrawnLine, text: string) => {
     // Get location information
     const editorContent = cmRef.current?.view?.contentDOM;
     if (!editorContent) {
@@ -188,12 +188,11 @@ export default function CodeEditorView({
       text,
     };
 
-    drawingInformationMap.set(line, newInfo);
-    console.log(newInfo);
-
-    // Start code completion
-    startRecording();
-  }
+    setDrawingInformationList((prev: DrawingInformation[]) => [
+      ...prev,
+      newInfo,
+    ]);
+  }, []);
 
   function getCanvasDOM(
     offsetX: number,

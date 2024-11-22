@@ -1,23 +1,29 @@
 "use client";
 
 import Menu from "@/components/menu";
-import CodeEditorView from "@/components/editor-views/code-editor-view";
+import CodeEditorView from "@/components/views/code-editor-view";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
+import { DrawingInformation } from "@/lib/interface";
+import { predictCodeCompletion } from "@/lib/agent/code-copilot";
+import { BaseTTS } from "@/lib/tts/tts";
 
 export default function Home() {
-  // get file from /test.tsx
-  const [content, setContent] = useState<string | undefined>(undefined);
-
   const [isCanvasReady, setIsCanvasReady] = useState(false);
-  const [sttModel, setSttModel] = useState<BaseSTT | undefined>(undefined);
-  const [llmModel, setLlmModel] = useState<BaseLLM | undefined>(undefined);
 
+  const drawingInformationListMap = useRef<Map<string, DrawingInformation[]>>(
+    new Map(),
+  );
+  const viewContentMap = useRef<Map<string, string>>(new Map());
+
+  const sttModelRef = useRef<BaseSTT | undefined>(undefined);
+  const llmModelRef = useRef<BaseLLM | undefined>(undefined);
+  const ttsModelRef = useRef<BaseTTS | undefined>(undefined);
   const vad = useMicVAD({
     startOnLoad: false,
     ortConfig(ort) {
@@ -29,13 +35,22 @@ export default function Home() {
       const wavBuffer = utils.encodeWAV(audio);
       const blob = new Blob([wavBuffer], { type: "audio/wav" });
       console.log("Speech end\n", blob);
-      console.log(sttModel, llmModel);
-      sttModel?.generate(blob).then((sttResult) => {
-        console.log("STT result:\n", sttResult);
-        llmModel?.generate(sttResult).then((llmResult) => {
-          console.log("LLM result:\n", llmResult);
-          toast("Agent:\n" + llmResult);
-        });
+
+      if (!llmModelRef.current) {
+        toast.error("LLM model not loaded");
+        return;
+      }
+      predictCodeCompletion(
+        sttModelRef.current,
+        llmModelRef.current,
+        ttsModelRef.current,
+        viewContentMap.current.get("1") || "",
+        drawingInformationListMap.current.get("1") || [],
+        {
+          audio: blob,
+        },
+      ).then((result) => {
+        toast("Agent:\n" + result.text);
       });
     },
   });
@@ -48,7 +63,8 @@ export default function Home() {
     fetch("/test.tsx")
       .then((res) => res.text())
       .then((text) => {
-        setContent(text);
+        const viewId = "1";
+        viewContentMap.current.set(viewId, text);
       });
   }, []);
 
@@ -65,7 +81,7 @@ export default function Home() {
           menuStates.settings.sttProvider,
           menuStates.settings.sttModel,
         );
-        setSttModel(model);
+        sttModelRef.current = model;
       } else {
         toast.error("Please set STT Provider, Model and API key in settings");
       }
@@ -80,7 +96,7 @@ export default function Home() {
           menuStates.settings.llmModel,
           0.85,
         );
-        setLlmModel(model);
+        llmModelRef.current = model;
       } else {
         toast.error("Please set LLM Provider, Model and API key in settings");
       }
@@ -106,6 +122,20 @@ export default function Home() {
     }
   }, [menuStates]);
 
+  const setViewDrawingInformationListMap = useCallback(
+    (viewId: string, infoList: DrawingInformation[]) => {
+      if (!drawingInformationListMap.current.has(viewId)) {
+        drawingInformationListMap.current.set(viewId, []);
+      }
+      drawingInformationListMap.current.set(viewId, infoList);
+      console.log(
+        "Drawing information processed",
+        drawingInformationListMap.current,
+      );
+    },
+    [],
+  );
+
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
       <PasswordScreen isOpen={isOpen} setIsOpen={setIsOpen} />
@@ -120,13 +150,15 @@ export default function Home() {
       >
         <div className="flex w-full flex-col items-center bg-background p-2">
           <CodeEditorView
+            viewId="1"
             width="600px"
             height="100%"
-            content={content}
+            content={viewContentMap.current.get("1")}
             isDrawingMode={menuStates?.isDrawingMode}
             isDownloadClip={menuStates?.isDownloadClip}
             isDrawHulls={menuStates?.isDrawHulls}
             setIsCanvasReady={setIsCanvasReady}
+            setViewDrawingInformationListMap={setViewDrawingInformationListMap}
           />
         </div>
       </div>

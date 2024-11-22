@@ -419,7 +419,6 @@ function SettingPopover() {
                 let days = 14;
 
                 days = parseInt(value);
-                console.log("days", days);
 
                 // Reset to default if invalid
                 if (days < -1) {

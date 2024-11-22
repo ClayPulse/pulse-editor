@@ -93,7 +93,7 @@ export default function Canvas({
     width: number,
     height: number,
   ) {
-    console.log("Creating canvas layer:", width, height);
+    // Create canvas layer
     const image = new window.Image();
     image.src = canvas.toDataURL();
 

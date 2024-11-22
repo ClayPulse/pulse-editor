@@ -7,12 +7,36 @@ import { BaseLLM } from "../llm/llm";
 import { BaseSTT } from "../stt/stt";
 import { BaseTTS } from "../tts/tts";
 
+function stringifyDrawingInformationList(
+  drawingInformationList: DrawingInformation[],
+): string {
+  function stringifyOneDrawingInformation(
+    drawingInformation: DrawingInformation,
+    index: number,
+  ): string {
+    return `\
+Selection ${index + 1}:
+- line range: line ${drawingInformation.lineStart} to line ${drawingInformation.lineEnd}
+- selected text (This is extracted by OCR so not guaranteed to be accurate. Use it as a hint, and use the full code file for accurate reference.):
+\`\`\`
+${drawingInformation.text}
+\`\`\`
+`;
+  }
+
+  return drawingInformationList
+    .map((drawingInformation, index) =>
+      stringifyOneDrawingInformation(drawingInformation, index),
+    )
+    .join("\n");
+}
+
 export async function predictCodeCompletion(
   stt: BaseSTT | undefined,
   llm: BaseLLM,
   tts: BaseTTS | undefined,
   file: string,
-  drawingInformation: DrawingInformation,
+  drawingInformationList: DrawingInformation[],
   instruction: CodeCompletionInstruction,
 ): Promise<CodeCompletionResult> {
   let llmInstruction;
@@ -38,20 +62,19 @@ export async function predictCodeCompletion(
   const llmPrompt = `\
 You are a helpful code copilot who is helping a developer to code. \
 You must review the code and complete instruction from the developer. \
-The information about the current line and focused text are given along with the full \
+The information about the selected line and selected text are given along with the full \
 code file. Finally, you must return in the specified format.
 
-Current line: ${drawingInformation.lineStart}-${drawingInformation.lineEnd}
-Focused text:
-\`\`\`
-${drawingInformation.text}
-\`\`\`
 Code file:
 \`\`\`
 ${file}
 \`\`\`
 
-After reviewing the code, the developer has given you the following instruction:
+These are the selection information provided by the developer:
+${stringifyDrawingInformationList(drawingInformationList)}
+
+
+After reviewing the code, execute the following instruction:
 \`\`\`
 ${llmInstruction}
 \`\`\`
@@ -59,7 +82,8 @@ ${llmInstruction}
 Finally, you must return a JSON containing the code completion in the following format:
 \`\`\`
 {
-  "codeCompletion": "The code completion goes here"
+  "codeCompletion": "The code completion goes here",
+  "explanation": "An explanation of the code completion goes here"
 }
 \`\`\`
 `;
@@ -70,8 +94,13 @@ Finally, you must return a JSON containing the code completion in the following 
     ttsResult = await tts.generate(llmResult);
   }
 
-  return {
+  const result: CodeCompletionResult = {
     text: llmResult,
     audio: ttsResult,
   };
+  console.log("Prompt:\n", llmPrompt);
+  // Pretty print the result
+  console.log("Code completion result:\n", JSON.stringify(result, null, 2));
+
+  return result;
 }

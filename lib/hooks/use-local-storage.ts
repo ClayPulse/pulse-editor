@@ -46,7 +46,6 @@ export function useLocalStorage() {
       value,
       expiry: ttl === -1 ? -1 : time + ttl,
     };
-    console.log(time);
     localStorage.setItem(key, JSON.stringify(item));
   }
 
