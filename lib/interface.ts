@@ -54,4 +54,12 @@ export interface ViewDocument {
   fileContent: string;
   filePath: string;
   selections: SelectionInformation[];
+  suggestedLines?: LineChange[];
+}
+
+export interface LineChange {
+  // Index starts from 1
+  index: number;
+  text: string;
+  status: "added" | "deleted" | "modified";
 }
