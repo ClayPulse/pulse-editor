@@ -33,6 +33,7 @@ export default function useMenuStatesContext() {
         setValue("isUsePassword", settings.isUsePassword);
         setValue("isPasswordSet", settings.isPasswordSet);
         setValue("ttl", settings.ttl); // 14 days
+        setValue("ttsVoice", settings.ttsVoice);
 
         // Do not allow API token editing after password is set
         if (!updatedStates.settings.isPasswordSet) {
@@ -66,6 +67,7 @@ export default function useMenuStatesContext() {
         setValue("isUsePassword", undefined);
         setValue("isPasswordSet", undefined);
         setValue("ttl", undefined);
+        setValue("ttsVoice", undefined);
       }
 
       context.setMenuStates(updatedStates);

@@ -341,6 +341,22 @@ function SettingPopover() {
                     </SelectItem>
                   )}
                 </Select>
+                <Input
+                  label="Voice Name"
+                  size="md"
+                  isRequired
+                  value={menuStates?.settings?.ttsVoice ?? ""}
+                  onValueChange={(value) => {
+                    const settings = menuStates?.settings ?? {};
+                    updateMenuStates({
+                      settings: {
+                        ...settings,
+                        ttsVoice: value,
+                      },
+                    });
+                  }}
+                  isDisabled={!menuStates?.settings?.ttsProvider}
+                />
                 <Tooltip
                   content={
                     <p>
@@ -423,8 +439,7 @@ function SettingPopover() {
                 // Reset to default if invalid
                 if (days < -1) {
                   days = 14;
-                }
-                else if (Number.isNaN(days)) {
+                } else if (Number.isNaN(days)) {
                   days = 14;
                   toast.error("Invalid input. Using default 14 days.");
                 }

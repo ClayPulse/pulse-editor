@@ -25,6 +25,8 @@ export interface Settings {
   isPasswordSet?: boolean;
   password?: string;
   ttl?: number;
+
+  ttsVoice?: string;
 }
 
 export interface DrawnLine {

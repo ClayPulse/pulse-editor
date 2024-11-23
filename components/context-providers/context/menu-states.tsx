@@ -46,6 +46,7 @@ export default function MenuStatesContextProvider({
     const isUsePassword = getValue<boolean>("isUsePassword");
     const isPasswordSet = getValue<boolean>("isPasswordSet");
     const ttl = getValue<number>("ttl");
+    const ttsVoice = getValue<string>("ttsVoice");
 
     loadedSettings.sttProvider = sttProvider ?? undefined;
     loadedSettings.llmProvider = llmProvider ?? undefined;
@@ -56,6 +57,7 @@ export default function MenuStatesContextProvider({
     loadedSettings.isUsePassword = isUsePassword ?? undefined;
     loadedSettings.isPasswordSet = isPasswordSet ?? undefined;
     loadedSettings.ttl = ttl ?? undefined;
+    loadedSettings.ttsVoice = ttsVoice ?? undefined;
 
     // Only load API keys here if password is not set.
     // If password is set, API keys will be loaded after password is entered.
@@ -80,7 +82,4 @@ export default function MenuStatesContextProvider({
       {children}
     </MenuStatesContext.Provider>
   );
-}
-function getValue<T>(arg0: string) {
-  throw new Error("Function not implemented.");
 }

@@ -23,7 +23,6 @@ export function getModelSTT(
   apiKey: string,
   provider: string,
   modelName: string,
-  voiceName?: string,
 ): BaseSTT {
   let model: any;
   let generateFunc: (model: any, audio: Blob) => Promise<string>;

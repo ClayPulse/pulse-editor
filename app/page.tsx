@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
 import { SelectionInformation, ViewDocument } from "@/lib/interface";
 import { predictCodeCompletion } from "@/lib/agent/code-copilot";
-import { BaseTTS } from "@/lib/tts/tts";
+import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
@@ -48,6 +48,11 @@ export default function Home() {
         },
       ).then((result) => {
         toast("Agent:\n" + result.text);
+        // Play the audio in the blob
+        if (result.audio) {
+          const audio = new Audio(URL.createObjectURL(result.audio));
+          audio.play();
+        }
       });
     },
   });
@@ -59,6 +64,7 @@ export default function Home() {
   // Load models
   useEffect(() => {
     if (menuStates?.settings) {
+      // Load STT
       if (
         menuStates.settings.sttAPIKey &&
         menuStates.settings.sttProvider &&
@@ -73,6 +79,8 @@ export default function Home() {
       } else {
         toast.error("Please set STT Provider, Model and API key in settings");
       }
+
+      // Load LLM
       if (
         menuStates.settings.llmAPIKey &&
         menuStates.settings.llmProvider &&
@@ -87,6 +95,24 @@ export default function Home() {
         llmModelRef.current = model;
       } else {
         toast.error("Please set LLM Provider, Model and API key in settings");
+      }
+
+      // Load TTS
+      if (
+        menuStates.settings.ttsAPIKey &&
+        menuStates.settings.ttsProvider &&
+        menuStates.settings.ttsModel &&
+        menuStates.settings.ttsVoice
+      ) {
+        const model = getModelTTS(
+          menuStates.settings.ttsAPIKey,
+          menuStates.settings.ttsProvider,
+          menuStates.settings.ttsModel,
+          menuStates.settings.ttsVoice,
+        );
+        ttsModelRef.current = model;
+      } else {
+        toast.error("Please set TTS Provider, Model and API key in settings");
       }
     }
   }, [menuStates]);

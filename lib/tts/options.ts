@@ -14,9 +14,9 @@ export const ttsProviderOptions: TTSProviderOption[] = [
     models: [
       {
         model: "tts-1",
-        isSupported: false,
-      }
-    ]
+        isSupported: true,
+      },
+    ],
   },
   {
     provider: "elevenlabs",
@@ -24,13 +24,13 @@ export const ttsProviderOptions: TTSProviderOption[] = [
     models: [
       {
         model: "eleven_multilingual_v2",
-        isSupported: false,
+        isSupported: true,
       },
       {
         model: "eleven_turbo_v2_5",
-        isSupported: false,
-      }
-    ]
+        isSupported: true,
+      },
+    ],
   },
   {
     provider: "playht",
@@ -39,7 +39,7 @@ export const ttsProviderOptions: TTSProviderOption[] = [
       {
         model: "Play3.0-mini",
         isSupported: false,
-      }
-    ]
-  }
-]
+      },
+    ],
+  },
+];
