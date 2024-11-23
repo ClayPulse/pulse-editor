@@ -125,7 +125,7 @@ If you have added/deleted/modified any line, you must indicate the line number w
 '+' means added, '-' means deleted, and '*' means modified.
 e.g. if you have added a comment "this is for later" in line 5, it should be: \`+ line5|//this is for later\`;
 or if line 6 was originally "console.log('hello world');" and you deleted it, you should return: \`- line6|console.log('hello world');\`;",
-  "explanation": "An explanation of the code completion goes here"
+  "explanation": "An explanation of the code completion goes here. It must be in the same language that the user uses in their instruction."
 }
 \`\`\`
 `;
