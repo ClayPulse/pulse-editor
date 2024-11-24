@@ -48,7 +48,10 @@ export interface CodeCompletionInstruction {
 }
 
 export interface CodeCompletionResult {
-  text: string;
+  text: {
+    codeCompletion: string;
+    explanation: string;
+  };
   audio?: Blob;
 }
 
@@ -62,6 +65,6 @@ export interface ViewDocument {
 export interface LineChange {
   // Index starts from 1
   index: number;
-  text: string;
+  content: string;
   status: "added" | "deleted" | "modified";
 }

@@ -1,22 +1,31 @@
 "use client";
 
 import Menu from "@/components/menu";
-import CodeEditorView from "@/components/views/code-editor-view";
+import CodeEditorView, {
+  CodeEditorViewRef,
+} from "@/components/views/code-editor-view";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
-import { SelectionInformation, ViewDocument } from "@/lib/interface";
-import { predictCodeCompletion } from "@/lib/agent/code-copilot";
+import { ViewDocument } from "@/lib/interface";
+import { CodeAgent } from "@/lib/agent/code-copilot";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
-  const viewDocumentMap = useRef<Map<string, ViewDocument>>(new Map());
+  const viewMap = useRef<Map<string, CodeEditorViewRef>>(new Map());
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
   const llmModelRef = useRef<BaseLLM | undefined>(undefined);
@@ -37,23 +46,32 @@ export default function Home() {
         toast.error("LLM model not loaded");
         return;
       }
-      predictCodeCompletion(
+      const agent = new CodeAgent(
         sttModelRef.current,
         llmModelRef.current,
         ttsModelRef.current,
-        viewDocumentMap.current.get("1")?.fileContent || "",
-        viewDocumentMap.current.get("1")?.selections || [],
-        {
-          audio: blob,
-        },
-      ).then((result) => {
-        toast("Agent:\n" + result.text);
-        // Play the audio in the blob
-        if (result.audio) {
-          const audio = new Audio(URL.createObjectURL(result.audio));
-          audio.play();
-        }
-      });
+      );
+      const viewDocument = viewMap.current.get("1")?.getViewDocument();
+      agent
+        .generateAgentCompletion(
+          viewDocument?.fileContent || "",
+          viewDocument?.selections || [],
+          {
+            audio: blob,
+          },
+        )
+        .then((result) => {
+          const changes = agent.getLineChanges(result.text.codeCompletion);
+
+          // Apply changes
+          viewMap.current.get("1")?.applyChanges(changes);
+
+          // Play the audio in the blob
+          if (result.audio) {
+            const audio = new Audio(URL.createObjectURL(result.audio));
+            audio.play();
+          }
+        });
     },
   });
 
@@ -136,18 +154,6 @@ export default function Home() {
     }
   }, [menuStates]);
 
-  const onViewDocumentChange = useCallback(
-    (viewId: string, viewDocument: ViewDocument | undefined) => {
-      if (!viewDocument) {
-        return viewDocumentMap.current.delete(viewId);
-      }
-
-      viewDocumentMap.current.set(viewId, viewDocument);
-      console.log("Selection information processed", viewDocumentMap.current);
-    },
-    [],
-  );
-
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
       <PasswordScreen isOpen={isOpen} setIsOpen={setIsOpen} />
@@ -162,6 +168,9 @@ export default function Home() {
       >
         <div className="flex w-full flex-col items-center bg-background p-2">
           <CodeEditorView
+            ref={(ref: CodeEditorViewRef) => {
+              viewMap.current.set("1", ref);
+            }}
             viewId="1"
             width="600px"
             height="100%"
@@ -170,7 +179,6 @@ export default function Home() {
             isDownloadClip={menuStates?.isDownloadClip}
             isDrawHulls={menuStates?.isDrawHulls}
             setIsCanvasReady={setIsCanvasReady}
-            onViewDocumentChange={onViewDocumentChange}
           />
         </div>
       </div>
