@@ -131,6 +131,7 @@ or if line 7 was modified from "let x = 5;" to "let x = 10;", you should return:
   }
   \`\`\`
   `;
+    console.log("Prompt:\n" + llmPrompt);
     let llmResult = await this.llm.generate(llmPrompt, signal);
     console.log("LLM result:\n" + llmResult);
     // strip the ```json or ``` from the beginning and ``` from the end if present
@@ -141,7 +142,6 @@ or if line 7 was modified from "let x = 5;" to "let x = 10;", you should return:
     const llmResultJson = JSON.parse(llmResult);
     const codeCompletion = llmResultJson.codeCompletion;
     const explanation = llmResultJson.explanation;
-    console.log("Prompt:\n" + llmPrompt);
     // Pretty print the result
     console.log("Code completion:\n" + codeCompletion);
     console.log("Explanation:\n" + explanation);
@@ -253,6 +253,7 @@ at "<FILL>". You must return a JSON containing the suggestions in the following 
 }
 \`\`\`
 `;
+    console.log("Prompt:\n" + llmPrompt);
     let llmResult = await this.llm.generate(llmPrompt, signal);
     console.log("LLM result:\n" + llmResult);
     // strip the ```json or ``` from the beginning and ``` from the end if present
@@ -262,7 +263,6 @@ at "<FILL>". You must return a JSON containing the suggestions in the following 
       .trim();
     const llmResultJson = JSON.parse(llmResult);
     const snippets = llmResultJson.snippets;
-    console.log("Prompt:\n" + llmPrompt);
     // Pretty print the result
     console.log("snippets:\n" + snippets);
 

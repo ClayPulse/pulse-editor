@@ -60,15 +60,12 @@ const codeInlineSuggestionField = StateField.define<{ suggestion?: string }>({
       }
     }
 
-    // If no suggestion effect and document or selection
-    // did not change, return the value.
-    if (!transaction.docChanged && !transaction.selection) {
+    // If selection changes but no text added, remove the suggestion.
+    if (transaction.selection) {
+      value = { suggestion: undefined };
       return value;
-    }
-
-    // If document or selection changed but no effect yet,
-    // reset the suggestion.
-    value = { suggestion: undefined };
+    } 
+    
 
     return value;
   },
@@ -102,8 +99,8 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      // Only update if the document or selection changes.
-      if (!update.docChanged && !update.selectionSet) {
+      // Only update if the document and selection changes.
+      if (!update.selectionSet || !update.docChanged) {
         return;
       }
 
@@ -120,13 +117,6 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
       const cursorX = cursorEnd - cursorLine.from + 1;
       const cursorY = cursorLine.number;
 
-      // Get file content with indicator for prompting
-      // const contentWithIndicator = getContentWithIndicator(
-      //   doc.toString(),
-      //   cursorX,
-      //   cursorY,
-      // );
-      // console.log(addLineInfo(contentWithIndicator));
 
       const { delay, agent } = update.view.state.facet(
         codeInlineSuggestionConfig,
