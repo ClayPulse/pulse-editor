@@ -55,6 +55,10 @@ export interface CodeCompletionResult {
   audio?: Blob;
 }
 
+export interface InlineSuggestionResult {
+  suggestions: string[];
+}
+
 export interface ViewDocument {
   fileContent: string;
   filePath: string;

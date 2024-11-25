@@ -1,12 +1,49 @@
 import {
   CodeCompletionInstruction,
   CodeCompletionResult,
+  InlineSuggestionResult,
   LineChange,
   SelectionInformation,
 } from "../interface";
 import { BaseLLM } from "../llm/llm";
 import { BaseSTT } from "../stt/stt";
 import { BaseTTS } from "../tts/tts";
+
+export function addLineInfo(
+  fileContent: string,
+  startFrom: number = 1,
+): string {
+  const lines = fileContent.split("\n");
+  const maxLineNumber = lines.length;
+  const maxLineNumberWidth = `line ${maxLineNumber}`.length;
+
+  const linesWithNumbers = lines.map((line, index) => {
+    const lineLabel = `line ${index + startFrom}`;
+    const paddedLineLabel = lineLabel.padEnd(maxLineNumberWidth);
+    return `${paddedLineLabel}|${line}`;
+  });
+
+  return linesWithNumbers.join("\n");
+}
+
+export function getContentWithIndicator(
+  fileContent: string,
+  cursorX: number,
+  cursorY: number,
+): string {
+  const lines = fileContent.split("\n");
+  const cursorXNormalized = cursorX - 1;
+  const cursorYNormalized = cursorY - 1;
+
+  // Indicate where the agent should suggest the code at
+  const suggestIndication = "(Suggest code snippet here)";
+  lines[cursorYNormalized] =
+    lines[cursorYNormalized].slice(0, cursorXNormalized) +
+    suggestIndication +
+    lines[cursorYNormalized].slice(cursorXNormalized);
+
+  return lines.join("\n");
+}
 
 export class CodeAgent {
   stt: BaseSTT | undefined;
@@ -20,61 +57,6 @@ export class CodeAgent {
     this.stt = stt;
     this.llm = llm;
     this.tts = tts;
-  }
-
-  private addLineInfo(fileContent: string, startFrom: number = 1): string {
-    const lines = fileContent.split("\n");
-    const maxLineNumber = lines.length;
-    const maxLineNumberWidth = `line ${maxLineNumber}`.length;
-
-    const linesWithNumbers = lines.map((line, index) => {
-      const lineLabel = `line ${index + startFrom}`;
-      const paddedLineLabel = lineLabel.padEnd(maxLineNumberWidth);
-      return `${paddedLineLabel}|${line}`;
-    });
-
-    return linesWithNumbers.join("\n");
-  }
-
-  private stringifyOneSelectionInformation(
-    fileContent: string,
-    selectionInformation: SelectionInformation,
-    index: number,
-  ): string {
-    const slicedContent = fileContent
-      .split("\n")
-      .slice(selectionInformation.lineStart - 1, selectionInformation.lineEnd)
-      .join("\n");
-
-    return `\
-Selection ${index + 1}:
-- line range: line ${selectionInformation.lineStart} to line ${selectionInformation.lineEnd}
-- code:
-\`\`\`
-${this.addLineInfo(slicedContent, selectionInformation.lineStart)}
-\`\`\`
-- highlighted text (This is extracted by OCR so not guaranteed to be accurate. Use it as a hint, and use the full code file for accurate reference.):
-\`\`\`
-${selectionInformation.text}
-\`\`\`
-`;
-  }
-
-  private stringifySelectionInformationList(
-    fileContent: string,
-    selectionInformationList: SelectionInformation[],
-  ): string {
-    const selections = selectionInformationList
-      .map((selectionInformation, index) =>
-        this.stringifyOneSelectionInformation(
-          fileContent,
-          selectionInformation,
-          index,
-        ),
-      )
-      .join("\n");
-
-    return selections;
   }
 
   public getLineChanges(text: string): LineChange[] {
@@ -138,7 +120,7 @@ ${selectionInformation.text}
   
   Code file:
   \`\`\`
-  ${this.addLineInfo(fileContent)}
+  ${addLineInfo(fileContent)}
   \`\`\`
   
   ${selectionInformationList.length > 0 ? "These are the selection information provided by the developer:" : ""}
@@ -191,6 +173,108 @@ or if line 7 was modified from "let x = 5;" to "let x = 10;", you should return:
     const result: CodeCompletionResult = {
       text: llmResultJson,
       audio: ttsResult,
+    };
+
+    return result;
+  }
+
+  private stringifyOneSelectionInformation(
+    fileContent: string,
+    selectionInformation: SelectionInformation,
+    index: number,
+  ): string {
+    const slicedContent = fileContent
+      .split("\n")
+      .slice(selectionInformation.lineStart - 1, selectionInformation.lineEnd)
+      .join("\n");
+
+    return `\
+Selection ${index + 1}:
+- line range: line ${selectionInformation.lineStart} to line ${selectionInformation.lineEnd}
+- code:
+\`\`\`
+${addLineInfo(slicedContent, selectionInformation.lineStart)}
+\`\`\`
+- highlighted text (This is extracted by OCR so not guaranteed to be accurate. Use it as a hint, and use the full code file for accurate reference.):
+\`\`\`
+${selectionInformation.text}
+\`\`\`
+`;
+  }
+
+  private stringifySelectionInformationList(
+    fileContent: string,
+    selectionInformationList: SelectionInformation[],
+  ): string {
+    const selections = selectionInformationList
+      .map((selectionInformation, index) =>
+        this.stringifyOneSelectionInformation(
+          fileContent,
+          selectionInformation,
+          index,
+        ),
+      )
+      .join("\n");
+
+    return selections;
+  }
+}
+
+export class InlineSuggestionAgent {
+  llm: BaseLLM;
+  constructor(llm: BaseLLM) {
+    this.llm = llm;
+  }
+
+  public async generateInlineSuggestion(
+    fileContent: string,
+    cursorX: number,
+    cursorY: number,
+    numberOfSuggestions: number,
+  ): Promise<InlineSuggestionResult> {
+    const fileContentWithIndicator = getContentWithIndicator(
+      fileContent,
+      cursorX,
+      cursorY,
+    );
+
+    const llmPrompt = `\
+  You are a helpful code copilot who is suggesting code snippets to the developer. \
+  You must review the code and provide inline suggestions. \
+  The developer has indicated where you should suggest the code. \
+  You must return in the specified format.
+
+  Code file:
+  \`\`\`
+  ${fileContentWithIndicator}
+  \`\`\`
+
+  After reviewing the code, provide ${numberOfSuggestions} inline suggestion(s) where indicated. Then, \
+  return a JSON containing the suggestions in the following format:
+  \`\`\`
+  {
+    "suggestions": [${Array.from(
+      { length: numberOfSuggestions },
+      (_, i) => `"Suggestion ${i + 1}"`,
+    )}]
+  }
+  \`\`\`
+  `;
+    let llmResult = await this.llm.generate(llmPrompt);
+    console.log("LLM result:\n" + llmResult);
+    // strip the ```json or ``` from the beginning and ``` from the end if present
+    llmResult = llmResult
+      .replace(/^```(?:json)?/, "")
+      .replace(/```$/, "")
+      .trim();
+    const llmResultJson = JSON.parse(llmResult);
+    const suggestions = llmResultJson.suggestions;
+    console.log("Prompt:\n" + llmPrompt);
+    // Pretty print the result
+    console.log("Suggestions:\n" + suggestions);
+
+    const result: InlineSuggestionResult = {
+      suggestions: suggestions,
     };
 
     return result;

@@ -26,6 +26,7 @@ import html2canvas from "html2canvas";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import toast from "react-hot-toast";
+import { codeInlineSuggestionExtension } from "../view-extensions/code-inline-suggestion";
 
 interface CodeEditorViewProps {
   viewId: string;
@@ -342,7 +343,12 @@ const CodeEditorView = forwardRef(
               ref={cmRef}
               value={viewDocument?.fileContent}
               onChange={onContentChange}
-              extensions={[javascript({ jsx: true })]}
+              extensions={[
+                javascript({ jsx: true }),
+                codeInlineSuggestionExtension({
+                  delay: 1000,
+                }),
+              ]}
               theme={theme}
               height="100%"
               style={{
