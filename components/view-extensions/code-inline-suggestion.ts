@@ -1,4 +1,4 @@
-import { addLineInfo, getContentWithIndicator } from "@/lib/agent/code-copilot";
+import { InlineSuggestionAgent } from "@/lib/agent/code-copilot";
 import {
   Decoration,
   DecorationSet,
@@ -16,14 +16,20 @@ import {
 
 /* A config facet for various inline suggestion settings */
 const codeInlineSuggestionConfig = Facet.define<
-  { delay?: number },
-  { delay?: number }
+  {
+    delay?: number;
+    agent: InlineSuggestionAgent;
+  },
+  {
+    delay?: number;
+    agent: InlineSuggestionAgent;
+  }
 >({
   combine(configs) {
     return {
-      delay: configs.some((config) => config.delay)
-        ? configs[0].delay
-        : undefined,
+      delay: configs.find((config) => config.delay)?.delay,
+      agent: configs.find((config) => config.agent)
+        ?.agent as InlineSuggestionAgent,
     };
   },
 });
@@ -115,19 +121,21 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
       const cursorY = cursorLine.number;
 
       // Get file content with indicator for prompting
-      const contentWithIndicator = getContentWithIndicator(
-        doc.toString(),
-        cursorX,
-        cursorY,
-      );
+      // const contentWithIndicator = getContentWithIndicator(
+      //   doc.toString(),
+      //   cursorX,
+      //   cursorY,
+      // );
       // console.log(addLineInfo(contentWithIndicator));
 
-      const { delay } = update.view.state.facet(codeInlineSuggestionConfig);
+      const { delay, agent } = update.view.state.facet(
+        codeInlineSuggestionConfig,
+      );
 
-      this.getSuggestion(contentWithIndicator, delay)
+      this.getSuggestion(agent, doc.toString(), cursorX, cursorY, 1, delay)
         .then((suggestion) => {
           // Dispatch effect to update the StateField
-          this.dispatchSuggestion(update.view, suggestion);
+          this.dispatchSuggestion(update.view, suggestion.snippets[0]);
         })
         .catch((err) => {
           if (err.name === "AbortError") {
@@ -138,7 +146,14 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         });
     }
 
-    private async getSuggestion(content: string, delay?: number) {
+    private async getSuggestion(
+      agent: InlineSuggestionAgent,
+      content: string,
+      cursorX: number,
+      cursorY: number,
+      numberOfSuggestions: number,
+      delay?: number,
+    ) {
       // If there is an ongoing request, abort it.
       if (this.abortController) {
         this.abortController.abort();
@@ -156,9 +171,13 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
 
       this.abortController = new AbortController();
       console.log("Fetching suggestion...");
-      const result = await fetch("/api/timeout", {
-        signal: this.abortController.signal,
-      }).then((res) => res.text());
+      const result = await agent.generateInlineSuggestion(
+        content,
+        cursorX,
+        cursorY,
+        numberOfSuggestions,
+        this.abortController.signal,
+      );
       this.abortController = null;
 
       return result;
@@ -257,8 +276,14 @@ const codeInlineSuggestionKeymap = Prec.highest(
 );
 
 /* An extension to enable inline code suggestions */
-export function codeInlineSuggestionExtension({ delay }: { delay: number }) {
-  const config = codeInlineSuggestionConfig.of({ delay });
+export function codeInlineSuggestionExtension({
+  delay,
+  agent,
+}: {
+  delay: number;
+  agent: InlineSuggestionAgent;
+}) {
+  const config = codeInlineSuggestionConfig.of({ delay, agent });
   return [
     codeInlineSuggestionKeymap,
     config,

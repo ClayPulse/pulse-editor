@@ -2,9 +2,9 @@ import OpenAI from "openai";
 
 export class BaseSTT {
   // The model object
-  model: any;
+  private model: any;
   // A function defines how to generate the output using the model
-  generateFunc: (model: any, audio: Blob) => Promise<string>;
+  private generateFunc: (model: any, audio: Blob) => Promise<string>;
 
   constructor(
     model: any,
@@ -14,7 +14,7 @@ export class BaseSTT {
     this.generateFunc = generateFunc;
   }
 
-  async generate(audio: Blob): Promise<string> {
+  public async generate(audio: Blob): Promise<string> {
     return await this.generateFunc(this.model, audio);
   }
 }

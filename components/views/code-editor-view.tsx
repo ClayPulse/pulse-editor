@@ -27,6 +27,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import toast from "react-hot-toast";
 import { codeInlineSuggestionExtension } from "../view-extensions/code-inline-suggestion";
+import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import { InlineSuggestionAgent } from "@/lib/agent/code-copilot";
+import { getModelLLM } from "@/lib/llm/llm";
 
 interface CodeEditorViewProps {
   viewId: string;
@@ -116,6 +119,16 @@ const CodeEditorView = forwardRef(
 
     /* Set editor content */
     const [viewDocument, setViewDocument] = useState<ViewDocument | undefined>(
+      undefined,
+    );
+
+    const { menuStates } = useMenuStatesContext();
+
+    // const [inlineSuggestionAgent, setInlineSuggestionAgent] = useState<
+    //   InlineSuggestionAgent | undefined
+    // >(undefined);
+
+    const inlineSuggestionAgentRef = useRef<InlineSuggestionAgent | undefined>(
       undefined,
     );
 
@@ -217,8 +230,22 @@ const CodeEditorView = forwardRef(
       });
     }, [isDrawingMode, resolvedTheme]);
 
-    // When the cmRef component is mounted, get the bounding box of the editor
-    // and set it to the state
+    useEffect(() => {
+      if (
+        menuStates?.settings?.llmProvider &&
+        menuStates?.settings?.llmModel &&
+        menuStates?.settings?.llmAPIKey
+      ) {
+        const llm = getModelLLM(
+          menuStates.settings.llmAPIKey,
+          menuStates.settings.llmProvider,
+          menuStates.settings.llmModel,
+          0.85,
+        );
+
+        inlineSuggestionAgentRef.current = new InlineSuggestionAgent(llm);
+      }
+    }, [menuStates]);
 
     function getDrawingLocation(line: DrawnLine): {
       lineStart: number;
@@ -347,6 +374,7 @@ const CodeEditorView = forwardRef(
                 javascript({ jsx: true }),
                 codeInlineSuggestionExtension({
                   delay: 1000,
+                  agent: inlineSuggestionAgentRef.current!,
                 }),
               ]}
               theme={theme}

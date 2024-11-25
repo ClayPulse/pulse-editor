@@ -56,7 +56,7 @@ export interface CodeCompletionResult {
 }
 
 export interface InlineSuggestionResult {
-  suggestions: string[];
+  snippets: string[];
 }
 
 export interface ViewDocument {

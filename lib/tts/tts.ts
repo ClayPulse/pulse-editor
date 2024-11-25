@@ -4,9 +4,9 @@ import { Readable } from "stream";
 
 export class BaseTTS {
   // The model object
-  model: any;
+  private model: any;
   // A function defines how to generate the output using the model
-  generateFunc: (model: any, text: string) => Promise<Blob>;
+  private generateFunc: (model: any, text: string) => Promise<Blob>;
 
   constructor(
     model: any,
@@ -16,7 +16,7 @@ export class BaseTTS {
     this.generateFunc = generateFunc;
   }
 
-  async generate(text: string): Promise<Blob> {
+  public async generate(text: string): Promise<Blob> {
     return await this.generateFunc(this.model, text);
   }
 }
@@ -50,10 +50,9 @@ export function getModelTTS(
       break;
     case "elevenlabs":
       const client = new ElevenLabsClient({
-        apiKey: apiKey
+        apiKey: apiKey,
       });
       model = client;
-
 
       generateFunc = async (model, text) => {
         const data: Readable = await model.generate({

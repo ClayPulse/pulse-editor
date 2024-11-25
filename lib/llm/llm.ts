@@ -5,20 +5,28 @@ import { BaseLanguageModel } from "@langchain/core/language_models/base";
 
 export class BaseLLM {
   // The model object
-  model: BaseLanguageModel;
+  private model: BaseLanguageModel;
   // A function defines how to generate the output using the model
-  generateFunc: (model: BaseLanguageModel, prompt: string) => Promise<string>;
+  private generateFunc: (
+    model: BaseLanguageModel,
+    prompt: string,
+    signal?: AbortSignal,
+  ) => Promise<string>;
 
   constructor(
     model: BaseLanguageModel,
-    generateFunc: (model: BaseLanguageModel, prompt: string) => Promise<string>,
+    generateFunc: (
+      model: BaseLanguageModel,
+      prompt: string,
+      signal?: AbortSignal,
+    ) => Promise<string>,
   ) {
     this.model = model;
     this.generateFunc = generateFunc;
   }
 
-  async generate(prompt: string): Promise<string> {
-    return await this.generateFunc(this.model, prompt);
+  public async generate(prompt: string, signal?: AbortSignal): Promise<string> {
+    return await this.generateFunc(this.model, prompt, signal);
   }
 }
 
@@ -65,8 +73,15 @@ export function getModelLLM(
   const generateFunc: (
     model: BaseLanguageModel,
     prompt: string,
-  ) => Promise<string> = async (model: BaseLanguageModel, prompt: string) => {
-    const result = await model.invoke(prompt);
+    signal?: AbortSignal,
+  ) => Promise<string> = async (
+    model: BaseLanguageModel,
+    prompt: string,
+    signal?: AbortSignal,
+  ) => {
+    const result = await model.invoke(prompt, {
+      signal,
+    });
     return result.content;
   };
 
