@@ -253,9 +253,9 @@ at "<FILL>". You must return a JSON containing the suggestions in the following 
 }
 \`\`\`
 `;
-    console.log("Prompt:\n" + llmPrompt);
+    // console.log("Prompt:\n" + llmPrompt);
     let llmResult = await this.llm.generate(llmPrompt, signal);
-    console.log("LLM result:\n" + llmResult);
+    // console.log("LLM result:\n" + llmResult);
     // strip the ```json or ``` from the beginning and ``` from the end if present
     llmResult = llmResult
       .replace(/^```(?:json)?/, "")
@@ -264,7 +264,7 @@ at "<FILL>". You must return a JSON containing the suggestions in the following 
     const llmResultJson = JSON.parse(llmResult);
     const snippets = llmResultJson.snippets;
     // Pretty print the result
-    console.log("snippets:\n" + snippets);
+    // console.log("snippets:\n" + snippets);
 
     const result: InlineSuggestionResult = {
       snippets: snippets,

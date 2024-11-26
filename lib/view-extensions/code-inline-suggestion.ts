@@ -35,9 +35,15 @@ const codeInlineSuggestionConfig = Facet.define<
 });
 
 /* A custom Effect to mark single to change StateField below */
-const codeInlineSuggestionEffect = StateEffect.define<{
+const addSuggestionEffect = StateEffect.define<{
   suggestion?: string;
 }>();
+
+/* A custom Effect to remove suggestion */
+const removeSuggestionEffect = StateEffect.define();
+
+/* A custom Effect to slice suggestion */
+const sliceSuggestionEffect = StateEffect.define<string>();
 
 /* 
   A state to hold value of currently suggestion.
@@ -52,21 +58,25 @@ const codeInlineSuggestionField = StateField.define<{ suggestion?: string }>({
   update(value: { suggestion?: string }, transaction) {
     // If there is a suggestion effect, update the value.
     for (const effect of transaction.effects) {
-      if (effect.is(codeInlineSuggestionEffect)) {
+      if (effect.is(addSuggestionEffect)) {
         value = {
           suggestion: effect.value.suggestion,
         };
         return value;
+      } else if (effect.is(removeSuggestionEffect)) {
+        value = { suggestion: undefined };
+        return value;
+      } else if (effect.is(sliceSuggestionEffect)) {
+        const prefix = effect.value;
+        console.log("Slicing suggestion with prefix", prefix);
+        if (value.suggestion?.startsWith(prefix)) {
+          value = { suggestion: value.suggestion.slice(prefix.length) };
+          return value;
+        }
       }
     }
 
-    // If selection changes but no text added, remove the suggestion.
-    if (transaction.selection) {
-      value = { suggestion: undefined };
-      return value;
-    } 
-    
-
+    // No suitable effect found, return the current value.
     return value;
   },
 });
@@ -99,11 +109,38 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
+      // If selection changes but no text added, remove the suggestion.
+      console.log(update.selectionSet, update.docChanged);
+      if (update.selectionSet && !update.docChanged) {
+        this.removeSuggestion(update.view);
+        return;
+      }
+
       // Only update if the document and selection changes.
       if (!update.selectionSet || !update.docChanged) {
         return;
       }
 
+      // Check if the current suggestion is a prefix of the inserted text.
+      const currentSuggestionState = update.state.field(
+        codeInlineSuggestionField,
+      );
+      const currentSuggestion = currentSuggestionState.suggestion;
+
+      const changes = update.changes;
+      let isSliced = false;
+      changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+        if (currentSuggestion?.startsWith(inserted.toString())) {
+          this.sliceSuggestion(update.view, inserted.toString());
+          isSliced = true;
+        }
+      });
+      if (isSliced) {
+        return;
+      }
+
+      // Get document and selection from the update,
+      // then create new suggestion.
       const { doc, selection } = update.state;
 
       // Anchor is the where the selection starts;
@@ -116,7 +153,6 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
       const cursorLine = doc.lineAt(cursorEnd);
       const cursorX = cursorEnd - cursorLine.from + 1;
       const cursorY = cursorLine.number;
-
 
       const { delay, agent } = update.view.state.facet(
         codeInlineSuggestionConfig,
@@ -174,10 +210,34 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
     }
 
     private dispatchSuggestion(view: EditorView, suggestion: string) {
-      view.dispatch({
-        effects: codeInlineSuggestionEffect.of({
-          suggestion: suggestion,
-        }),
+      // Use requestAnimationFrame to dispatch the effect in the next frame.
+      // This is to avoid the effect being dispatched in the same frame as the update.
+      requestAnimationFrame(() => {
+        view.dispatch({
+          effects: addSuggestionEffect.of({
+            suggestion: suggestion,
+          }),
+        });
+      });
+    }
+
+    private removeSuggestion(view: EditorView) {
+      // Use requestAnimationFrame to dispatch the effect in the next frame.
+      // This is to avoid the effect being dispatched in the same frame as the update.
+      requestAnimationFrame(() => {
+        view.dispatch({
+          effects: removeSuggestionEffect.of(null),
+        });
+      });
+    }
+
+    private sliceSuggestion(view: EditorView, prefix: string) {
+      // Use requestAnimationFrame to dispatch the effect in the next frame.
+      // This is to avoid the effect being dispatched in the same frame as the update.
+      requestAnimationFrame(() => {
+        view.dispatch({
+          effects: sliceSuggestionEffect.of(prefix),
+        });
       });
     }
   },
