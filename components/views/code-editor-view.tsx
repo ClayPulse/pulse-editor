@@ -1,6 +1,9 @@
 "use client";
 
-import ReactCodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import ReactCodeMirror, {
+  ReactCodeMirrorRef,
+  TransactionSpec,
+} from "@uiw/react-codemirror";
 import {
   forwardRef,
   useCallback,
@@ -74,12 +77,19 @@ const CodeEditorView = forwardRef(
           return;
         }
 
+        const transactions: TransactionSpec[] = [];
         // Apply changes to the editor
         for (const change of changes) {
           if (change.status === "added") {
             const from = cmView.state.doc.line(change.index + 1).from;
 
-            cmView.dispatch({
+            // cmView.dispatch({
+            //   changes: {
+            //     from: from,
+            //     insert: change.content + "\n",
+            //   },
+            // });
+            transactions.push({
               changes: {
                 from: from,
                 insert: change.content + "\n",
@@ -89,7 +99,14 @@ const CodeEditorView = forwardRef(
             const from = cmView.state.doc.line(change.index).from;
             const to = cmView.state.doc.line(change.index + 1).from;
 
-            cmView.dispatch({
+            // cmView.dispatch({
+            //   changes: {
+            //     from: from,
+            //     to: to,
+            //     insert: "",
+            //   },
+            // });
+            transactions.push({
               changes: {
                 from: from,
                 to: to,
@@ -100,7 +117,14 @@ const CodeEditorView = forwardRef(
             const from = cmView.state.doc.line(change.index).from;
             const to = cmView.state.doc.line(change.index).to;
 
-            cmView.dispatch({
+            // cmView.dispatch({
+            //   changes: {
+            //     from: from,
+            //     to: to,
+            //     insert: change.content,
+            //   },
+            // });
+            transactions.push({
               changes: {
                 from: from,
                 to: to,
@@ -109,6 +133,8 @@ const CodeEditorView = forwardRef(
             });
           }
         }
+
+        cmView.dispatch(...transactions);
       },
     }));
 
