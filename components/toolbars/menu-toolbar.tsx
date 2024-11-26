@@ -25,6 +25,7 @@ import { ttsProviderOptions } from "@/lib/tts/options";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import IconQA from "../icons/qa";
 
 function SettingPopover() {
   const { menuStates, updateMenuStates } = useMenuStatesContext();
@@ -465,66 +466,88 @@ export default function MenuToolbar() {
 
   return (
     <ToolbarLayout>
-      <Button
-        isIconOnly
-        className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-        onPress={() => {
-          if (menuStates) {
-            updateMenuStates({ isDrawingMode: !menuStates.isDrawingMode });
-          }
-        }}
-        variant={menuStates?.isDrawingMode ? "faded" : "solid"}
-      >
-        <IconPen />
-      </Button>
-      <Button
-        isIconOnly
-        className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-      >
-        <IconComment />
-      </Button>
-      <Button
+      <Tooltip content={"Pen Tool"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+          onPress={() => {
+            if (menuStates) {
+              updateMenuStates({ isDrawingMode: !menuStates.isDrawingMode });
+            }
+          }}
+          variant={menuStates?.isDrawingMode ? "faded" : "solid"}
+        >
+          <IconPen />
+        </Button>
+      </Tooltip>
+      <Tooltip content={"Inline Chat Tool"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+        >
+          <IconComment />
+        </Button>
+      </Tooltip>
+      {/* <Button
         isIconOnly
         className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
       >
         <IconErase />
-      </Button>
+      </Button> */}
 
       <Divider className="mx-1" orientation="vertical" />
-      <Button
-        isIconOnly
-        className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-        onPress={() => {
-          if (menuStates) {
-            updateMenuStates({ isRecording: !menuStates.isRecording });
-          }
-        }}
-        variant={menuStates?.isRecording ? "faded" : "solid"}
-      >
-        <IconMicrophone />
-      </Button>
+      <Tooltip content={"Full Chat Window"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+        >
+          <IconQA />
+        </Button>
+      </Tooltip>
 
-      <Button
-        isIconOnly
-        className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-      >
-        <IconSpeaker />
-      </Button>
+      <Tooltip content={"Voice Chat With Agent"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+          onPress={() => {
+            if (menuStates) {
+              updateMenuStates({ isRecording: !menuStates.isRecording });
+            }
+          }}
+          variant={menuStates?.isRecording ? "faded" : "solid"}
+        >
+          <IconMicrophone />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content={"Agent Speech Volume"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+        >
+          <IconSpeaker />
+        </Button>
+      </Tooltip>
 
       <Divider className="mx-1" orientation="vertical" />
 
-      <Button
-        isIconOnly
-        className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-      >
-        <IconAgent />
-      </Button>
-      <Button
-        isIconOnly
-        className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-      >
-        <IconApps />
-      </Button>
+      <Tooltip content={"Agent Configuration"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+        >
+          <IconAgent />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content={"Discover Extensions"}>
+        <Button
+          isIconOnly
+          className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+        >
+          <IconApps />
+        </Button>
+      </Tooltip>
 
       <SettingPopover />
     </ToolbarLayout>

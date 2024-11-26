@@ -185,7 +185,7 @@ export default function Home() {
               viewMap.current.set("1", ref);
             }}
             viewId="1"
-            width="600px"
+            width="100%"
             height="100%"
             url="/test.tsx"
             isDrawingMode={menuStates?.isDrawingMode}
