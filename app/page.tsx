@@ -8,17 +8,9 @@ import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import {
-  MutableRefObject,
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
-import { ViewDocument } from "@/lib/interface";
 import { CodeAgent } from "@/lib/agent/code-copilot";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
 
@@ -26,10 +18,15 @@ export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   const viewMap = useRef<Map<string, CodeEditorViewRef>>(new Map());
+  const { menuStates, updateMenuStates } = useMenuStatesContext();
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
   const llmModelRef = useRef<BaseLLM | undefined>(undefined);
   const ttsModelRef = useRef<BaseTTS | undefined>(undefined);
+
+  // TODO: Use a timer to stop recorder if no speech is detected for more than 30 seconds
+
+  const [isProcessing, setIsProcessing] = useState(false);
   const vad = useMicVAD({
     startOnLoad: false,
     ortConfig(ort) {
@@ -37,45 +34,61 @@ export default function Home() {
     },
     workletURL: "/vad/vad.worklet.bundle.min.js",
     modelURL: "/vad/silero_vad.onnx",
-    onSpeechEnd: (audio) => {
-      const wavBuffer = utils.encodeWAV(audio);
-      const blob = new Blob([wavBuffer], { type: "audio/wav" });
-      console.log("Speech end\n", blob);
-
-      if (!llmModelRef.current) {
-        toast.error("LLM model not loaded");
-        return;
+    onSpeechStart: () => {
+      if (!isProcessing) {
+        updateMenuStates({ isListening: true });
       }
-      const agent = new CodeAgent(
-        sttModelRef.current,
-        llmModelRef.current,
-        ttsModelRef.current,
-      );
-      const viewDocument = viewMap.current.get("1")?.getViewDocument();
-      agent
-        .generateAgentCompletion(
-          viewDocument?.fileContent || "",
-          viewDocument?.selections || [],
-          {
-            audio: blob,
-          },
-        )
-        .then((result) => {
-          const changes = agent.getLineChanges(result.text.codeCompletion);
+    },
+    onSpeechEnd: (audio) => {
+      if (!isProcessing) {
+        setIsProcessing(true);
+        const wavBuffer = utils.encodeWAV(audio);
+        const blob = new Blob([wavBuffer], { type: "audio/wav" });
+        console.log("Speech end\n", blob);
 
-          // Apply changes
-          viewMap.current.get("1")?.applyChanges(changes);
+        if (!llmModelRef.current) {
+          toast.error("LLM model not loaded");
+          return;
+        }
+        const agent = new CodeAgent(
+          sttModelRef.current,
+          llmModelRef.current,
+          ttsModelRef.current,
+        );
+        const viewDocument = viewMap.current.get("1")?.getViewDocument();
+        updateMenuStates({ isListening: false, isThinking: true });
+        agent
+          .generateAgentCompletion(
+            viewDocument?.fileContent || "",
+            viewDocument?.selections || [],
+            {
+              audio: blob,
+            },
+          )
+          .then((result) => {
+            const changes = agent.getLineChanges(result.text.codeCompletion);
+            updateMenuStates({ isThinking: false });
 
-          // Play the audio in the blob
-          if (result.audio) {
-            const audio = new Audio(URL.createObjectURL(result.audio));
-            audio.play();
-          }
-        });
+            // Apply changes
+            viewMap.current.get("1")?.applyChanges(changes);
+
+            // Play the audio in the blob
+            if (result.audio) {
+              const audio = new Audio(URL.createObjectURL(result.audio));
+              audio.onended = () => {
+                console.log("Audio ended");
+                updateMenuStates({ isSpeaking: false });
+                setIsProcessing(false);
+              };
+              updateMenuStates({ isSpeaking: true });
+              audio.play();
+              return;
+            }
+            setIsProcessing(false);
+          });
+      }
     },
   });
-
-  const { menuStates } = useMenuStatesContext();
 
   const [isOpen, setIsOpen] = useState(false);
 

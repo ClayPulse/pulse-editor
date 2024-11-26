@@ -2,7 +2,12 @@ export interface MenuStates {
   isDrawingMode: boolean;
   isDrawHulls: boolean;
   isDownloadClip: boolean;
+
+  // Voice agent
   isRecording: boolean;
+  isListening: boolean;
+  isThinking: boolean;
+  isSpeaking: boolean;
 
   // Settings
   settings?: Settings;

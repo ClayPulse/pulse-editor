@@ -27,6 +27,7 @@
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1",
     "react-konva": "^18.2.10",
+    "react-spinners": "^0.14.1",
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {

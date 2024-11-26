@@ -29,6 +29,9 @@ export default function MenuStatesContextProvider({
     isDrawHulls: true,
     isDownloadClip: false,
     isRecording: false,
+    isListening: false,
+    isThinking: false,
+    isSpeaking: false,
   });
 
   const { getValue } = useLocalStorage();
@@ -69,7 +72,6 @@ export default function MenuStatesContextProvider({
       loadedSettings.llmAPIKey = llmAPIKey ?? undefined;
       loadedSettings.ttsAPIKey = ttsAPIKey ?? undefined;
     }
-
 
     setMenuStates((prev) => ({
       ...prev,
