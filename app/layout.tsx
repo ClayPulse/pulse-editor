@@ -4,6 +4,7 @@ import "./globals.css";
 import { WrappedNextUIProvider } from "../components/context-providers/theme/wrapped-next-ui-provider";
 import MenuStatesContextProvider from "@/components/context-providers/context/menu-states";
 import { Toaster } from "react-hot-toast";
+import { MenuStates } from "@/lib/interface";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,12 +27,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const menuStates = {
+  const menuStates: MenuStates = {
     isDrawing: false,
     isDrawHulls: true,
     isDownloadClip: false,
     isInlineChat: false,
-    isFullChatWindow: false,
+    isOpenChatView: false,
     isRecording: false,
     isListening: false,
     isThinking: false,
