@@ -1,4 +1,4 @@
-export default function IconAddComment() {
+export default function IconAdd() {
   return (
     <svg
       width="24"
@@ -8,7 +8,7 @@ export default function IconAddComment() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M22 4C22 2.9 21.1 2 20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H18L22 22V4ZM20 17.17L18.83 16H4V4H20V17.17ZM13 5H11V9H7V11H11V15H13V11H17V9H13V5Z"
+        d="M19 3H5C3.89 3 3 3.9 3 5V19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM11 17H13V13H17V11H13V7H11V11H7V13H11V17Z"
         fill="currentColor"
       />
     </svg>

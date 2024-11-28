@@ -42,6 +42,7 @@ function SettingPopover() {
     >
       <PopoverTrigger>
         <Button
+          variant="light"
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
@@ -475,20 +476,21 @@ export default function MenuToolbar() {
               updateMenuStates({ isDrawing: !menuStates.isDrawing });
             }
           }}
-          variant={menuStates?.isDrawing ? "faded" : "solid"}
+          variant={menuStates?.isDrawing ? "solid" : "light"}
         >
           <IconPen />
         </Button>
       </Tooltip>
       <Tooltip content={"Inline Chat Tool"}>
         <Button
+          variant="light"
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
           <IconInlineChat />
         </Button>
       </Tooltip>
-      {/* <Button
+      {/* <Button variant="light"
         isIconOnly
         className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
       >
@@ -498,6 +500,7 @@ export default function MenuToolbar() {
       <Divider className="mx-1" orientation="vertical" />
       <Tooltip content={"Open Chat View"}>
         <Button
+          variant="light"
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
           onPress={() => {
@@ -519,7 +522,7 @@ export default function MenuToolbar() {
               updateMenuStates({ isRecording: !menuStates.isRecording });
             }
           }}
-          variant={menuStates?.isRecording ? "faded" : "solid"}
+          variant={menuStates?.isRecording ? "solid" : "light"}
         >
           <IconMicrophone />
         </Button>
@@ -527,6 +530,7 @@ export default function MenuToolbar() {
 
       <Tooltip content={"Agent Speech Volume"}>
         <Button
+          variant="light"
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
@@ -538,6 +542,7 @@ export default function MenuToolbar() {
 
       <Tooltip content={"Agent Configuration"}>
         <Button
+          variant="light"
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
@@ -547,6 +552,7 @@ export default function MenuToolbar() {
 
       <Tooltip content={"Discover Extensions"}>
         <Button
+          variant="light"
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >

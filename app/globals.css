@@ -37,6 +37,6 @@ body {
   }
 
   .toolbar-layout {
-    @apply relative flex h-10 w-fit items-center rounded-full bg-default px-4 py-1;
+    @apply relative flex h-10 w-fit items-center rounded-full bg-content2 px-4 py-1;
   }
 }

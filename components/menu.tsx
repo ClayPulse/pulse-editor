@@ -1,25 +1,21 @@
 "use client";
 
 import MenuToolbar from "./toolbars/menu-toolbar";
-import { Button, colors, menu, Switch } from "@nextui-org/react";
+import { colors, Switch } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import {
   BounceLoader,
   ClockLoader,
-  GridLoader,
   PuffLoader,
   PulseLoader,
-  SyncLoader,
 } from "react-spinners";
 
 export default function Menu() {
   const { menuStates } = useMenuStatesContext();
 
   return (
-    <div
-      className={"grid h-fit w-full grid-cols-3 grid-rows-1 bg-default-400 p-2"}
-    >
+    <div className={"grid h-fit w-full grid-cols-3 grid-rows-1 bg-default p-2"}>
       <div>
         <MenuToolbar />
       </div>

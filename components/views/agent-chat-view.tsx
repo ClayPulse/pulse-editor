@@ -14,6 +14,7 @@ import IconBeautify from "../icons/beautify";
 import IconAddComment from "../icons/add-comment";
 import IconTest from "../icons/test";
 import IconSearch from "../icons/search";
+import IconAdd from "../icons/add";
 
 function MessageBlock({ message }: { message: ChatMessage }) {
   return (
@@ -93,7 +94,7 @@ export default function AgentChatView() {
   return (
     <ViewLayout>
       <div className="flex h-[400px] min-h-[240px] w-full flex-col bg-content1 p-3">
-        <div className="flex h-10 w-full flex-shrink-0 items-center  rounded-full bg-content2 px-3 text-content2-foreground">
+        <div className="flex h-10 w-full flex-shrink-0 items-center rounded-full bg-content2 px-3 text-content2-foreground">
           <Tooltip content="Agent Quick Action: search online">
             <Button isIconOnly variant="light" size="sm">
               <IconSearch />
@@ -119,6 +120,11 @@ export default function AgentChatView() {
           <div className="h-full px-1 py-2">
             <Divider orientation="vertical" />
           </div>
+          <Tooltip content="Add Custom Agent Quick Action">
+            <Button isIconOnly variant="light" size="sm">
+              <IconAdd />
+            </Button>
+          </Tooltip>
           <Tooltip content="Discover Agent Quick Actions">
             <Button isIconOnly variant="light" size="sm">
               <IconApps />
