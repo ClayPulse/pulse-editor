@@ -11,21 +11,13 @@ import {
   Tooltip,
 } from "@nextui-org/react";
 import ToolbarLayout from "./layout";
-import IconPen from "../icons/pen";
-import IconInlineChat from "../icons/inline-chat";
-import IconErase from "../icons/erase";
-import IconMicrophone from "../icons/microphone";
-import IconSpeaker from "../icons/speaker";
-import IconAgent from "../icons/agent";
-import IconApps from "../icons/apps";
-import IconSettings from "../icons/settings";
 import { llmProviderOptions } from "@/lib/llm/options";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import IconQA from "../icons/qa";
+import Icon from "../icon";
 
 function SettingPopover() {
   const { menuStates, updateMenuStates } = useMenuStatesContext();
@@ -46,7 +38,7 @@ function SettingPopover() {
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
-          <IconSettings />
+          <Icon name="settings" variant="outlined" />
         </Button>
       </PopoverTrigger>
       <PopoverContent>
@@ -478,7 +470,7 @@ export default function MenuToolbar() {
           }}
           variant={menuStates?.isDrawing ? "solid" : "light"}
         >
-          <IconPen />
+          <Icon name="edit" variant="round" />
         </Button>
       </Tooltip>
       <Tooltip content={"Inline Chat Tool"}>
@@ -487,7 +479,7 @@ export default function MenuToolbar() {
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
-          <IconInlineChat />
+          <Icon name="comment" variant="outlined" />
         </Button>
       </Tooltip>
       {/* <Button variant="light"
@@ -509,7 +501,7 @@ export default function MenuToolbar() {
             }
           }}
         >
-          <IconQA />
+          <Icon name="forum" variant="outlined" />
         </Button>
       </Tooltip>
 
@@ -524,7 +516,7 @@ export default function MenuToolbar() {
           }}
           variant={menuStates?.isRecording ? "solid" : "light"}
         >
-          <IconMicrophone />
+          <Icon name="mic" variant="outlined" />
         </Button>
       </Tooltip>
 
@@ -534,7 +526,7 @@ export default function MenuToolbar() {
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
-          <IconSpeaker />
+          <Icon name="volume_up" variant="outlined" />
         </Button>
       </Tooltip>
 
@@ -546,7 +538,7 @@ export default function MenuToolbar() {
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
-          <IconAgent />
+          <Icon name="smart_toy" variant="outlined" />
         </Button>
       </Tooltip>
 
@@ -556,7 +548,7 @@ export default function MenuToolbar() {
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
-          <IconApps />
+          <Icon name="dashboard_customize" variant="outlined" />
         </Button>
       </Tooltip>
 

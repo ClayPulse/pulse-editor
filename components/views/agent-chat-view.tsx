@@ -4,17 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ViewLayout from "./layout";
 import { ChatMessage } from "@/lib/interface";
 import { Avatar, Button, Divider, Input, Tooltip } from "@nextui-org/react";
-import IconSend from "../icons/send";
-import IconLink from "../icons/link";
-import IconImage from "../icons/image";
-import IconFile from "../icons/file";
-import toast from "react-hot-toast";
-import IconApps from "../icons/apps";
-import IconBeautify from "../icons/beautify";
-import IconAddComment from "../icons/add-comment";
-import IconTest from "../icons/test";
-import IconSearch from "../icons/search";
-import IconAdd from "../icons/add";
+import Icon from "../icon";
 
 function MessageBlock({ message }: { message: ChatMessage }) {
   return (
@@ -97,24 +87,24 @@ export default function AgentChatView() {
         <div className="flex h-10 w-full flex-shrink-0 items-center rounded-full bg-content2 px-3 text-content2-foreground">
           <Tooltip content="Agent Quick Action: search online">
             <Button isIconOnly variant="light" size="sm">
-              <IconSearch />
+              <Icon variant="outlined" name="language" />
             </Button>
           </Tooltip>
           <Tooltip content="Agent Quick Action: add test cases">
             <Button isIconOnly variant="light" size="sm">
-              <IconTest />
+              <Icon variant="outlined" name="science" />
             </Button>
           </Tooltip>
 
           <Tooltip content="Agent Quick Action: add comment">
             <Button isIconOnly variant="light" size="sm">
-              <IconAddComment />
+              <Icon variant="outlined" name="add_comment" />
             </Button>
           </Tooltip>
 
           <Tooltip content="Agent Quick Action: beautify code">
             <Button isIconOnly variant="light" size="sm">
-              <IconBeautify />
+              <Icon variant="outlined" name="auto_fix_high" />
             </Button>
           </Tooltip>
           <div className="h-full px-1 py-2">
@@ -122,12 +112,12 @@ export default function AgentChatView() {
           </div>
           <Tooltip content="Add Custom Agent Quick Action">
             <Button isIconOnly variant="light" size="sm">
-              <IconAdd />
+              <Icon variant="outlined" name="add_box" />
             </Button>
           </Tooltip>
           <Tooltip content="Discover Agent Quick Actions">
             <Button isIconOnly variant="light" size="sm">
-              <IconApps />
+              <Icon variant="outlined" name="dashboard_customize" />
             </Button>
           </Tooltip>
         </div>
@@ -148,13 +138,13 @@ export default function AgentChatView() {
           endContent={
             <div className="flex h-full items-center">
               <Button isIconOnly variant="light" size="sm">
-                <IconLink />
+                <Icon variant="outlined" name="insert_link" />
               </Button>
               <Button isIconOnly variant="light" size="sm">
-                <IconImage />
+                <Icon variant="outlined" name="insert_photo" />
               </Button>
               <Button isIconOnly variant="light" size="sm">
-                <IconFile />
+                <Icon variant="outlined" name="insert_drive_file" />
               </Button>
               <div className="h-full px-1 py-2">
                 <Divider orientation="vertical" />
@@ -167,7 +157,7 @@ export default function AgentChatView() {
                   onInputSubmit(inputValue);
                 }}
               >
-                <IconSend />
+                <Icon variant="round" name="send" />
               </Button>
             </div>
           }

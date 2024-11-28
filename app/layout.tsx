@@ -5,6 +5,7 @@ import { WrappedNextUIProvider } from "../components/context-providers/theme/wra
 import MenuStatesContextProvider from "@/components/context-providers/context/menu-states";
 import { Toaster } from "react-hot-toast";
 import { MenuStates } from "@/lib/interface";
+import "material-icons/iconfont/material-icons.css";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

@@ -21,6 +21,7 @@
     "html2canvas": "^1.4.1",
     "konva": "^9.3.16",
     "langchain": "^0.3.6",
+    "material-icons": "^1.13.12",
     "next": "14.2.16",
     "next-themes": "^0.4.3",
     "react": "^18",

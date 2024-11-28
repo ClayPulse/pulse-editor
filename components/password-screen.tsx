@@ -7,12 +7,12 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
-import { LockIcon } from "./icons/lock";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { decrypt, encrypt } from "@/lib/security/simple-password";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
+import Icon from "./icon";
 
 export default function PasswordScreen({
   isOpen,
@@ -64,7 +64,7 @@ export default function PasswordScreen({
           <ModalBody>
             <Input
               endContent={
-                <LockIcon className="pointer-events-none flex-shrink-0 text-2xl text-default-400" />
+                <Icon name="lock"/>
               }
               label="Password"
               placeholder="Enter your password"
