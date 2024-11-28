@@ -21,18 +21,12 @@ export const MenuStatesContext = createContext<
 
 export default function MenuStatesContextProvider({
   children,
+  defaultMenuStates,
 }: {
   children: React.ReactNode;
+  defaultMenuStates: MenuStates;
 }) {
-  const [menuStates, setMenuStates] = useState<MenuStates>({
-    isDrawingMode: false,
-    isDrawHulls: true,
-    isDownloadClip: false,
-    isRecording: false,
-    isListening: false,
-    isThinking: false,
-    isSpeaking: false,
-  });
+  const [menuStates, setMenuStates] = useState<MenuStates>(defaultMenuStates);
 
   const { getValue } = useLocalStorage();
 

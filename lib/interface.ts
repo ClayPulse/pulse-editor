@@ -1,13 +1,21 @@
 export interface MenuStates {
-  isDrawingMode: boolean;
+  // Selection by drawing
+  isDrawing: boolean;
   isDrawHulls: boolean;
   isDownloadClip: boolean;
+
+  // Inline/popover chat
+  isInlineChat: boolean;
+
+  // Open chat view
+  isOpenChatView: boolean;
 
   // Voice agent
   isRecording: boolean;
   isListening: boolean;
   isThinking: boolean;
   isSpeaking: boolean;
+  isMuted: boolean;
 
   // Settings
   settings?: Settings;
@@ -76,4 +84,10 @@ export interface LineChange {
   index: number;
   content: string;
   status: "added" | "deleted" | "modified";
+}
+
+export interface ChatMessage {
+  from: string;
+  content: string;
+  datetime: string;
 }

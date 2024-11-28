@@ -110,7 +110,6 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
 
     update(update: ViewUpdate) {
       // If selection changes but no text added, remove the suggestion.
-      console.log(update.selectionSet, update.docChanged);
       if (update.selectionSet && !update.docChanged) {
         this.removeSuggestion(update.view);
         return;

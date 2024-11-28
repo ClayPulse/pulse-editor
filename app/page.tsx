@@ -13,6 +13,8 @@ import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
 import { CodeAgent } from "@/lib/agent/code-copilot";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
+import AgentChatView from "@/components/views/agent-chat-view";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
@@ -173,26 +175,41 @@ export default function Home() {
       <div className={`fixed z-10 h-14 w-full`}>
         <Menu />
       </div>
-      <div
-        className={`mt-14 flex min-h-0 w-full flex-grow`}
-        style={{
-          cursor: menuStates?.isDrawingMode && !isCanvasReady ? "wait" : "auto",
-        }}
-      >
-        <div className="flex w-full flex-col items-center bg-background p-2">
-          <CodeEditorView
-            ref={(ref: CodeEditorViewRef) => {
-              viewMap.current.set("1", ref);
+      <div className="flex h-full w-full flex-col px-1 pb-1 pt-[60px]">
+        <div className="flex h-full w-full flex-col items-start justify-between space-y-1.5 overflow-hidden rounded-2xl bg-default p-3">
+          <div
+            className={`min-h-0 w-full flex-grow`}
+            style={{
+              cursor: menuStates?.isDrawing && !isCanvasReady ? "wait" : "auto",
             }}
-            viewId="1"
-            width="100%"
-            height="100%"
-            url="/test.tsx"
-            isDrawingMode={menuStates?.isDrawingMode}
-            isDownloadClip={menuStates?.isDownloadClip}
-            isDrawHulls={menuStates?.isDrawHulls}
-            setIsCanvasReady={setIsCanvasReady}
-          />
+          >
+            <CodeEditorView
+              ref={(ref: CodeEditorViewRef) => {
+                viewMap.current.set("1", ref);
+              }}
+              viewId="1"
+              width="100%"
+              height="100%"
+              url="/test.tsx"
+              isDrawingMode={menuStates?.isDrawing}
+              isDownloadClip={menuStates?.isDownloadClip}
+              isDrawHulls={menuStates?.isDrawHulls}
+              setIsCanvasReady={setIsCanvasReady}
+            />
+          </div>
+          <AnimatePresence>
+            {menuStates?.isOpenChatView && (
+              <motion.div
+                className="w-full"
+                // Enter from bottom and exit to bottom
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+              >
+                <AgentChatView />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

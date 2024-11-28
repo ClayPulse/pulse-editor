@@ -26,13 +26,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const menuStates = {
+    isDrawing: false,
+    isDrawHulls: true,
+    isDownloadClip: false,
+    isInlineChat: false,
+    isFullChatWindow: false,
+    isRecording: false,
+    isListening: false,
+    isThinking: false,
+    isSpeaking: false,
+    isMuted: false,
+  };
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen antialiased`}
       >
         <WrappedNextUIProvider>
-          <MenuStatesContextProvider>
+          <MenuStatesContextProvider defaultMenuStates={menuStates}>
             <Toaster />
             {children}
           </MenuStatesContextProvider>

@@ -61,7 +61,7 @@ export default function Menu() {
       </div>
       <div>
         <AnimatePresence>
-          {menuStates?.isDrawingMode && (
+          {menuStates?.isDrawing && (
             <motion.div
               initial={{ x: 100 }}
               animate={{ x: 0 }}
@@ -70,7 +70,6 @@ export default function Menu() {
               className="left-0 top-0 z-0 flex h-full w-full items-center justify-end space-x-2"
             >
               <Switch>Use Image Recognition</Switch>
-              <Button>Advanced Interaction</Button>
             </motion.div>
           )}
         </AnimatePresence>

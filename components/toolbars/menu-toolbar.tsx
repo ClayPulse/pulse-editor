@@ -12,7 +12,7 @@ import {
 } from "@nextui-org/react";
 import ToolbarLayout from "./layout";
 import IconPen from "../icons/pen";
-import IconComment from "../icons/comment";
+import IconInlineChat from "../icons/inline-chat";
 import IconErase from "../icons/erase";
 import IconMicrophone from "../icons/microphone";
 import IconSpeaker from "../icons/speaker";
@@ -472,10 +472,10 @@ export default function MenuToolbar() {
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
           onPress={() => {
             if (menuStates) {
-              updateMenuStates({ isDrawingMode: !menuStates.isDrawingMode });
+              updateMenuStates({ isDrawing: !menuStates.isDrawing });
             }
           }}
-          variant={menuStates?.isDrawingMode ? "faded" : "solid"}
+          variant={menuStates?.isDrawing ? "faded" : "solid"}
         >
           <IconPen />
         </Button>
@@ -485,7 +485,7 @@ export default function MenuToolbar() {
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
         >
-          <IconComment />
+          <IconInlineChat />
         </Button>
       </Tooltip>
       {/* <Button
@@ -496,10 +496,15 @@ export default function MenuToolbar() {
       </Button> */}
 
       <Divider className="mx-1" orientation="vertical" />
-      <Tooltip content={"Full Chat Window"}>
+      <Tooltip content={"Open Chat View"}>
         <Button
           isIconOnly
           className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+          onPress={() => {
+            if (menuStates) {
+              updateMenuStates({ isOpenChatView: !menuStates.isOpenChatView });
+            }
+          }}
         >
           <IconQA />
         </Button>

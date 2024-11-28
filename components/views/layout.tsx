@@ -11,7 +11,7 @@ export default function ViewLayout({
 }) {
   return (
     <div
-      className="flex flex-col items-start justify-between rounded-2xl bg-default p-3"
+      className="overflow-hidden rounded-lg h-full w-full"
       style={{
         height,
         width,
