@@ -30,6 +30,7 @@ import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import toast from "react-hot-toast";
 import { TerminalAgent } from "@/lib/agent/terminal-agent";
 import { CodeEditorViewRef } from "./code-editor-view";
+import { motion } from "framer-motion";
 
 export interface AgentChatTerminalViewRef extends ViewRef {}
 
@@ -66,6 +67,7 @@ const defaultAgents: AgentConfig[] = [
       "You are an agent who helps user beautify the given code. User says {userMessage}. {viewContent}",
   },
 ];
+
 const AgentChatTerminalView = forwardRef(
   (
     { viewMap }: AgentChatTerminalViewProps,
@@ -133,6 +135,10 @@ const AgentChatTerminalView = forwardRef(
       }
     }, [selectedAgent]);
 
+    useEffect(() => {
+      setSelectedAgent(agents[0] || undefined);
+    }, [agents]);
+
     async function onInputSubmit(content: string) {
       if (!agentRef.current) {
         toast.error("LLM agent is not configured");
@@ -176,40 +182,43 @@ const AgentChatTerminalView = forwardRef(
       setCurrentChatHistory((prev) => [...prev, agentMessage]);
     }
 
-    function TerminalTabs({ agents }: { agents: AgentConfig[] }) {
+    function TerminalTabs() {
       return (
-        <div className="flex h-10 w-full flex-shrink-0 items-center bg-content3 text-content2-foreground">
-          <div>
-            <Tabs
-              items={agents}
-              selectedKey={selectedAgent?.name}
-              onSelectionChange={(key) => {
-                const agent = agents.find(
-                  (agent) => agent.name === key.toString(),
-                );
-                setSelectedAgent(agent);
-              }}
-              classNames={{
-                tabList: ["bg-content3", "gap-0"],
-              }}
-            >
-              {(agent) => (
-                <Tab
-                  key={agent.name}
-                  title={
-                    <div className="flex items-center space-x-0.5 text-content2-foreground group-data-[selected=true]:text-default-foreground">
-                      <Icon
-                        variant="outlined"
-                        name={agent.icon || "smart_toy"}
-                      />
-                      <p>{agent.name}</p>
-                    </div>
-                  }
-                  className="px-2"
-                />
+        <div className="mx-1 flex h-full items-center">
+          {agents.map((agent, index) => (
+            <div className="relative flex h-full items-center">
+              {selectedAgent === agent && (
+                <motion.div
+                  className="absolute z-10 h-8 w-full rounded-lg bg-content4 shadow-sm"
+                  layoutId="tab-indicator"
+                ></motion.div>
               )}
-            </Tabs>
-          </div>
+              <Button
+                key={index}
+                className={`tab-button z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
+                disableRipple
+                disableAnimation
+                onClick={(e) => {
+                  setSelectedAgent(agent);
+                }}
+              >
+                <div
+                  className={`flex items-center space-x-0.5 text-sm text-content1-foreground`}
+                >
+                  <Icon variant="outlined" name={agent.icon || "smart_toy"} />
+                  <p>{agent.name}</p>
+                </div>
+              </Button>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function TerminalNavBar() {
+      return (
+        <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
+          <TerminalTabs />
           <div className="flex h-full items-center py-2">
             <Divider orientation="vertical" />
             <Tooltip content="Add new agent">
@@ -258,7 +267,7 @@ const AgentChatTerminalView = forwardRef(
     return (
       <ViewLayout>
         <div className="flex h-[400px] min-h-[240px] w-full flex-col bg-content1 pb-3">
-          <TerminalTabs agents={agents} />
+          <TerminalNavBar />
           <div
             ref={chatListRef}
             className="min-h-0 flex-grow space-y-2 overflow-y-auto px-4 py-1"
