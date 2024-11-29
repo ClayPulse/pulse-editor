@@ -1,4 +1,4 @@
-import { InlineSuggestionAgent } from "@/lib/agent/code-copilot";
+import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import {
   Decoration,
   DecorationSet,

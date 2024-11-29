@@ -11,9 +11,9 @@ import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
-import { CodeAgent } from "@/lib/agent/code-copilot";
+import { CodeAgent } from "@/lib/agent/code-agent";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
-import AgentChatView from "@/components/views/agent-chat-view";
+import AgentChatTerminalView from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Home() {
@@ -206,7 +206,7 @@ export default function Home() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
               >
-                <AgentChatView />
+                <AgentChatTerminalView />
               </motion.div>
             )}
           </AnimatePresence>

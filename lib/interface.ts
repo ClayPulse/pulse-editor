@@ -91,3 +91,10 @@ export interface ChatMessage {
   content: string;
   datetime: string;
 }
+
+export interface AgentConfig {
+  name: string;
+  icon?: string;
+  tooltip?: string;
+  instruction: string;
+}

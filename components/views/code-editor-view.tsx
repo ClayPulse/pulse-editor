@@ -31,7 +31,7 @@ import { createRoot } from "react-dom/client";
 import toast from "react-hot-toast";
 import { codeInlineSuggestionExtension } from "@/lib/view-extensions/code-inline-suggestion";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
-import { InlineSuggestionAgent } from "@/lib/agent/code-copilot";
+import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import { getModelLLM } from "@/lib/llm/llm";
 
 interface CodeEditorViewProps {
