@@ -8,18 +8,21 @@ import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { useEffect, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import PasswordScreen from "@/components/password-screen";
-import { CodeAgent } from "@/lib/agent/code-agent";
+import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
-import AgentChatTerminalView from "@/components/views/agent-chat-terminal-view";
+import AgentChatTerminalView, {
+  AgentChatTerminalViewRef,
+} from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
+import { ViewRef } from "@/lib/interface";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
-  const viewMap = useRef<Map<string, CodeEditorViewRef>>(new Map());
+  const viewMap = useRef<Map<string, ViewRef | null>>(new Map());
   const { menuStates, updateMenuStates } = useMenuStatesContext();
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
@@ -29,68 +32,68 @@ export default function Home() {
   // TODO: Use a timer to stop recorder if no speech is detected for more than 30 seconds
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const vad = useMicVAD({
-    startOnLoad: false,
-    ortConfig(ort) {
-      ort.env.wasm.wasmPaths = "/vad/";
-    },
-    workletURL: "/vad/vad.worklet.bundle.min.js",
-    modelURL: "/vad/silero_vad.onnx",
-    onSpeechStart: () => {
-      if (!isProcessing) {
-        updateMenuStates({ isListening: true });
-      }
-    },
-    onSpeechEnd: (audio) => {
-      if (!isProcessing) {
-        setIsProcessing(true);
-        const wavBuffer = utils.encodeWAV(audio);
-        const blob = new Blob([wavBuffer], { type: "audio/wav" });
-        console.log("Speech end\n", blob);
+  // const vad = useMicVAD({
+  //   startOnLoad: false,
+  //   ortConfig(ort) {
+  //     ort.env.wasm.wasmPaths = "/vad/";
+  //   },
+  //   workletURL: "/vad/vad.worklet.bundle.min.js",
+  //   modelURL: "/vad/silero_vad.onnx",
+  //   onSpeechStart: () => {
+  //     if (!isProcessing) {
+  //       updateMenuStates({ isListening: true });
+  //     }
+  //   },
+  //   onSpeechEnd: (audio) => {
+  //     if (!isProcessing) {
+  //       setIsProcessing(true);
+  //       const wavBuffer = utils.encodeWAV(audio);
+  //       const blob = new Blob([wavBuffer], { type: "audio/wav" });
+  //       console.log("Speech end\n", blob);
 
-        if (!llmModelRef.current) {
-          toast.error("LLM model not loaded");
-          return;
-        }
-        const agent = new CodeAgent(
-          sttModelRef.current,
-          llmModelRef.current,
-          ttsModelRef.current,
-        );
-        const viewDocument = viewMap.current.get("1")?.getViewDocument();
-        updateMenuStates({ isListening: false, isThinking: true });
-        agent
-          .generateAgentCompletion(
-            viewDocument?.fileContent || "",
-            viewDocument?.selections || [],
-            {
-              audio: blob,
-            },
-          )
-          .then((result) => {
-            const changes = agent.getLineChanges(result.text.codeCompletion);
-            updateMenuStates({ isThinking: false });
+  //       if (!llmModelRef.current) {
+  //         toast.error("LLM model not loaded");
+  //         return;
+  //       }
+  //       const agent = new CodeEditorAgent(
+  //         sttModelRef.current,
+  //         llmModelRef.current,
+  //         ttsModelRef.current,
+  //       );
+  //       const viewDocument = views.current.get("1")?.getViewDocument();
+  //       updateMenuStates({ isListening: false, isThinking: true });
+  //       agent
+  //         .generateAgentCompletion(
+  //           viewDocument?.fileContent || "",
+  //           viewDocument?.selections || [],
+  //           {
+  //             audio: blob,
+  //           },
+  //         )
+  //         .then((result) => {
+  //           const changes = agent.getLineChanges(result.text.codeCompletion);
+  //           updateMenuStates({ isThinking: false });
 
-            // Apply changes
-            viewMap.current.get("1")?.applyChanges(changes);
+  //           // Apply changes
+  //           views.current.get("1")?.applyChanges(changes);
 
-            // Play the audio in the blob
-            if (result.audio) {
-              const audio = new Audio(URL.createObjectURL(result.audio));
-              audio.onended = () => {
-                console.log("Audio ended");
-                updateMenuStates({ isSpeaking: false });
-                setIsProcessing(false);
-              };
-              updateMenuStates({ isSpeaking: true });
-              audio.play();
-              return;
-            }
-            setIsProcessing(false);
-          });
-      }
-    },
-  });
+  //           // Play the audio in the blob
+  //           if (result.audio) {
+  //             const audio = new Audio(URL.createObjectURL(result.audio));
+  //             audio.onended = () => {
+  //               console.log("Audio ended");
+  //               updateMenuStates({ isSpeaking: false });
+  //               setIsProcessing(false);
+  //             };
+  //             updateMenuStates({ isSpeaking: true });
+  //             audio.play();
+  //             return;
+  //           }
+  //           setIsProcessing(false);
+  //         });
+  //     }
+  //   },
+  // });
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -151,13 +154,13 @@ export default function Home() {
   }, [menuStates]);
 
   // Toggle recording
-  useEffect(() => {
-    if (menuStates?.isRecording) {
-      vad.start();
-    } else {
-      vad.stop();
-    }
-  }, [menuStates, vad]);
+  // useEffect(() => {
+  //   if (menuStates?.isRecording) {
+  //     vad.start();
+  //   } else {
+  //     vad.stop();
+  //   }
+  // }, [menuStates, vad]);
 
   // Open PasswordScreen if password is set
   useEffect(() => {
@@ -167,6 +170,7 @@ export default function Home() {
     ) {
       setIsOpen(true);
     }
+
   }, [menuStates]);
 
   return (
@@ -184,10 +188,9 @@ export default function Home() {
             }}
           >
             <CodeEditorView
-              ref={(ref: CodeEditorViewRef) => {
+              ref={(ref) => {
                 viewMap.current.set("1", ref);
               }}
-              viewId="1"
               width="100%"
               height="100%"
               url="/test.tsx"
@@ -206,7 +209,12 @@ export default function Home() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
               >
-                <AgentChatTerminalView />
+                <AgentChatTerminalView
+                  ref={(ref) => {
+                    viewMap.current.set("2", ref);
+                  }}
+                  viewMap={viewMap}
+                />
               </motion.div>
             )}
           </AnimatePresence>

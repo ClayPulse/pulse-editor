@@ -16,12 +16,13 @@ import { javascript } from "@codemirror/lang-javascript";
 import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
-import { Button, Progress } from "@nextui-org/react";
+import { Progress } from "@nextui-org/react";
 import {
   DrawnLine,
   LineChange,
   SelectionInformation,
   ViewDocument,
+  ViewRef,
 } from "@/lib/interface";
 import CanvasEditor from "../canvas/canvas-editor";
 import html2canvas from "html2canvas";
@@ -35,7 +36,6 @@ import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import { getModelLLM } from "@/lib/llm/llm";
 
 interface CodeEditorViewProps {
-  viewId: string;
   width?: string;
   height?: string;
   url?: string;
@@ -45,7 +45,7 @@ interface CodeEditorViewProps {
   setIsCanvasReady: (isReady: boolean) => void;
 }
 
-export interface CodeEditorViewRef {
+export interface CodeEditorViewRef extends ViewRef {
   getViewDocument: () => ViewDocument | undefined;
   applyChanges: (changes: LineChange[]) => void;
 }
@@ -53,7 +53,6 @@ export interface CodeEditorViewRef {
 const CodeEditorView = forwardRef(
   (
     {
-      viewId,
       width,
       height,
       url,
@@ -65,6 +64,7 @@ const CodeEditorView = forwardRef(
     ref: React.Ref<CodeEditorViewRef>,
   ) => {
     useImperativeHandle(ref, () => ({
+      getType: () => "CodeEditorView",
       getViewDocument: () => {
         return viewDocument;
       },

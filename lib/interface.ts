@@ -96,5 +96,9 @@ export interface AgentConfig {
   name: string;
   icon?: string;
   tooltip?: string;
-  instruction: string;
+  prompt: string;
+}
+
+export interface ViewRef {
+  getType: () => string;
 }

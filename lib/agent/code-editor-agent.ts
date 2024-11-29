@@ -8,7 +8,7 @@ import { BaseLLM } from "../llm/llm";
 import { BaseSTT } from "../stt/stt";
 import { BaseTTS } from "../tts/tts";
 
-export class CodeAgent {
+export class CodeEditorAgent {
   stt: BaseSTT | undefined;
   llm: BaseLLM;
   tts: BaseTTS | undefined;
