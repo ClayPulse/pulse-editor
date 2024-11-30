@@ -95,7 +95,7 @@ export interface ChatMessage {
 export interface AgentConfig {
   name: string;
   icon?: string;
-  tooltip?: string;
+  description?: string;
   prompt: string;
 }
 

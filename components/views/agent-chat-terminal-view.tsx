@@ -20,8 +20,11 @@ import {
   Button,
   Divider,
   Input,
-  Tab,
-  Tabs,
+  Link,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Textarea,
   Tooltip,
 } from "@nextui-org/react";
 import Icon from "../icon";
@@ -31,6 +34,7 @@ import toast from "react-hot-toast";
 import { TerminalAgent } from "@/lib/agent/terminal-agent";
 import { CodeEditorViewRef } from "./code-editor-view";
 import { motion } from "framer-motion";
+import { BeatLoader } from "react-spinners";
 
 export interface AgentChatTerminalViewRef extends ViewRef {}
 
@@ -42,28 +46,28 @@ const defaultAgents: AgentConfig[] = [
   {
     name: "Online Search Agent",
     icon: "language",
-    tooltip: "An agent searches information online",
+    description: "An agent searches information online",
     prompt:
       "You are an agent who searches online for the given query. User says {userMessage}. {viewContent}",
   },
   {
     name: "Test Agent",
     icon: "science",
-    tooltip: "An agent adds test cases",
+    description: "An agent adds test cases",
     prompt:
       "You are an agent who helps user write test cases for the given code. User says {userMessage}. {viewContent}",
   },
   {
     name: "Add Comment Agent",
     icon: "add_comment",
-    tooltip: "An agent adds comments",
+    description: "An agent adds comments",
     prompt:
       "You are an agent who helps user add comments to the given code. User says {userMessage}. {viewContent}",
   },
   {
     name: "Beautify Code Agent",
     icon: "auto_fix_high",
-    tooltip: "An agent beautifies the code",
+    description: "An agent beautifies the code",
     prompt:
       "You are an agent who helps user beautify the given code. User says {userMessage}. {viewContent}",
   },
@@ -91,6 +95,7 @@ const AgentChatTerminalView = forwardRef(
 
     const [inputValue, setInputValue] = useState<string>("");
     const chatListRef = useRef<HTMLDivElement>(null);
+    const [isThinking, setIsThinking] = useState<boolean>(false);
 
     const { menuStates } = useMenuStatesContext();
 
@@ -148,10 +153,11 @@ const AgentChatTerminalView = forwardRef(
       const userMessage: ChatMessage = {
         from: "User",
         content: content,
-        datetime: new Date().toISOString(),
+        datetime: new Date().toLocaleDateString(),
       };
       setCurrentChatHistory((prev) => [...prev, userMessage]);
       setInputValue("");
+      setIsThinking(true);
 
       // Get all code editor views and their content
       let viewDocuments: ViewDocument[] = [];
@@ -177,9 +183,10 @@ const AgentChatTerminalView = forwardRef(
       const agentMessage: ChatMessage = {
         from: selectedAgent?.name || "Agent",
         content: res || "No response",
-        datetime: new Date().toISOString(),
+        datetime: new Date().toLocaleDateString(),
       };
 
+      setIsThinking(false);
       setCurrentChatHistory((prev) => [...prev, agentMessage]);
     }
 
@@ -194,22 +201,24 @@ const AgentChatTerminalView = forwardRef(
                   layoutId="tab-indicator"
                 ></motion.div>
               )}
-              <Button
-                key={index}
-                className={`tab-button z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
-                disableRipple
-                disableAnimation
-                onClick={(e) => {
-                  setSelectedAgent(agent);
-                }}
-              >
-                <div
-                  className={`flex items-center space-x-0.5 text-sm text-content1-foreground`}
+              <Tooltip content={agent.description}>
+                <Button
+                  key={index}
+                  className={`tab-button z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
+                  disableRipple
+                  disableAnimation
+                  onClick={(e) => {
+                    setSelectedAgent(agent);
+                  }}
                 >
-                  <Icon variant="outlined" name={agent.icon || "smart_toy"} />
-                  <p>{agent.name}</p>
-                </div>
-              </Button>
+                  <div
+                    className={`flex items-center space-x-0.5 text-sm text-content1-foreground`}
+                  >
+                    <Icon variant="outlined" name={agent.icon || "smart_toy"} />
+                    <p>{agent.name}</p>
+                  </div>
+                </Button>
+              </Tooltip>
             </div>
           ))}
         </div>
@@ -217,25 +226,127 @@ const AgentChatTerminalView = forwardRef(
     }
 
     function TerminalNavBar() {
+      const [name, setName] = useState<string>("");
+      const [icon, setIcon] = useState<string>("");
+      const [description, setDescription] = useState<string>("");
+      const [prompt, setPrompt] = useState<string>("");
       return (
         <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
           <TerminalTabs />
           <div className="flex h-full items-center py-2">
             <Divider orientation="vertical" />
-            <Tooltip content="Add new agent">
-              <Button isIconOnly variant="light" size="sm">
-                <Icon variant="outlined" name="add" />
-              </Button>
-            </Tooltip>
+            <Popover showArrow placement="bottom" backdrop="opaque">
+              <PopoverTrigger>
+                <Button isIconOnly variant="light" size="sm">
+                  <Icon variant="outlined" name="add" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <div className="h-80 w-60 overflow-y-auto px-1 py-2">
+                  <div className="flex flex-col space-y-2">
+                    <p>
+                      Add a new agent definition by adding agent name, icon,
+                      description, and prompt.
+                    </p>
+
+                    <Input
+                      label="name"
+                      placeholder="Enter agent name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                    <Input
+                      label="icon"
+                      placeholder="Enter agent icon"
+                      description={
+                        <p>
+                          You can use Material Icons. See available icons at
+                          <Link
+                            href="https://marella.me/material-icons/demo/"
+                            target="_blank"
+                            className="text-xs"
+                          >
+                            &nbsp; Available Icons
+                          </Link>
+                          .
+                        </p>
+                      }
+                      value={icon}
+                      onChange={(e) => setIcon(e.target.value)}
+                    />
+                    <Textarea
+                      label="description"
+                      placeholder="Enter agent description"
+                      isMultiline
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                    <Textarea
+                      label="prompt"
+                      placeholder="Enter agent prompt"
+                      isMultiline
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                    />
+
+                    <Button
+                      onClick={() => {
+                        const config: AgentConfig = {
+                          name: name,
+                          icon: icon === "" ? "smart_toy" : icon,
+                          description: description,
+                          prompt: prompt,
+                        };
+
+                        setAgents((prev) => [...prev, config]);
+                      }}
+                    >
+                      Add Agent
+                    </Button>
+
+                    <Divider />
+                    <p>
+                      Alternatively, you can import or find agent in the
+                      marketplace.
+                    </p>
+                    <Button isDisabled>Import Agent (Coming Soon)</Button>
+                    <Button isDisabled>Marketplace (Coming Soon)</Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="flex flex-grow justify-end pr-2">
             <Tooltip content="Refresh agent instance">
-              <Button isIconOnly variant="light" size="sm">
+              <Button
+                isIconOnly
+                variant="light"
+                size="sm"
+                onClick={() => {
+                  if (selectedAgent) {
+                    chatHistoryMap.current.set(selectedAgent.name, []);
+                    setCurrentChatHistory([]);
+                  }
+                }}
+              >
                 <Icon name="refresh" />
               </Button>
             </Tooltip>
             <Tooltip content="Delete agent instance">
-              <Button isIconOnly variant="light" size="sm">
+              <Button
+                isIconOnly
+                variant="light"
+                size="sm"
+                onClick={() => {
+                  if (selectedAgent) {
+                    const newAgents = agents.filter(
+                      (agent) => agent.name !== selectedAgent.name,
+                    );
+                    setAgents(newAgents);
+                    setSelectedAgent(newAgents[0]);
+                  }
+                }}
+              >
                 <Icon name="delete" className="text-danger" />
               </Button>
             </Tooltip>
@@ -246,19 +357,21 @@ const AgentChatTerminalView = forwardRef(
 
     function MessageBlock({ message }: { message: ChatMessage }) {
       return (
-        <div className="flex space-x-2 text-base">
+        <div className="flex w-full space-x-2 text-base">
           <div className="pt-0.5">
             <Avatar />
           </div>
-          <div className="flex flex-grow flex-col space-y-1.5">
+          <div className="flex w-full min-w-0 flex-grow flex-col space-y-1.5">
             <div className="flex h-4 space-x-3">
               <p className="font-bold">
                 {message.from === "User" ? "You" : message.from}
               </p>
               <p className="opacity-60">{message.datetime}</p>
             </div>
-            <div>
-              <p className="whitespace-pre">{message.content}</p>
+            <div className="w-full">
+              <p className="w-full whitespace-pre-wrap break-words">
+                {message.content}
+              </p>
             </div>
           </div>
         </div>
@@ -271,11 +384,16 @@ const AgentChatTerminalView = forwardRef(
           <TerminalNavBar />
           <div
             ref={chatListRef}
-            className="min-h-0 flex-grow space-y-2 overflow-y-auto px-4 py-1"
+            className="min-h-0 w-full flex-grow space-y-2 overflow-y-auto px-4 py-1"
           >
             {currentChatHistory.map((message, index) => (
               <MessageBlock key={index} message={message} />
             ))}
+            {isThinking && (
+              <div className="flex w-full justify-center">
+                <BeatLoader />
+              </div>
+            )}
           </div>
           <Input
             className="px-2"
