@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "android": "next build && npx cap sync && npx cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
     "@codemirror/lang-javascript": "^6.2.2",
     "@langchain/anthropic": "^0.3.8",
     "@langchain/community": "^0.3.15",
