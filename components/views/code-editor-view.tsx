@@ -45,10 +45,10 @@ interface CodeEditorViewProps {
   setIsCanvasReady: (isReady: boolean) => void;
 }
 
-export interface CodeEditorViewRef extends ViewRef {
+export type CodeEditorViewRef = ViewRef & {
   getViewDocument: () => ViewDocument | undefined;
   applyChanges: (changes: LineChange[]) => void;
-}
+};
 
 const CodeEditorView = forwardRef(
   (

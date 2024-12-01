@@ -99,6 +99,6 @@ export interface AgentConfig {
   prompt: string;
 }
 
-export interface ViewRef {
+export type ViewRef = {
   getType: () => string;
-}
+};

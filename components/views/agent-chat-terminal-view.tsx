@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  Dispatch,
   forwardRef,
   MutableRefObject,
+  SetStateAction,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -36,7 +38,7 @@ import { CodeEditorViewRef } from "./code-editor-view";
 import { motion } from "framer-motion";
 import { BeatLoader } from "react-spinners";
 
-export interface AgentChatTerminalViewRef extends ViewRef {}
+export type AgentChatTerminalViewRef = ViewRef;
 
 interface AgentChatTerminalViewProps {
   viewMap: MutableRefObject<Map<string, ViewRef | null>>;
@@ -72,6 +74,265 @@ const defaultAgents: AgentConfig[] = [
       "You are an agent who helps user beautify the given code. User says {userMessage}. {viewContent}",
   },
 ];
+
+function TerminalTabs({
+  agents,
+  selectedAgent,
+  setSelectedAgent,
+}: {
+  agents: AgentConfig[];
+  selectedAgent: AgentConfig | undefined;
+  setSelectedAgent: Dispatch<SetStateAction<AgentConfig | undefined>>;
+}) {
+  const tabDivRef = useRef<HTMLDivElement | null>(null);
+  const [isLeftScrollable, setIsLeftScrollable] = useState<boolean>(false);
+  const [isRightScrollable, setIsRightScrollable] = useState<boolean>(false);
+
+  function updateScroll() {
+    console.log(
+      tabDivRef.current?.scrollLeft,
+      tabDivRef.current?.scrollWidth,
+      tabDivRef.current?.clientWidth,
+    );
+    if (tabDivRef.current) {
+      setIsLeftScrollable(tabDivRef.current.scrollLeft > 0);
+      setIsRightScrollable(
+        tabDivRef.current.scrollLeft + tabDivRef.current.clientWidth <
+          tabDivRef.current.scrollWidth - 1,
+      );
+    }
+  }
+
+  useEffect(() => {
+    updateScroll();
+  }, [agents]);
+
+  return (
+    <div className="mx-1 flex h-full items-center overflow-x-auto">
+      <Button
+        isIconOnly
+        variant="light"
+        size="sm"
+        onClick={() => {
+          // Scroll to the left
+          tabDivRef.current?.scrollBy({
+            left: -100,
+            behavior: "smooth",
+          });
+        }}
+        isDisabled={!isLeftScrollable}
+      >
+        <Icon name="arrow_left" />
+      </Button>
+      <div
+        ref={tabDivRef}
+        className="flex items-center overflow-x-auto scrollbar-hide"
+        onScroll={(e) => {
+          updateScroll();
+        }}
+      >
+        {agents.map((agent, index) => (
+          <div key={index} className="relative flex h-full items-center">
+            {selectedAgent === agent && (
+              <motion.div
+                className="absolute z-10 h-8 w-full rounded-lg bg-content4 shadow-sm"
+                layoutId="tab-indicator"
+              ></motion.div>
+            )}
+            <Tooltip content={agent.description}>
+              <Button
+                className={`z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
+                disableRipple
+                disableAnimation
+                onClick={(e) => {
+                  setSelectedAgent(agent);
+                  // Move scroll location to the tab
+                  const tab = e.currentTarget as HTMLElement;
+                  tab?.scrollIntoView({
+                    behavior: "smooth",
+                    inline: "nearest",
+                  });
+                }}
+              >
+                <div
+                  className={`flex items-center space-x-0.5 text-sm text-content1-foreground`}
+                >
+                  <Icon variant="outlined" name={agent.icon || "smart_toy"} />
+                  <p>{agent.name}</p>
+                </div>
+              </Button>
+            </Tooltip>
+          </div>
+        ))}
+      </div>
+
+      <Button
+        isIconOnly
+        variant="light"
+        size="sm"
+        onClick={() => {
+          // Scroll to the right
+          tabDivRef.current?.scrollBy({
+            left: 100,
+            behavior: "smooth",
+          });
+        }}
+        isDisabled={!isRightScrollable}
+      >
+        <Icon name="arrow_right" />
+      </Button>
+    </div>
+  );
+}
+
+function TerminalNavBar({
+  agents,
+  setAgents,
+  selectedAgent,
+  setSelectedAgent,
+  chatHistoryMap,
+  setCurrentChatHistory,
+}: {
+  agents: AgentConfig[];
+  setAgents: Dispatch<SetStateAction<AgentConfig[]>>;
+  selectedAgent: AgentConfig | undefined;
+  setSelectedAgent: Dispatch<SetStateAction<AgentConfig | undefined>>;
+  chatHistoryMap: MutableRefObject<Map<string, ChatMessage[]>>;
+  setCurrentChatHistory: Dispatch<SetStateAction<ChatMessage[]>>;
+}) {
+  const [name, setName] = useState<string>("");
+  const [icon, setIcon] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [prompt, setPrompt] = useState<string>("");
+
+  return (
+    <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
+      <TerminalTabs
+        agents={agents}
+        selectedAgent={selectedAgent}
+        setSelectedAgent={setSelectedAgent}
+      />
+      <div className="flex h-full items-center py-2">
+        <Divider orientation="vertical" />
+        <Popover showArrow placement="bottom" backdrop="opaque">
+          <PopoverTrigger>
+            <Button isIconOnly variant="light" size="sm">
+              <Icon variant="outlined" name="add" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="h-80 w-60 overflow-y-auto px-1 py-2">
+              <div className="flex flex-col space-y-2">
+                <p>
+                  Add a new agent definition by adding agent name, icon,
+                  description, and prompt.
+                </p>
+
+                <Input
+                  label="name"
+                  placeholder="Enter agent name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Input
+                  label="icon"
+                  placeholder="Enter agent icon"
+                  description={
+                    <p>
+                      You can use Material Icons. See available icons at
+                      <Link
+                        href="https://marella.me/material-icons/demo/"
+                        target="_blank"
+                        className="text-xs"
+                      >
+                        &nbsp; Available Icons
+                      </Link>
+                      .
+                    </p>
+                  }
+                  value={icon}
+                  onChange={(e) => setIcon(e.target.value)}
+                />
+                <Textarea
+                  label="description"
+                  placeholder="Enter agent description"
+                  isMultiline
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                <Textarea
+                  label="prompt"
+                  placeholder="Enter agent prompt"
+                  isMultiline
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                />
+
+                <Button
+                  onClick={() => {
+                    const config: AgentConfig = {
+                      name: name,
+                      icon: icon === "" ? "smart_toy" : icon,
+                      description: description,
+                      prompt: prompt,
+                    };
+
+                    setAgents((prev) => [...prev, config]);
+                  }}
+                >
+                  Add Agent
+                </Button>
+
+                <Divider />
+                <p>
+                  Alternatively, you can import or find agent in the
+                  marketplace.
+                </p>
+                <Button isDisabled>Import Agent (Coming Soon)</Button>
+                <Button isDisabled>Marketplace (Coming Soon)</Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      <div className="flex flex-grow justify-end pr-2">
+        <Tooltip content="Refresh agent instance">
+          <Button
+            isIconOnly
+            variant="light"
+            size="sm"
+            onClick={() => {
+              if (selectedAgent) {
+                chatHistoryMap.current.set(selectedAgent.name, []);
+                setCurrentChatHistory([]);
+              }
+            }}
+          >
+            <Icon name="refresh" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Close agent instance">
+          <Button
+            isIconOnly
+            variant="light"
+            size="sm"
+            onClick={() => {
+              if (selectedAgent) {
+                const newAgents = agents.filter(
+                  (agent) => agent.name !== selectedAgent.name,
+                );
+                setAgents(newAgents);
+                setSelectedAgent(newAgents[0]);
+              }
+            }}
+          >
+            <Icon name="close" className="text-danger" />
+          </Button>
+        </Tooltip>
+      </div>
+    </div>
+  );
+}
 
 const AgentChatTerminalView = forwardRef(
   (
@@ -160,7 +421,7 @@ const AgentChatTerminalView = forwardRef(
       setIsThinking(true);
 
       // Get all code editor views and their content
-      let viewDocuments: ViewDocument[] = [];
+      const viewDocuments: ViewDocument[] = [];
       viewMap.current.forEach((view) => {
         if (view?.getType() === "CodeEditorView") {
           const codeEditorView = view as CodeEditorViewRef;
@@ -190,171 +451,6 @@ const AgentChatTerminalView = forwardRef(
       setCurrentChatHistory((prev) => [...prev, agentMessage]);
     }
 
-    function TerminalTabs() {
-      return (
-        <div className="mx-1 flex h-full items-center">
-          {agents.map((agent, index) => (
-            <div className="relative flex h-full items-center">
-              {selectedAgent === agent && (
-                <motion.div
-                  className="absolute z-10 h-8 w-full rounded-lg bg-content4 shadow-sm"
-                  layoutId="tab-indicator"
-                ></motion.div>
-              )}
-              <Tooltip content={agent.description}>
-                <Button
-                  key={index}
-                  className={`tab-button z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
-                  disableRipple
-                  disableAnimation
-                  onClick={(e) => {
-                    setSelectedAgent(agent);
-                  }}
-                >
-                  <div
-                    className={`flex items-center space-x-0.5 text-sm text-content1-foreground`}
-                  >
-                    <Icon variant="outlined" name={agent.icon || "smart_toy"} />
-                    <p>{agent.name}</p>
-                  </div>
-                </Button>
-              </Tooltip>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    function TerminalNavBar() {
-      const [name, setName] = useState<string>("");
-      const [icon, setIcon] = useState<string>("");
-      const [description, setDescription] = useState<string>("");
-      const [prompt, setPrompt] = useState<string>("");
-      return (
-        <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
-          <TerminalTabs />
-          <div className="flex h-full items-center py-2">
-            <Divider orientation="vertical" />
-            <Popover showArrow placement="bottom" backdrop="opaque">
-              <PopoverTrigger>
-                <Button isIconOnly variant="light" size="sm">
-                  <Icon variant="outlined" name="add" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <div className="h-80 w-60 overflow-y-auto px-1 py-2">
-                  <div className="flex flex-col space-y-2">
-                    <p>
-                      Add a new agent definition by adding agent name, icon,
-                      description, and prompt.
-                    </p>
-
-                    <Input
-                      label="name"
-                      placeholder="Enter agent name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                    <Input
-                      label="icon"
-                      placeholder="Enter agent icon"
-                      description={
-                        <p>
-                          You can use Material Icons. See available icons at
-                          <Link
-                            href="https://marella.me/material-icons/demo/"
-                            target="_blank"
-                            className="text-xs"
-                          >
-                            &nbsp; Available Icons
-                          </Link>
-                          .
-                        </p>
-                      }
-                      value={icon}
-                      onChange={(e) => setIcon(e.target.value)}
-                    />
-                    <Textarea
-                      label="description"
-                      placeholder="Enter agent description"
-                      isMultiline
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                    <Textarea
-                      label="prompt"
-                      placeholder="Enter agent prompt"
-                      isMultiline
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                    />
-
-                    <Button
-                      onClick={() => {
-                        const config: AgentConfig = {
-                          name: name,
-                          icon: icon === "" ? "smart_toy" : icon,
-                          description: description,
-                          prompt: prompt,
-                        };
-
-                        setAgents((prev) => [...prev, config]);
-                      }}
-                    >
-                      Add Agent
-                    </Button>
-
-                    <Divider />
-                    <p>
-                      Alternatively, you can import or find agent in the
-                      marketplace.
-                    </p>
-                    <Button isDisabled>Import Agent (Coming Soon)</Button>
-                    <Button isDisabled>Marketplace (Coming Soon)</Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="flex flex-grow justify-end pr-2">
-            <Tooltip content="Refresh agent instance">
-              <Button
-                isIconOnly
-                variant="light"
-                size="sm"
-                onClick={() => {
-                  if (selectedAgent) {
-                    chatHistoryMap.current.set(selectedAgent.name, []);
-                    setCurrentChatHistory([]);
-                  }
-                }}
-              >
-                <Icon name="refresh" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Delete agent instance">
-              <Button
-                isIconOnly
-                variant="light"
-                size="sm"
-                onClick={() => {
-                  if (selectedAgent) {
-                    const newAgents = agents.filter(
-                      (agent) => agent.name !== selectedAgent.name,
-                    );
-                    setAgents(newAgents);
-                    setSelectedAgent(newAgents[0]);
-                  }
-                }}
-              >
-                <Icon name="delete" className="text-danger" />
-              </Button>
-            </Tooltip>
-          </div>
-        </div>
-      );
-    }
-
     function MessageBlock({ message }: { message: ChatMessage }) {
       return (
         <div className="flex w-full space-x-2 text-base">
@@ -381,7 +477,14 @@ const AgentChatTerminalView = forwardRef(
     return (
       <ViewLayout>
         <div className="flex h-[400px] min-h-[240px] w-full flex-col bg-content1 pb-3">
-          <TerminalNavBar />
+          <TerminalNavBar
+            agents={agents}
+            setAgents={setAgents}
+            selectedAgent={selectedAgent}
+            setSelectedAgent={setSelectedAgent}
+            chatHistoryMap={chatHistoryMap}
+            setCurrentChatHistory={setCurrentChatHistory}
+          />
           <div
             ref={chatListRef}
             className="min-h-0 w-full flex-grow space-y-2 overflow-y-auto px-4 py-1"

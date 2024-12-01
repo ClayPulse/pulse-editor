@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { WrappedNextUIProvider } from "../components/context-providers/theme/wrapped-next-ui-provider";
-import MenuStatesContextProvider from "@/components/context-providers/context/menu-states";
+import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
+import MenuStatesContextProvider from "@/components/providers/menu-states-provider";
 import { Toaster } from "react-hot-toast";
 import { MenuStates } from "@/lib/interface";
 import "material-icons/iconfont/material-icons.css";
+import CapacitorProvider from "@/components/providers/capacitor-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -46,12 +47,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen antialiased`}
       >
-        <WrappedNextUIProvider>
-          <MenuStatesContextProvider defaultMenuStates={menuStates}>
-            <Toaster />
-            {children}
-          </MenuStatesContextProvider>
-        </WrappedNextUIProvider>
+        <CapacitorProvider>
+          <WrappedNextUIProvider>
+            <MenuStatesContextProvider defaultMenuStates={menuStates}>
+              <Toaster />
+              {children}
+            </MenuStatesContextProvider>
+          </WrappedNextUIProvider>
+        </CapacitorProvider>
       </body>
     </html>
   );

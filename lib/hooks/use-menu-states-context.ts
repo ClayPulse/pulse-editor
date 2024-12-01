@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useContext } from "react";
 import { MenuStates } from "../interface";
 import { useLocalStorage } from "./use-local-storage";
-import { MenuStatesContext } from "@/components/context-providers/context/menu-states";
+import { MenuStatesContext } from "@/components/providers/menu-states-provider";
 
 export default function useMenuStatesContext() {
   const context:
