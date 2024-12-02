@@ -38,7 +38,10 @@ export default function Menu() {
                   ) : menuStates?.isSpeaking ? (
                     <PuffLoader color={colors.green["300"]} size={24} />
                   ) : (
-                    <ClockLoader color={colors.black["300"]} size={24} />
+                    <ClockLoader
+                      className="!shadow-[0px_0px_0px_2px_inset] !shadow-content2-foreground [&>span]:!bg-content2-foreground"
+                      size={24}
+                    />
                   )}
                 </div>
                 <p className="w-full text-center text-xl text-content2-foreground">

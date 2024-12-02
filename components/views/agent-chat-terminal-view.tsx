@@ -37,6 +37,7 @@ import { TerminalAgent } from "@/lib/agent/terminal-agent";
 import { CodeEditorViewRef } from "./code-editor-view";
 import { motion } from "framer-motion";
 import { BeatLoader } from "react-spinners";
+import AgentConfigModal from "../modals/agent-config-modal";
 
 export type AgentChatTerminalViewRef = ViewRef;
 
@@ -113,7 +114,7 @@ function TerminalTabs({
         isIconOnly
         variant="light"
         size="sm"
-        onClick={() => {
+        onPress={() => {
           // Scroll to the left
           tabDivRef.current?.scrollBy({
             left: -100,
@@ -144,10 +145,10 @@ function TerminalTabs({
                 className={`z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
                 disableRipple
                 disableAnimation
-                onClick={(e) => {
+                onPress={(e) => {
                   setSelectedAgent(agent);
                   // Move scroll location to the tab
-                  const tab = e.currentTarget as HTMLElement;
+                  const tab = e.target as HTMLElement;
                   tab?.scrollIntoView({
                     behavior: "smooth",
                     inline: "nearest",
@@ -170,7 +171,7 @@ function TerminalTabs({
         isIconOnly
         variant="light"
         size="sm"
-        onClick={() => {
+        onPress={() => {
           // Scroll to the right
           tabDivRef.current?.scrollBy({
             left: 100,
@@ -200,10 +201,7 @@ function TerminalNavBar({
   chatHistoryMap: MutableRefObject<Map<string, ChatMessage[]>>;
   setCurrentChatHistory: Dispatch<SetStateAction<ChatMessage[]>>;
 }) {
-  const [name, setName] = useState<string>("");
-  const [icon, setIcon] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [prompt, setPrompt] = useState<string>("");
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
     <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
@@ -214,86 +212,23 @@ function TerminalNavBar({
       />
       <div className="flex h-full items-center py-2">
         <Divider orientation="vertical" />
-        <Popover showArrow placement="bottom" backdrop="opaque">
-          <PopoverTrigger>
-            <Button isIconOnly variant="light" size="sm">
-              <Icon variant="outlined" name="add" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <div className="h-80 w-60 overflow-y-auto px-1 py-2">
-              <div className="flex flex-col space-y-2">
-                <p>
-                  Add a new agent definition by adding agent name, icon,
-                  description, and prompt.
-                </p>
-
-                <Input
-                  label="name"
-                  placeholder="Enter agent name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <Input
-                  label="icon"
-                  placeholder="Enter agent icon"
-                  description={
-                    <p>
-                      You can use Material Icons. See available icons at
-                      <Link
-                        href="https://marella.me/material-icons/demo/"
-                        target="_blank"
-                        className="text-xs"
-                      >
-                        &nbsp; Available Icons
-                      </Link>
-                      .
-                    </p>
-                  }
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                />
-                <Textarea
-                  label="description"
-                  placeholder="Enter agent description"
-                  isMultiline
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <Textarea
-                  label="prompt"
-                  placeholder="Enter agent prompt"
-                  isMultiline
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                />
-
-                <Button
-                  onClick={() => {
-                    const config: AgentConfig = {
-                      name: name,
-                      icon: icon === "" ? "smart_toy" : icon,
-                      description: description,
-                      prompt: prompt,
-                    };
-
-                    setAgents((prev) => [...prev, config]);
-                  }}
-                >
-                  Add Agent
-                </Button>
-
-                <Divider />
-                <p>
-                  Alternatively, you can import or find agent in the
-                  marketplace.
-                </p>
-                <Button isDisabled>Import Agent (Coming Soon)</Button>
-                <Button isDisabled>Marketplace (Coming Soon)</Button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+        <Tooltip content="Add a new agent definition">
+          <Button
+            isIconOnly
+            variant="light"
+            size="sm"
+            onPress={() => {
+              setIsOpen(true);
+            }}
+          >
+            <Icon variant="outlined" name="add" />
+          </Button>
+        </Tooltip>
+        <AgentConfigModal
+          setAgents={setAgents}
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+        />
       </div>
       <div className="flex flex-grow justify-end pr-2">
         <Tooltip content="Refresh agent instance">
@@ -301,7 +236,7 @@ function TerminalNavBar({
             isIconOnly
             variant="light"
             size="sm"
-            onClick={() => {
+            onPress={() => {
               if (selectedAgent) {
                 chatHistoryMap.current.set(selectedAgent.name, []);
                 setCurrentChatHistory([]);
@@ -316,7 +251,7 @@ function TerminalNavBar({
             isIconOnly
             variant="light"
             size="sm"
-            onClick={() => {
+            onPress={() => {
               if (selectedAgent) {
                 const newAgents = agents.filter(
                   (agent) => agent.name !== selectedAgent.name,
@@ -436,19 +371,23 @@ const AgentChatTerminalView = forwardRef(
         .map((view, index) => `Code file ${index}:\n${view.fileContent}`)
         .join("\n\n");
 
-      const res = await agentRef.current?.generateAgentCompletion(
-        userMessage,
-        viewContent,
-      );
+      try {
+        const res = await agentRef.current?.generateAgentCompletion(
+          userMessage,
+          viewContent,
+        );
 
-      const agentMessage: ChatMessage = {
-        from: selectedAgent?.name || "Agent",
-        content: res || "No response",
-        datetime: new Date().toLocaleDateString(),
-      };
+        const agentMessage: ChatMessage = {
+          from: selectedAgent?.name || "Agent",
+          content: res || "No response",
+          datetime: new Date().toLocaleDateString(),
+        };
 
+        setCurrentChatHistory((prev) => [...prev, agentMessage]);
+      } catch (e) {
+        toast.error("Error in generating agent completion. Please try again.");
+      }
       setIsThinking(false);
-      setCurrentChatHistory((prev) => [...prev, agentMessage]);
     }
 
     function MessageBlock({ message }: { message: ChatMessage }) {
@@ -494,7 +433,7 @@ const AgentChatTerminalView = forwardRef(
             ))}
             {isThinking && (
               <div className="flex w-full justify-center">
-                <BeatLoader />
+                <BeatLoader className="[&>span]:!bg-content1-foreground" />
               </div>
             )}
           </div>
@@ -523,7 +462,7 @@ const AgentChatTerminalView = forwardRef(
                   isIconOnly
                   variant="light"
                   size="sm"
-                  onClick={() => {
+                  onPress={() => {
                     onInputSubmit(inputValue);
                   }}
                 >

@@ -10,7 +10,7 @@ import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import PasswordScreen from "@/components/password-screen";
+import PasswordScreen from "@/components/modals/password-modal";
 import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
 import AgentChatTerminalView, {
