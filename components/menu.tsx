@@ -20,10 +20,10 @@ export default function Menu() {
         "grid h-12 w-full grid-cols-3 grid-rows-1 bg-default px-2 py-1"
       }
     >
-      <div className="hidden md:block">
+      <div className="col-start-1 hidden md:block">
         <EditorToolbar />
       </div>
-      <div>
+      <div className="col-start-2">
         <AnimatePresence>
           {menuStates?.isRecording && (
             <motion.div
@@ -62,7 +62,7 @@ export default function Menu() {
           )}
         </AnimatePresence>
       </div>
-      <div>
+      <div className="col-start-3">
         <AnimatePresence>
           {menuStates?.isDrawing && (
             <motion.div
