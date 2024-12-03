@@ -1,6 +1,6 @@
 "use client";
 
-import MenuToolbar from "./toolbars/menu-toolbar";
+import EditorToolbar from "@/components/editor-toolbar";
 import { colors, Switch } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
@@ -15,9 +15,13 @@ export default function Menu() {
   const { menuStates } = useMenuStatesContext();
 
   return (
-    <div className={"grid h-fit w-full grid-cols-3 grid-rows-1 bg-default p-2"}>
-      <div>
-        <MenuToolbar />
+    <div
+      className={
+        "grid h-12 w-full grid-cols-3 grid-rows-1 bg-default px-2 py-1"
+      }
+    >
+      <div className="hidden md:block">
+        <EditorToolbar />
       </div>
       <div>
         <AnimatePresence>

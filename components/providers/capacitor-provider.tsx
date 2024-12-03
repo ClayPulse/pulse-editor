@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { StatusBar } from "@capacitor/status-bar";
 import { ScreenOrientation } from "@capacitor/screen-orientation";
+import { Capacitor } from "@capacitor/core";
 
 export default function CapacitorProvider({
   children,
@@ -25,7 +26,10 @@ export default function CapacitorProvider({
       }
     }
 
-    ScreenOrientation.addListener("screenOrientationChange", setStatusBar);
+    // Check if Capacitorjs is available
+    if (Capacitor.isNativePlatform()) {
+      ScreenOrientation.addListener("screenOrientationChange", setStatusBar);
+    }
   }, []);
   return children;
 }

@@ -1,17 +1,16 @@
 import { Button, Divider, Tooltip } from "@nextui-org/react";
-import ToolbarLayout from "./layout";
 import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useState } from "react";
-import Icon from "../icon";
-import SettingModal from "../modals/settings-modal";
+import Icon from "@/components/icon";
+import SettingModal from "@/components/modals/settings-modal";
 
-export default function MenuToolbar() {
+export default function EditorToolbar() {
   const { menuStates, updateMenuStates } = useMenuStatesContext();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <ToolbarLayout>
+    <div className="relative flex h-10 w-fit items-center rounded-full bg-content2 px-2 py-1 shadow-md ">
       <Tooltip content={"Pen Tool"}>
         <Button
           isIconOnly
@@ -117,6 +116,6 @@ export default function MenuToolbar() {
         </Button>
       </Tooltip>
       <SettingModal isOpen={isSettingsOpen} setIsOpen={setIsSettingsOpen} />
-    </ToolbarLayout>
+    </div>
   );
 }

@@ -11,7 +11,7 @@ export default function ViewLayout({
 }) {
   return (
     <div
-      className="overflow-hidden rounded-lg h-full w-full"
+      className="overflow-hidden rounded-lg"
       style={{
         height,
         width,

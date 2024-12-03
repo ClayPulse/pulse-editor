@@ -415,7 +415,7 @@ const AgentChatTerminalView = forwardRef(
 
     return (
       <ViewLayout>
-        <div className="flex h-[400px] min-h-[240px] w-full flex-col bg-content1 pb-3">
+        <div className="flex h-full w-full flex-col bg-content1 pb-3">
           <TerminalNavBar
             agents={agents}
             setAgents={setAgents}

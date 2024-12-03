@@ -35,8 +35,4 @@ body {
   .view-layout {
     @apply flex h-full w-full flex-col items-start justify-between rounded-2xl bg-default p-3;
   }
-
-  .toolbar-layout {
-    @apply relative flex h-10 w-fit items-center rounded-full bg-content2 px-4 py-1;
-  }
 }

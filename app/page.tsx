@@ -18,6 +18,7 @@ import AgentChatTerminalView, {
 } from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
 import { ViewRef } from "@/lib/interface";
+import EditorToolbar from "@/components/editor-toolbar";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
@@ -173,18 +174,16 @@ export default function Home() {
       setIsOpen(true);
     }
   }, [menuStates]);
-  const echoParameter = (param: string) => {
-    console.log(param);
-    return param;
-  };
+
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
       <PasswordScreen isOpen={isOpen} setIsOpen={setIsOpen} />
-      <div className={`fixed z-10 h-14 w-full`}>
+      <div className="fixed z-10 h-12 w-full">
         <Menu />
       </div>
-      <div className="flex h-full w-full flex-col px-1 pb-1 pt-[60px]">
-        <div className="flex h-full w-full flex-col items-start justify-between space-y-1.5 overflow-hidden rounded-2xl bg-default p-3">
+
+      <div className="flex h-full w-full flex-col px-1 pb-1 pt-[52px]">
+        <div className="flex h-full w-full flex-col items-start justify-between space-y-1.5 overflow-hidden rounded-xl bg-default p-2">
           <div
             className={`min-h-0 w-full flex-grow`}
             style={{
@@ -207,7 +206,7 @@ export default function Home() {
           <AnimatePresence>
             {menuStates?.isOpenChatView && (
               <motion.div
-                className="w-full"
+                className="h-full min-h-[60%] w-full"
                 // Enter from bottom and exit to bottom
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
@@ -222,6 +221,17 @@ export default function Home() {
               </motion.div>
             )}
           </AnimatePresence>
+          <div
+            className={
+              "bottom-0 left-0 z-10 flex w-full items-center justify-center md:hidden"
+            }
+            style={{
+              position: menuStates?.isOpenChatView ? "relative" : "fixed",
+              paddingBottom: menuStates?.isOpenChatView ? "8px" : "20px",
+            }}
+          >
+            <EditorToolbar />
+          </div>
         </div>
       </div>
     </div>
