@@ -178,6 +178,7 @@ export default function Home() {
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
       <PasswordScreen isOpen={isOpen} setIsOpen={setIsOpen} />
+      <EditorToolbar />
       <div className="fixed z-10 h-12 w-full">
         <Menu />
       </div>
@@ -206,7 +207,7 @@ export default function Home() {
           <AnimatePresence>
             {menuStates?.isOpenChatView && (
               <motion.div
-                className="h-full min-h-[60%] w-full"
+                className="h-full min-h-[60%] w-full pb-14"
                 // Enter from bottom and exit to bottom
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
@@ -221,17 +222,6 @@ export default function Home() {
               </motion.div>
             )}
           </AnimatePresence>
-          <div
-            className={
-              "bottom-0 left-0 z-10 flex w-full items-center justify-center md:hidden"
-            }
-            style={{
-              position: menuStates?.isOpenChatView ? "relative" : "fixed",
-              paddingBottom: menuStates?.isOpenChatView ? "8px" : "20px",
-            }}
-          >
-            <EditorToolbar />
-          </div>
         </div>
       </div>
     </div>

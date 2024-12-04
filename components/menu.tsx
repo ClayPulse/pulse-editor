@@ -20,9 +20,6 @@ export default function Menu() {
         "grid h-12 w-full grid-cols-3 grid-rows-1 bg-default px-2 py-1"
       }
     >
-      <div className="col-start-1 hidden md:block">
-        <EditorToolbar />
-      </div>
       <div className="col-start-2">
         <AnimatePresence>
           {menuStates?.isRecording && (
@@ -33,7 +30,7 @@ export default function Menu() {
               transition={{ duration: 0.1 }}
               className="flex h-full w-full items-center justify-center"
             >
-              <div className="flex h-10 w-44 items-center rounded-full bg-content2 px-4">
+              <div className="flex h-10 w-40 items-center rounded-full bg-content2 px-4">
                 <div className="flex w-12 items-center justify-center">
                   {menuStates?.isListening ? (
                     <BounceLoader color={colors.red["300"]} size={24} />

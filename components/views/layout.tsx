@@ -11,13 +11,18 @@ export default function ViewLayout({
 }) {
   return (
     <div
-      className="overflow-hidden rounded-lg"
+      className="relative"
       style={{
         height,
         width,
       }}
     >
-      <Suspense>{children}</Suspense>
+      <div className="absolute top-0 z-20 -mt-0.5 flex w-full justify-center">
+        <div className="h-1 w-8 cursor-pointer rounded-full bg-default-500"></div>
+      </div>
+      <div className="h-full w-full overflow-hidden rounded-lg">
+        <Suspense>{children}</Suspense>
+      </div>
     </div>
   );
 }
