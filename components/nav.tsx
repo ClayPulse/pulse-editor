@@ -93,7 +93,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
       <div className="fixed z-40 h-12 w-full">
         <div
           className={
-            "grid h-12 w-full grid-cols-3 grid-rows-1 bg-default px-2 py-1"
+            "grid h-12 w-full grid-cols-3 grid-rows-1 bg-default px-2 py-1 text-default-foreground"
           }
         >
           <div className="col-start-1">
@@ -153,6 +153,8 @@ export default function Nav({ children }: { children: React.ReactNode }) {
           </div>
           <div className="col-start-3 flex justify-end">
             <Button
+              // Disable on hover background
+              className="data-[hover=true]:bg-transparent"
               isIconOnly
               disableRipple
               variant="light"

@@ -12,7 +12,7 @@ export function WrappedNextUIProvider({
   return (
     <NextUIProvider className="h-full w-full">
       <ThemeProvider attribute="class">
-        <div className="h-full w-full light:bg-white dark:bg-black">
+        <div className="h-full w-full bg-white dark:bg-black">
           {children}
         </div>
       </ThemeProvider>
