@@ -1,6 +1,6 @@
 "use client";
 
-import Menu from "@/components/menu";
+import Nav from "@/components/nav";
 import CodeEditorView, {
   CodeEditorViewRef,
 } from "@/components/views/code-editor-view";
@@ -98,8 +98,6 @@ export default function Home() {
     },
   });
 
-  const [isOpen, setIsOpen] = useState(false);
-
   // Load models
   useEffect(() => {
     if (menuStates?.settings) {
@@ -165,25 +163,13 @@ export default function Home() {
     }
   }, [menuStates, vad]);
 
-  // Open PasswordScreen if password is set
-  useEffect(() => {
-    if (
-      menuStates?.settings?.isUsePassword &&
-      !menuStates?.settings?.password
-    ) {
-      setIsOpen(true);
-    }
-  }, [menuStates]);
+
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-x-hidden">
-      <PasswordScreen isOpen={isOpen} setIsOpen={setIsOpen} />
+    <div className="flex h-full w-full flex-col">
       <EditorToolbar />
-      <div className="fixed z-10 h-12 w-full">
-        <Menu />
-      </div>
 
-      <div className="flex h-full w-full flex-col px-1 pb-1 pt-[52px]">
+      <div className="flex h-full w-full flex-col p-1">
         <div className="flex h-full w-full flex-col items-start justify-between space-y-1.5 overflow-hidden rounded-xl bg-default p-2">
           <div
             className={`min-h-0 w-full flex-grow`}

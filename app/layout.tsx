@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import { MenuStates } from "@/lib/interface";
 import "material-icons/iconfont/material-icons.css";
 import CapacitorProvider from "@/components/providers/capacitor-provider";
+import Nav from "@/components/nav";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -51,7 +52,7 @@ export default function RootLayout({
           <WrappedNextUIProvider>
             <MenuStatesContextProvider defaultMenuStates={menuStates}>
               <Toaster />
-              {children}
+              <Nav>{children}</Nav>
             </MenuStatesContextProvider>
           </WrappedNextUIProvider>
         </CapacitorProvider>
