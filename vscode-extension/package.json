@@ -1,0 +1,101 @@
+{
+  "name": "chisel-editor",
+  "displayName": "Chisel Editor",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "chisel.editorWebview",
+        "displayName": "Chisel Editor Webview",
+        "priority": "option",
+        "selector": [
+          {
+            "filenamePattern": "*"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "chisel.editInChisel",
+        "title": "Edit in Chisel Editor",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "chisel.editInVSCode",
+        "title": "Edit in VSCode",
+        "icon": "$(notebook-open-as-text)"
+      },
+      {
+        "command": "chisel.test",
+        "title": "Test command"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "chisel.editInChisel",
+        "when": "editorTextFocus",
+        "key": "ctrl+alt+a",
+        "win": "ctrl+alt+a",
+        "linux": "ctrl+alt+a",
+        "mac": "cmd+alt+a"
+      },
+      {
+        "command": "chisel.editInVSCode",
+        "when": "editorTextFocus",
+        "key": "ctrl+alt+s",
+        "win": "ctrl+alt+s",
+        "linux": "ctrl+alt+s",
+        "mac": "cmd+alt+s"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "!chisel.isEditInChisel",
+          "command": "chisel.editInChisel",
+          "group": "navigation"
+        },
+        {
+          "when": "chisel.isEditInChisel",
+          "command": "chisel.editInVSCode",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.95.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3",
+    "ts-loader": "^9.5.1",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "@vscode/test-cli": "^0.0.8",
+    "@vscode/test-electron": "^2.3.9"
+  }
+}

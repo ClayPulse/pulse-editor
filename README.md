@@ -13,17 +13,25 @@ npm run dev
 ### Mobile Development
 Chisel Editor uses Capacitor.js to create mobile apps on Android and iOS. To develop mobile app locally, run the following:
 ```bash
-# Build Next.js
-npm run build
-# Copy Next.js build to mobile folders
-npx cap sync
-# For android, run
-npx cap run android
+# Development with Live Reload
+npx cap run android -l --host [your_LAN_host_that_your_phone_can_access]
+# Production
+npm run android
 ```
 
-### Desktop Development (WIP)
+### Desktop Development
 Chisel Editor uses Electron.js to create desktop apps on Windows, Mac and Linux. To develop desktop app locally,
 run:
+```bash
+# Development
+npm run desktop-dev
+# Production
+npm run desktop-build
+```
 
-### VSCode Extension Development (WIP)
-Chisel Editor uses VSCode Webview API to create a VSCode Extension. To develop VScode Extension locally, run:
+If you run `npm run desktop-build` for a production build, you can file an executable file inside `out-desktop`.
+
+### VSCode Extension Development
+Chisel Editor uses VSCode Webview API to create a VSCode Extension. To develop VScode Extension locally, open the `vscode-extension` in a separate VSCode window. Then press F5 to launch debug task.
+
+Note that you will also need to run the Nextjs server locally during development.
