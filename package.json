@@ -2,12 +2,16 @@
   "name": "chisel-editor",
   "version": "0.1.0",
   "private": true,
+  "main": "./desktop/main.mjs",
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "android": "next build && npx cap sync && npx cap run android"
+    "android": "next build && npx cap sync && npx cap run android",
+    "desktop-dev": "electron .",
+    "desktop-build": "electron-forge package"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
@@ -22,6 +26,7 @@
     "@ricky0123/vad-web": "^0.0.19",
     "@uiw/codemirror-theme-vscode": "^4.23.6",
     "@uiw/react-codemirror": "^4.23.6",
+    "electron-serve": "^2.1.1",
     "elevenlabs": "^0.18.0",
     "framer-motion": "^11.11.11",
     "html2canvas": "^1.4.1",
@@ -39,9 +44,11 @@
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.6.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "electron": "^33.2.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.16",
     "postcss": "^8",
