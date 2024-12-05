@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
-import { MenuStates, Settings } from "@/lib/interface";
+import { MenuStates, Settings } from "@/lib/types";
 import {
   createContext,
   Dispatch,

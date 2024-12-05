@@ -4,7 +4,7 @@ import "./globals.css";
 import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
 import MenuStatesContextProvider from "@/components/providers/menu-states-provider";
 import { Toaster } from "react-hot-toast";
-import { MenuStates } from "@/lib/interface";
+import { MenuStates } from "@/lib/types";
 import "material-icons/iconfont/material-icons.css";
 import CapacitorProvider from "@/components/providers/capacitor-provider";
 import Nav from "@/components/nav";

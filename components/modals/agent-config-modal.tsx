@@ -1,7 +1,7 @@
 import { Button, Divider, Input, Link, Textarea } from "@nextui-org/react";
 import ModalWrapper from "./modal-wrapper";
 import { Dispatch, SetStateAction, useState } from "react";
-import { AgentConfig } from "@/lib/interface";
+import { AgentConfig } from "@/lib/types";
 
 export default function AgentConfigModal({
   isOpen,

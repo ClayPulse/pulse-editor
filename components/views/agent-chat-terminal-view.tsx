@@ -16,7 +16,7 @@ import {
   ChatMessage,
   ViewDocument,
   ViewRef,
-} from "@/lib/interface";
+} from "@/lib/types";
 import {
   Avatar,
   Button,

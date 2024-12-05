@@ -1,4 +1,4 @@
-import { AgentConfig, ChatMessage } from "../interface";
+import { AgentConfig, ChatMessage } from "../types";
 import { BaseLLM } from "../llm/llm";
 
 export class TerminalAgent {

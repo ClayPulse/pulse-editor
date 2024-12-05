@@ -1,7 +1,7 @@
 "use client";
 
 import { convexHull, Point } from "@/lib/canvas/convex-hull";
-import { DrawnLine } from "@/lib/interface";
+import { DrawnLine } from "@/lib/types";
 import Konva from "konva";
 import { Stage as StageType } from "konva/lib/Stage";
 import { useTheme } from "next-themes";

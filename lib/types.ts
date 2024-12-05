@@ -102,3 +102,8 @@ export interface AgentConfig {
 export type ViewRef = {
   getType: () => string;
 };
+
+export type Folder = {
+  file: File;
+  uri: string;
+}[];

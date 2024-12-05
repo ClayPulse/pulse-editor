@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useContext } from "react";
-import { MenuStates } from "../interface";
+import { MenuStates } from "../types";
 import { useLocalStorage } from "./use-local-storage";
 import { MenuStatesContext } from "@/components/providers/menu-states-provider";
 

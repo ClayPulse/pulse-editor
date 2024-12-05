@@ -1,6 +1,6 @@
 "use client";
 
-import { DrawnLine } from "@/lib/interface";
+import { DrawnLine } from "@/lib/types";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 

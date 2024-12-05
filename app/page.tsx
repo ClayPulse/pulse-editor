@@ -17,7 +17,7 @@ import AgentChatTerminalView, {
   AgentChatTerminalViewRef,
 } from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
-import { ViewRef } from "@/lib/interface";
+import { ViewRef } from "@/lib/types";
 import EditorToolbar from "@/components/editor-toolbar";
 
 export default function Home() {

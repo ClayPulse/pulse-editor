@@ -1,4 +1,4 @@
-import { InlineSuggestionResult } from "../interface";
+import { InlineSuggestionResult } from "../types";
 import { BaseLLM } from "../llm/llm";
 
 export class InlineSuggestionAgent {

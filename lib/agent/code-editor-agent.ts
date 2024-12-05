@@ -3,7 +3,7 @@ import {
   CodeCompletionResult,
   LineChange,
   SelectionInformation,
-} from "../interface";
+} from "../types";
 import { BaseLLM } from "../llm/llm";
 import { BaseSTT } from "../stt/stt";
 import { BaseTTS } from "../tts/tts";

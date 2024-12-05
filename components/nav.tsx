@@ -180,10 +180,12 @@ export default function Nav({ children }: { children: React.ReactNode }) {
                 <div className="flex h-full w-full flex-col items-center space-y-1">
                   {!projectPath && (
                     <div className="flex w-full flex-wrap justify-center gap-x-0.5 gap-y-0.5">
-                      <Button size="sm">Open Project</Button>
                       <Button size="sm">New Project</Button>
-                      <Button size="sm">Open File</Button>
+                      <Button size="sm">Open Project</Button>
+                      <Button size="sm">Save Project</Button>
                       <Button size="sm">New File</Button>
+                      <Button size="sm">Open File</Button>
+                      <Button size="sm">Save File</Button>
                     </div>
                   )}
                 </div>

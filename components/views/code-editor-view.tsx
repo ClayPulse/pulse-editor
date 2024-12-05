@@ -23,7 +23,7 @@ import {
   SelectionInformation,
   ViewDocument,
   ViewRef,
-} from "@/lib/interface";
+} from "@/lib/types";
 import CanvasEditor from "../canvas/canvas-editor";
 import html2canvas from "html2canvas";
 
