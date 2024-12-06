@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import CodeEditorView, {
   CodeEditorViewRef,
 } from "@/components/views/code-editor-view";
@@ -8,17 +7,15 @@ import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import PasswordScreen from "@/components/modals/password-modal";
 import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
-import AgentChatTerminalView, {
-  AgentChatTerminalViewRef,
-} from "@/components/views/agent-chat-terminal-view";
+import AgentChatTerminalView from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
 import { ViewRef } from "@/lib/types";
 import EditorToolbar from "@/components/editor-toolbar";
+import { getPlatform } from "@/lib/platforms/platform-checker";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
@@ -98,6 +95,12 @@ export default function Home() {
     },
   });
 
+  // Check platform
+  useEffect(() => {
+    const platform = getPlatform();
+    console.log("Platform:", platform);
+  }, []);
+
   // Load models
   useEffect(() => {
     if (menuStates?.settings) {
@@ -162,8 +165,6 @@ export default function Home() {
       vad.stop();
     }
   }, [menuStates, vad]);
-
-
 
   return (
     <div className="flex h-full w-full flex-col">

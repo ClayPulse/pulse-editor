@@ -178,7 +178,7 @@ export class ChiselEditorProvider
         </script>
 			</head>
 			<body>
-          <iframe src="${this.chisel_editor}"></iframe>
+          <iframe src="${this.chisel_editor}?vscode=true"></iframe>
 			</body>
 			</html>`;
   }
