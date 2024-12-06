@@ -22,11 +22,6 @@ import {
   Button,
   Divider,
   Input,
-  Link,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Textarea,
   Tooltip,
 } from "@nextui-org/react";
 import Icon from "../icon";
@@ -90,11 +85,6 @@ function TerminalTabs({
   const [isRightScrollable, setIsRightScrollable] = useState<boolean>(false);
 
   function updateScroll() {
-    console.log(
-      tabDivRef.current?.scrollLeft,
-      tabDivRef.current?.scrollWidth,
-      tabDivRef.current?.clientWidth,
-    );
     if (tabDivRef.current) {
       setIsLeftScrollable(tabDivRef.current.scrollLeft > 0);
       setIsRightScrollable(
@@ -261,7 +251,7 @@ function TerminalNavBar({
               }
             }}
           >
-            <Icon name="close" className="text-danger" />
+            <Icon name="delete" className="text-danger" />
           </Button>
         </Tooltip>
       </div>

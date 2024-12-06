@@ -22,7 +22,7 @@
     "@codemirror/lang-javascript": "^6.2.2",
     "@langchain/anthropic": "^0.3.8",
     "@langchain/community": "^0.3.15",
-    "@nextui-org/react": "^2.4.8",
+    "@nextui-org/react": "^2.6.2",
     "@ricky0123/vad-web": "^0.0.19",
     "@uiw/codemirror-theme-vscode": "^4.23.6",
     "@uiw/react-codemirror": "^4.23.6",
