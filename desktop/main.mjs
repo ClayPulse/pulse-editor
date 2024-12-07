@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import serve from "electron-serve";
 import { join } from "path";
 
@@ -18,7 +18,6 @@ const appServe = serve({
   directory: join(process.resourcesPath, "app/out-next"),
 });
 
-
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 960,
@@ -32,16 +31,17 @@ const createWindow = () => {
     },
   });
 
+  win.menuBarVisible = false;
+
+  // Production launch
   if (app.isPackaged) {
     appServe(win).then(() => {
       win.loadURL("app://-");
     });
-  } else {
+  }
+  // Development launch
+  else {
     win.loadURL("http://localhost:3000");
-    // appServe(win).then(() => {
-    //   console.log(join(process.resourcesPath, "app/out-next"));
-    //   win.loadURL("app://-");
-    // });
     win.webContents.openDevTools();
     win.webContents.on("did-fail-load", (e, code, desc) => {
       win.webContents.reloadIgnoringCache();
@@ -58,22 +58,27 @@ function handleSetTitle(event, title) {
   return title[0];
 }
 
-function handleListFiles(event, path) {
-  return new Promise((resolve, reject) => {
-    console.log(path);
-    fs.readdir(path, (err, files) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(files);
-    });
+async function handleOpenFilePicker(event, isFolder) {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: isFolder ? ["openDirectory"] : ["openFile"],
   });
+  if (!canceled) {
+    return filePaths;
+  }
+}
+
+async function handleReadFile(event, path) {
+  // Read the file at path
+  const data = await fs.promises.readFile(path, "utf-8");
+
+  return data;
 }
 
 app.whenReady().then(() => {
   nativeTheme.themeSource = "light";
 
-  ipcMain.handle("list-files", handleListFiles);
+  ipcMain.handle("open-file-picker", handleOpenFilePicker);
+  ipcMain.handle("read-file", handleReadFile);
   createWindow();
 });
 
