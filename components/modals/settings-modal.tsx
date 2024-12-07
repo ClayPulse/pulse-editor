@@ -1,4 +1,4 @@
-import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import {
   Divider,
   Input,
@@ -21,7 +21,7 @@ export default function SettingModal({
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }) {
-  const { menuStates, updateMenuStates } = useMenuStatesContext();
+  const { editorStates, updateEditorStates } = useEditorStatesContext();
   const [ttl, setTTL] = useState<string>("14");
   return (
     <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -41,8 +41,8 @@ export default function SettingModal({
                 label="Provider"
                 placeholder="Select a provider"
                 onChange={(e) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       sttProvider: e.target.value,
@@ -53,8 +53,8 @@ export default function SettingModal({
                 }}
                 isRequired
                 selectedKeys={
-                  menuStates?.settings?.sttProvider
-                    ? [menuStates.settings.sttProvider]
+                  editorStates?.settings?.sttProvider
+                    ? [editorStates.settings.sttProvider]
                     : []
                 }
               >
@@ -65,18 +65,19 @@ export default function SettingModal({
                 )}
               </Select>
               <Select
-                isDisabled={!menuStates?.settings?.sttProvider}
+                isDisabled={!editorStates?.settings?.sttProvider}
                 items={
                   sttProviderOptions.find(
                     (provider) =>
-                      provider.provider === menuStates?.settings?.sttProvider,
+                      provider.provider === editorStates?.settings?.sttProvider,
                   )?.models ?? []
                 }
                 disabledKeys={
                   sttProviderOptions
                     .find(
                       (provider) =>
-                        provider.provider === menuStates?.settings?.sttProvider,
+                        provider.provider ===
+                        editorStates?.settings?.sttProvider,
                     )
                     ?.models.filter((model) => !model.isSupported)
                     .map((model) => model.model) ?? []
@@ -85,13 +86,13 @@ export default function SettingModal({
                 placeholder="Select a model"
                 isRequired
                 selectedKeys={
-                  menuStates?.settings?.sttModel
-                    ? [menuStates.settings.sttModel]
+                  editorStates?.settings?.sttModel
+                    ? [editorStates.settings.sttModel]
                     : []
                 }
                 onChange={(e) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       sttModel: e.target.value,
@@ -112,24 +113,24 @@ export default function SettingModal({
                     You can enable password again after editing API keys.
                   </p>
                 }
-                isDisabled={!menuStates?.settings?.isUsePassword}
+                isDisabled={!editorStates?.settings?.isUsePassword}
               >
                 <Input
                   label="API Key"
                   size="md"
                   isRequired
-                  value={menuStates?.settings?.sttAPIKey ?? ""}
+                  value={editorStates?.settings?.sttAPIKey ?? ""}
                   onValueChange={(value) => {
-                    const settings = menuStates?.settings ?? {};
-                    updateMenuStates({
+                    const settings = editorStates?.settings ?? {};
+                    updateEditorStates({
                       settings: {
                         ...settings,
                         sttAPIKey: value,
                       },
                     });
                   }}
-                  isDisabled={!menuStates?.settings?.sttProvider}
-                  isReadOnly={menuStates?.settings?.isUsePassword}
+                  isDisabled={!editorStates?.settings?.sttProvider}
+                  isReadOnly={editorStates?.settings?.isUsePassword}
                 />
               </Tooltip>
             </div>
@@ -146,8 +147,8 @@ export default function SettingModal({
                 label="Provider"
                 placeholder="Select a provider"
                 onChange={(e) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       llmProvider: e.target.value,
@@ -158,8 +159,8 @@ export default function SettingModal({
                 }}
                 isRequired
                 selectedKeys={
-                  menuStates?.settings?.llmProvider
-                    ? [menuStates.settings.llmProvider]
+                  editorStates?.settings?.llmProvider
+                    ? [editorStates.settings.llmProvider]
                     : []
                 }
               >
@@ -170,18 +171,19 @@ export default function SettingModal({
                 )}
               </Select>
               <Select
-                isDisabled={!menuStates?.settings?.llmProvider}
+                isDisabled={!editorStates?.settings?.llmProvider}
                 items={
                   llmProviderOptions.find(
                     (provider) =>
-                      provider.provider === menuStates?.settings?.llmProvider,
+                      provider.provider === editorStates?.settings?.llmProvider,
                   )?.models ?? []
                 }
                 disabledKeys={
                   llmProviderOptions
                     .find(
                       (provider) =>
-                        provider.provider === menuStates?.settings?.llmProvider,
+                        provider.provider ===
+                        editorStates?.settings?.llmProvider,
                     )
                     ?.models.filter((model) => !model.isSupported)
                     .map((model) => model.model) ?? []
@@ -190,8 +192,8 @@ export default function SettingModal({
                 placeholder="Select a model"
                 isRequired
                 onChange={(e) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       llmModel: e.target.value,
@@ -199,8 +201,8 @@ export default function SettingModal({
                   });
                 }}
                 selectedKeys={
-                  menuStates?.settings?.llmModel
-                    ? [menuStates?.settings?.llmModel]
+                  editorStates?.settings?.llmModel
+                    ? [editorStates?.settings?.llmModel]
                     : []
                 }
               >
@@ -217,24 +219,24 @@ export default function SettingModal({
                     You can enable password again after editing API keys.
                   </p>
                 }
-                isDisabled={!menuStates?.settings?.isUsePassword}
+                isDisabled={!editorStates?.settings?.isUsePassword}
               >
                 <Input
                   label="API Key"
                   size="md"
                   isRequired
-                  value={menuStates?.settings?.llmAPIKey ?? ""}
+                  value={editorStates?.settings?.llmAPIKey ?? ""}
                   onValueChange={(value) => {
-                    const settings = menuStates?.settings ?? {};
-                    updateMenuStates({
+                    const settings = editorStates?.settings ?? {};
+                    updateEditorStates({
                       settings: {
                         ...settings,
                         llmAPIKey: value,
                       },
                     });
                   }}
-                  isDisabled={!menuStates?.settings?.llmProvider}
-                  isReadOnly={menuStates?.settings?.isUsePassword}
+                  isDisabled={!editorStates?.settings?.llmProvider}
+                  isReadOnly={editorStates?.settings?.isUsePassword}
                 />
               </Tooltip>
             </div>
@@ -251,8 +253,8 @@ export default function SettingModal({
                 label="Provider"
                 placeholder="Select a provider"
                 onChange={(e) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       ttsProvider: e.target.value,
@@ -263,8 +265,8 @@ export default function SettingModal({
                 }}
                 isRequired
                 selectedKeys={
-                  menuStates?.settings?.ttsProvider
-                    ? [menuStates?.settings?.ttsProvider]
+                  editorStates?.settings?.ttsProvider
+                    ? [editorStates?.settings?.ttsProvider]
                     : []
                 }
               >
@@ -275,18 +277,19 @@ export default function SettingModal({
                 )}
               </Select>
               <Select
-                isDisabled={!menuStates?.settings?.ttsProvider}
+                isDisabled={!editorStates?.settings?.ttsProvider}
                 items={
                   ttsProviderOptions.find(
                     (provider) =>
-                      provider.provider === menuStates?.settings?.ttsProvider,
+                      provider.provider === editorStates?.settings?.ttsProvider,
                   )?.models ?? []
                 }
                 disabledKeys={
                   ttsProviderOptions
                     .find(
                       (provider) =>
-                        provider.provider === menuStates?.settings?.ttsProvider,
+                        provider.provider ===
+                        editorStates?.settings?.ttsProvider,
                     )
                     ?.models.filter((model) => !model.isSupported)
                     .map((model) => model.model) ?? []
@@ -295,8 +298,8 @@ export default function SettingModal({
                 placeholder="Select a model"
                 isRequired
                 onChange={(e) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       ttsModel: e.target.value,
@@ -304,8 +307,8 @@ export default function SettingModal({
                   });
                 }}
                 selectedKeys={
-                  menuStates?.settings?.ttsModel
-                    ? [menuStates?.settings?.ttsModel]
+                  editorStates?.settings?.ttsModel
+                    ? [editorStates?.settings?.ttsModel]
                     : []
                 }
               >
@@ -319,17 +322,17 @@ export default function SettingModal({
                 label="Voice Name"
                 size="md"
                 isRequired
-                value={menuStates?.settings?.ttsVoice ?? ""}
+                value={editorStates?.settings?.ttsVoice ?? ""}
                 onValueChange={(value) => {
-                  const settings = menuStates?.settings ?? {};
-                  updateMenuStates({
+                  const settings = editorStates?.settings ?? {};
+                  updateEditorStates({
                     settings: {
                       ...settings,
                       ttsVoice: value,
                     },
                   });
                 }}
-                isDisabled={!menuStates?.settings?.ttsProvider}
+                isDisabled={!editorStates?.settings?.ttsProvider}
               />
               <Tooltip
                 content={
@@ -338,24 +341,24 @@ export default function SettingModal({
                     You can enable password again after editing API keys.
                   </p>
                 }
-                isDisabled={!menuStates?.settings?.isUsePassword}
+                isDisabled={!editorStates?.settings?.isUsePassword}
               >
                 <Input
                   label="API Key"
                   size="md"
                   isRequired
-                  value={menuStates?.settings?.ttsAPIKey ?? ""}
+                  value={editorStates?.settings?.ttsAPIKey ?? ""}
                   onValueChange={(value) => {
-                    const settings = menuStates?.settings ?? {};
-                    updateMenuStates({
+                    const settings = editorStates?.settings ?? {};
+                    updateEditorStates({
                       settings: {
                         ...settings,
                         ttsAPIKey: value,
                       },
                     });
                   }}
-                  isDisabled={!menuStates?.settings?.ttsProvider}
-                  isReadOnly={menuStates?.settings?.isUsePassword}
+                  isDisabled={!editorStates?.settings?.ttsProvider}
+                  isReadOnly={editorStates?.settings?.isUsePassword}
                 />
               </Tooltip>
             </div>
@@ -370,13 +373,13 @@ export default function SettingModal({
             password to encrypt the API tokens as a temporary workaround.
           </p>
           <Switch
-            isSelected={menuStates?.settings?.isUsePassword ?? false}
+            isSelected={editorStates?.settings?.isUsePassword ?? false}
             onChange={(e) => {
               const newValue = e.target.checked;
               if (newValue) {
                 setIsOpen(false);
-                const settings = menuStates?.settings ?? {};
-                updateMenuStates({
+                const settings = editorStates?.settings ?? {};
+                updateEditorStates({
                   settings: {
                     ...settings,
                     isUsePassword: newValue,
@@ -384,7 +387,7 @@ export default function SettingModal({
                 });
               } else {
                 // Reset all settings
-                updateMenuStates({
+                updateEditorStates({
                   settings: undefined,
                 });
               }
@@ -418,8 +421,8 @@ export default function SettingModal({
                 toast.error("Invalid input. Using default 14 days.");
               }
 
-              const settings = menuStates?.settings ?? {};
-              updateMenuStates({
+              const settings = editorStates?.settings ?? {};
+              updateEditorStates({
                 settings: {
                   ...settings,
                   ttl: days === -1 ? -1 : days * 86400000,

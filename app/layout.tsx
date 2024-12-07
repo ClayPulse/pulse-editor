@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
-import MenuStatesContextProvider from "@/components/providers/menu-states-context-provider";
+import EditorStatesProvider from "@/components/providers/editor-states-provider";
 import { Toaster } from "react-hot-toast";
-import { MenuStates } from "@/lib/types";
+import { EditorStates } from "@/lib/types";
 import "material-icons/iconfont/material-icons.css";
 import CapacitorProvider from "@/components/providers/capacitor-provider";
 import Nav from "@/components/nav";
@@ -30,7 +30,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const menuStates: MenuStates = {
+  const editorStates: EditorStates = {
     isDrawing: false,
     isDrawHulls: true,
     isDownloadClip: false,
@@ -50,10 +50,10 @@ export default function RootLayout({
       >
         <CapacitorProvider>
           <WrappedNextUIProvider>
-            <MenuStatesContextProvider defaultMenuStates={menuStates}>
+            <EditorStatesProvider defaultEditorStates={editorStates}>
               <Toaster />
               <Nav>{children}</Nav>
-            </MenuStatesContextProvider>
+            </EditorStatesProvider>
           </WrappedNextUIProvider>
         </CapacitorProvider>
       </body>

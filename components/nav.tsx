@@ -2,7 +2,7 @@
 
 import { Button, colors } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
-import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import {
   BounceLoader,
   ClockLoader,
@@ -16,7 +16,7 @@ import { useTheme } from "next-themes";
 import NavMenu from "./nav-menu";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
-  const { menuStates } = useMenuStatesContext();
+  const { editorStates } = useEditorStatesContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPasswordScreenOpen, setIsPasswordScreenOpen] = useState(false);
 
@@ -25,12 +25,12 @@ export default function Nav({ children }: { children: React.ReactNode }) {
   // Open PasswordScreen if password is set
   useEffect(() => {
     if (
-      menuStates?.settings?.isUsePassword &&
-      !menuStates?.settings?.password
+      editorStates?.settings?.isUsePassword &&
+      !editorStates?.settings?.password
     ) {
       setIsPasswordScreenOpen(true);
     }
-  }, [menuStates]);
+  }, [editorStates]);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
@@ -63,7 +63,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
           </div>
           <div className="col-start-2">
             <AnimatePresence>
-              {menuStates?.isRecording && (
+              {editorStates?.isRecording && (
                 <motion.div
                   initial={{ y: -56 }}
                   animate={{ y: 0 }}
@@ -73,11 +73,11 @@ export default function Nav({ children }: { children: React.ReactNode }) {
                 >
                   <div className="flex h-10 w-40 items-center rounded-full bg-content2 px-4">
                     <div className="flex w-12 items-center justify-center">
-                      {menuStates?.isListening ? (
+                      {editorStates?.isListening ? (
                         <BounceLoader color={colors.red["300"]} size={24} />
-                      ) : menuStates?.isThinking ? (
+                      ) : editorStates?.isThinking ? (
                         <PulseLoader color={colors.blue["300"]} size={8} />
-                      ) : menuStates?.isSpeaking ? (
+                      ) : editorStates?.isSpeaking ? (
                         <PuffLoader color={colors.green["300"]} size={24} />
                       ) : (
                         <ClockLoader
@@ -87,11 +87,11 @@ export default function Nav({ children }: { children: React.ReactNode }) {
                       )}
                     </div>
                     <p className="w-full text-center text-xl text-content2-foreground">
-                      {menuStates?.isListening
+                      {editorStates?.isListening
                         ? "Listening"
-                        : menuStates?.isThinking
+                        : editorStates?.isThinking
                           ? "Thinking"
-                          : menuStates.isSpeaking
+                          : editorStates.isSpeaking
                             ? "Speaking"
                             : "Waiting"}
                     </p>

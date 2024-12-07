@@ -26,7 +26,7 @@ import {
 } from "@nextui-org/react";
 import Icon from "../icon";
 import { getModelLLM } from "@/lib/llm/llm";
-import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import toast from "react-hot-toast";
 import { TerminalAgent } from "@/lib/agent/terminal-agent";
 import { CodeEditorViewRef } from "./code-editor-view";
@@ -283,7 +283,7 @@ const AgentChatTerminalView = forwardRef(
     const chatListRef = useRef<HTMLDivElement>(null);
     const [isThinking, setIsThinking] = useState<boolean>(false);
 
-    const { menuStates } = useMenuStatesContext();
+    const { editorStates } = useEditorStatesContext();
 
     useEffect(() => {
       setAgents(defaultAgents);
@@ -312,14 +312,14 @@ const AgentChatTerminalView = forwardRef(
         );
 
         if (
-          menuStates?.settings?.llmAPIKey &&
-          menuStates?.settings?.llmProvider &&
-          menuStates?.settings?.llmModel
+          editorStates?.settings?.llmAPIKey &&
+          editorStates?.settings?.llmProvider &&
+          editorStates?.settings?.llmModel
         ) {
           const llm = getModelLLM(
-            menuStates.settings.llmAPIKey,
-            menuStates.settings.llmProvider,
-            menuStates.settings.llmModel,
+            editorStates.settings.llmAPIKey,
+            editorStates.settings.llmProvider,
+            editorStates.settings.llmModel,
             0.85,
           );
           agentRef.current = new TerminalAgent(llm, selectedAgent);

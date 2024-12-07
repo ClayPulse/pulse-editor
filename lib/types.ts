@@ -1,4 +1,6 @@
-export interface MenuStates {
+import { Dispatch, SetStateAction } from "react";
+
+export interface EditorStates {
   // Selection by drawing
   isDrawing: boolean;
   isDrawHulls: boolean;
@@ -107,3 +109,8 @@ export type Folder = {
   file: File;
   uri: string;
 }[];
+
+export interface EditorStatesContextType {
+  editorStates: EditorStates;
+  setEditorStates: Dispatch<SetStateAction<EditorStates>>;
+}

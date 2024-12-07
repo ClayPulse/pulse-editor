@@ -7,7 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
-import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { decrypt, encrypt } from "@/lib/security/simple-password";
@@ -22,7 +22,7 @@ export default function PasswordScreen({
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }) {
-  const { menuStates, updateMenuStates } = useMenuStatesContext();
+  const { editorStates, updateEditorStates } = useEditorStatesContext();
   const [password, setPassword] = useState<string | undefined>(undefined);
   const { getValue, setValue } = useLocalStorage();
 
@@ -33,7 +33,7 @@ export default function PasswordScreen({
     >
       <>
         <ModalHeader className="flex flex-col gap-1">
-          {menuStates?.settings?.isPasswordSet
+          {editorStates?.settings?.isPasswordSet
             ? "Enter your password"
             : "Set a password"}
         </ModalHeader>
@@ -54,7 +54,7 @@ export default function PasswordScreen({
             onPress={() => {
               setIsOpen(false);
               // Reset all settings
-              updateMenuStates({
+              updateEditorStates({
                 settings: undefined,
               });
             }}
@@ -73,10 +73,10 @@ export default function PasswordScreen({
               }
 
               setIsOpen(false);
-              if (!menuStates?.settings?.isPasswordSet) {
+              if (!editorStates?.settings?.isPasswordSet) {
                 // Set password if not already set
-                const settings = menuStates?.settings ?? {};
-                updateMenuStates({
+                const settings = editorStates?.settings ?? {};
+                updateEditorStates({
                   settings: {
                     ...settings,
                     isPasswordSet: true,
@@ -113,8 +113,8 @@ export default function PasswordScreen({
                   : undefined;
 
                 // Load password to context if the password was set
-                const settings = menuStates?.settings ?? {};
-                updateMenuStates({
+                const settings = editorStates?.settings ?? {};
+                updateEditorStates({
                   settings: {
                     ...settings,
                     sttAPIKey: sttAPIKey,

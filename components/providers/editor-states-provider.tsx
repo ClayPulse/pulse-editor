@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
-import { MenuStates, Settings } from "@/lib/types";
+import { EditorStates, EditorStatesContextType, Settings } from "@/lib/types";
 import {
   createContext,
   Dispatch,
@@ -10,23 +10,19 @@ import {
   useState,
 } from "react";
 
-interface MenuStatesContextType {
-  menuStates: MenuStates;
-  setMenuStates: Dispatch<SetStateAction<MenuStates>>;
-}
-
-export const MenuStatesContext = createContext<
-  MenuStatesContextType | undefined
+export const EditorStatesContext = createContext<
+  EditorStatesContextType | undefined
 >(undefined);
 
-export default function MenuStatesContextProvider({
+export default function EditorStatesProvider({
   children,
-  defaultMenuStates,
+  defaultEditorStates,
 }: {
   children: React.ReactNode;
-  defaultMenuStates: MenuStates;
+  defaultEditorStates: EditorStates;
 }) {
-  const [menuStates, setMenuStates] = useState<MenuStates>(defaultMenuStates);
+  const [editorStates, setEditorStates] =
+    useState<EditorStates>(defaultEditorStates);
 
   const { getValue } = useLocalStorage();
 
@@ -67,15 +63,17 @@ export default function MenuStatesContextProvider({
       loadedSettings.ttsAPIKey = ttsAPIKey ?? undefined;
     }
 
-    setMenuStates((prev) => ({
+    setEditorStates((prev) => ({
       ...prev,
       settings: loadedSettings,
     }));
   }, []);
 
   return (
-    <MenuStatesContext.Provider value={{ menuStates, setMenuStates }}>
+    <EditorStatesContext.Provider
+      value={{ editorStates: editorStates, setEditorStates: setEditorStates }}
+    >
       {children}
-    </MenuStatesContext.Provider>
+    </EditorStatesContext.Provider>
   );
 }

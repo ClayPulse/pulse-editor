@@ -1,21 +1,17 @@
-import { Dispatch, SetStateAction, useContext } from "react";
-import { MenuStates } from "../types";
+import { useContext } from "react";
+import { EditorStates, EditorStatesContextType } from "../types";
 import { useLocalStorage } from "./use-local-storage";
-import { MenuStatesContext } from "@/components/providers/menu-states-context-provider";
+import { EditorStatesContext } from "@/components/providers/editor-states-provider";
 
-export default function useMenuStatesContext() {
-  const context:
-    | {
-        menuStates: MenuStates;
-        setMenuStates: Dispatch<SetStateAction<MenuStates>>;
-      }
-    | undefined = useContext(MenuStatesContext);
+export default function useEditorStatesContext() {
+  const context: EditorStatesContextType | undefined =
+    useContext(EditorStatesContext);
   const { getValue, setValue } = useLocalStorage();
 
-  function updateMenuStates(newMenuStates: Partial<MenuStates>) {
+  function updateEditorStates(newEditorStates: Partial<EditorStates>) {
     if (context) {
-      context.setMenuStates((prev) => {
-        const updatedStates = { ...prev, ...newMenuStates };
+      context.setEditorStates((prev) => {
+        const updatedStates = { ...prev, ...newEditorStates };
 
         if (updatedStates.settings) {
           // Default TTL is set to 14 days
@@ -87,7 +83,7 @@ export default function useMenuStatesContext() {
   }
 
   return {
-    menuStates: context?.menuStates,
-    updateMenuStates,
+    editorStates: context?.editorStates,
+    updateEditorStates: updateEditorStates,
   };
 }

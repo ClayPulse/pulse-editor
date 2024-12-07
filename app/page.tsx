@@ -3,7 +3,7 @@
 import CodeEditorView, {
   CodeEditorViewRef,
 } from "@/components/views/code-editor-view";
-import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
@@ -21,7 +21,7 @@ export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   const viewMap = useRef<Map<string, ViewRef | null>>(new Map());
-  const { menuStates, updateMenuStates } = useMenuStatesContext();
+  const { editorStates, updateEditorStates } = useEditorStatesContext();
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
   const llmModelRef = useRef<BaseLLM | undefined>(undefined);
@@ -39,7 +39,7 @@ export default function Home() {
     modelURL: "/vad/silero_vad.onnx",
     onSpeechStart: () => {
       if (!isProcessing) {
-        updateMenuStates({ isListening: true });
+        updateEditorStates({ isListening: true });
       }
     },
     onSpeechEnd: (audio) => {
@@ -60,7 +60,7 @@ export default function Home() {
         );
         const codeEditor = viewMap.current.get("1") as CodeEditorViewRef;
         const viewDocument = codeEditor?.getViewDocument();
-        updateMenuStates({ isListening: false, isThinking: true });
+        updateEditorStates({ isListening: false, isThinking: true });
         agent
           .generateAgentCompletion(
             viewDocument?.fileContent || "",
@@ -71,7 +71,7 @@ export default function Home() {
           )
           .then((result) => {
             const changes = agent.getLineChanges(result.text.codeCompletion);
-            updateMenuStates({ isThinking: false });
+            updateEditorStates({ isThinking: false });
 
             // Apply changes
             const codeEditor = viewMap.current.get("1") as CodeEditorViewRef;
@@ -82,10 +82,10 @@ export default function Home() {
               const audio = new Audio(URL.createObjectURL(result.audio));
               audio.onended = () => {
                 console.log("Audio ended");
-                updateMenuStates({ isSpeaking: false });
+                updateEditorStates({ isSpeaking: false });
                 setIsProcessing(false);
               };
-              updateMenuStates({ isSpeaking: true });
+              updateEditorStates({ isSpeaking: true });
               audio.play();
               return;
             }
@@ -103,17 +103,17 @@ export default function Home() {
 
   // Load models
   useEffect(() => {
-    if (menuStates?.settings) {
+    if (editorStates?.settings) {
       // Load STT
       if (
-        menuStates.settings.sttAPIKey &&
-        menuStates.settings.sttProvider &&
-        menuStates.settings.sttModel
+        editorStates.settings.sttAPIKey &&
+        editorStates.settings.sttProvider &&
+        editorStates.settings.sttModel
       ) {
         const model = getModelSTT(
-          menuStates.settings.sttAPIKey,
-          menuStates.settings.sttProvider,
-          menuStates.settings.sttModel,
+          editorStates.settings.sttAPIKey,
+          editorStates.settings.sttProvider,
+          editorStates.settings.sttModel,
         );
         sttModelRef.current = model;
       } else {
@@ -122,14 +122,14 @@ export default function Home() {
 
       // Load LLM
       if (
-        menuStates.settings.llmAPIKey &&
-        menuStates.settings.llmProvider &&
-        menuStates.settings.llmModel
+        editorStates.settings.llmAPIKey &&
+        editorStates.settings.llmProvider &&
+        editorStates.settings.llmModel
       ) {
         const model = getModelLLM(
-          menuStates.settings.llmAPIKey,
-          menuStates.settings.llmProvider,
-          menuStates.settings.llmModel,
+          editorStates.settings.llmAPIKey,
+          editorStates.settings.llmProvider,
+          editorStates.settings.llmModel,
           0.85,
         );
         llmModelRef.current = model;
@@ -139,32 +139,32 @@ export default function Home() {
 
       // Load TTS
       if (
-        menuStates.settings.ttsAPIKey &&
-        menuStates.settings.ttsProvider &&
-        menuStates.settings.ttsModel &&
-        menuStates.settings.ttsVoice
+        editorStates.settings.ttsAPIKey &&
+        editorStates.settings.ttsProvider &&
+        editorStates.settings.ttsModel &&
+        editorStates.settings.ttsVoice
       ) {
         const model = getModelTTS(
-          menuStates.settings.ttsAPIKey,
-          menuStates.settings.ttsProvider,
-          menuStates.settings.ttsModel,
-          menuStates.settings.ttsVoice,
+          editorStates.settings.ttsAPIKey,
+          editorStates.settings.ttsProvider,
+          editorStates.settings.ttsModel,
+          editorStates.settings.ttsVoice,
         );
         ttsModelRef.current = model;
       } else {
         toast.error("Please set TTS Provider, Model and API key in settings");
       }
     }
-  }, [menuStates]);
+  }, [editorStates]);
 
   // Toggle recording
   useEffect(() => {
-    if (menuStates?.isRecording) {
+    if (editorStates?.isRecording) {
       vad.start();
     } else {
       vad.stop();
     }
-  }, [menuStates, vad]);
+  }, [editorStates, vad]);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -175,7 +175,8 @@ export default function Home() {
           <div
             className={`min-h-0 w-full flex-grow`}
             style={{
-              cursor: menuStates?.isDrawing && !isCanvasReady ? "wait" : "auto",
+              cursor:
+                editorStates?.isDrawing && !isCanvasReady ? "wait" : "auto",
             }}
           >
             <CodeEditorView
@@ -185,14 +186,14 @@ export default function Home() {
               width="100%"
               height="100%"
               url="/test.tsx"
-              isDrawingMode={menuStates?.isDrawing}
-              isDownloadClip={menuStates?.isDownloadClip}
-              isDrawHulls={menuStates?.isDrawHulls}
+              isDrawingMode={editorStates?.isDrawing}
+              isDownloadClip={editorStates?.isDownloadClip}
+              isDrawHulls={editorStates?.isDrawHulls}
               setIsCanvasReady={setIsCanvasReady}
             />
           </div>
           <AnimatePresence>
-            {menuStates?.isOpenChatView && (
+            {editorStates?.isOpenChatView && (
               <motion.div
                 className="h-full min-h-[60%] w-full pb-14"
                 // Enter from bottom and exit to bottom

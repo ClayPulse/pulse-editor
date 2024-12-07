@@ -31,7 +31,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import toast from "react-hot-toast";
 import { codeInlineSuggestionExtension } from "@/lib/view-extensions/code-inline-suggestion";
-import useMenuStatesContext from "@/lib/hooks/use-menu-states-context";
+import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import { getModelLLM } from "@/lib/llm/llm";
 
@@ -148,7 +148,7 @@ const CodeEditorView = forwardRef(
       undefined,
     );
 
-    const { menuStates } = useMenuStatesContext();
+    const { editorStates } = useEditorStatesContext();
 
     // const [inlineSuggestionAgent, setInlineSuggestionAgent] = useState<
     //   InlineSuggestionAgent | undefined
@@ -258,20 +258,20 @@ const CodeEditorView = forwardRef(
 
     useEffect(() => {
       if (
-        menuStates?.settings?.llmProvider &&
-        menuStates?.settings?.llmModel &&
-        menuStates?.settings?.llmAPIKey
+        editorStates?.settings?.llmProvider &&
+        editorStates?.settings?.llmModel &&
+        editorStates?.settings?.llmAPIKey
       ) {
         const llm = getModelLLM(
-          menuStates.settings.llmAPIKey,
-          menuStates.settings.llmProvider,
-          menuStates.settings.llmModel,
+          editorStates.settings.llmAPIKey,
+          editorStates.settings.llmProvider,
+          editorStates.settings.llmModel,
           0.85,
         );
 
         inlineSuggestionAgentRef.current = new InlineSuggestionAgent(llm);
       }
-    }, [menuStates]);
+    }, [editorStates]);
 
     function getDrawingLocation(line: DrawnLine): {
       lineStart: number;
