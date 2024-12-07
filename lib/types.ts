@@ -20,10 +20,10 @@ export interface EditorStates {
   isMuted: boolean;
 
   // Settings
-  settings?: Settings;
+  settings?: PersistSettings;
 }
 
-export interface Settings {
+export interface PersistSettings {
   sttProvider?: string;
   llmProvider?: string;
   ttsProvider?: string;

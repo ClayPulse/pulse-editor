@@ -150,10 +150,6 @@ const CodeEditorView = forwardRef(
 
     const { editorStates } = useEditorStatesContext();
 
-    // const [inlineSuggestionAgent, setInlineSuggestionAgent] = useState<
-    //   InlineSuggestionAgent | undefined
-    // >(undefined);
-
     const inlineSuggestionAgentRef = useRef<InlineSuggestionAgent | undefined>(
       undefined,
     );

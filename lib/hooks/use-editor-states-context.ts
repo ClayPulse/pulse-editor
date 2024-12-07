@@ -1,82 +1,28 @@
 import { useContext } from "react";
 import { EditorStates, EditorStatesContextType } from "../types";
-import { useLocalStorage } from "./use-local-storage";
 import { EditorStatesContext } from "@/components/providers/editor-states-provider";
+import usePersistSettings from "./use-persist-settings";
 
 export default function useEditorStatesContext() {
   const context: EditorStatesContextType | undefined =
     useContext(EditorStatesContext);
-  const { getValue, setValue } = useLocalStorage();
+
+  const { setPersistSettings, clearPersistSettings } = usePersistSettings();
 
   function updateEditorStates(newEditorStates: Partial<EditorStates>) {
     if (context) {
       context.setEditorStates((prev) => {
         const updatedStates = { ...prev, ...newEditorStates };
 
+        // For persist settings, update or clear settings
         if (updatedStates.settings) {
-          // Default TTL is set to 14 days
-          if (!updatedStates.settings.ttl) {
-            updatedStates.settings.ttl = 14 * 24 * 60 * 60 * 1000;
-          }
           // Save settings to local storage
-          const settings = updatedStates.settings;
-          setValue("sttProvider", settings.sttProvider);
-          setValue("llmProvider", settings.llmProvider);
-          setValue("ttsProvider", settings.ttsProvider);
-          setValue("sttModel", settings.sttModel);
-          setValue("llmModel", settings.llmModel);
-          setValue("ttsModel", settings.ttsModel);
-          setValue("isUsePassword", settings.isUsePassword);
-          setValue("isPasswordSet", settings.isPasswordSet);
-          setValue("ttl", settings.ttl); // 14 days
-          setValue("ttsVoice", settings.ttsVoice);
-
-          // Do not allow API token editing after password is set
-          if (!updatedStates.settings.isPasswordSet) {
-            const sttAPIKey = updatedStates.settings.sttAPIKey;
-            const llmAPIKey = updatedStates.settings.llmAPIKey;
-            const ttsAPIKey = updatedStates.settings.ttsAPIKey;
-            setValue("sttAPIKey", sttAPIKey, updatedStates.settings.ttl);
-            setValue("llmAPIKey", llmAPIKey, updatedStates.settings.ttl);
-            setValue("ttsAPIKey", ttsAPIKey, updatedStates.settings.ttl);
-          }
-          // Only update TTL if it is set
-          else {
-            const encryptedSttAPIKey = getValue<string>("sttAPIKey");
-            const encryptedLlmAPIKey = getValue<string>("llmAPIKey");
-            const encryptedTtsAPIKey = getValue<string>("ttsAPIKey");
-            setValue(
-              "sttAPIKey",
-              encryptedSttAPIKey,
-              updatedStates.settings.ttl,
-            );
-            setValue(
-              "llmAPIKey",
-              encryptedLlmAPIKey,
-              updatedStates.settings.ttl,
-            );
-            setValue(
-              "ttsAPIKey",
-              encryptedTtsAPIKey,
-              updatedStates.settings.ttl,
-            );
-          }
+          setPersistSettings(updatedStates.settings);
         } else {
-          // Reset all settings
-          setValue("sttProvider", undefined);
-          setValue("llmProvider", undefined);
-          setValue("ttsProvider", undefined);
-          setValue("sttModel", undefined);
-          setValue("llmModel", undefined);
-          setValue("ttsModel", undefined);
-          setValue("sttAPIKey", undefined);
-          setValue("llmAPIKey", undefined);
-          setValue("ttsAPIKey", undefined);
-          setValue("isUsePassword", undefined);
-          setValue("isPasswordSet", undefined);
-          setValue("ttl", undefined);
-          setValue("ttsVoice", undefined);
+          // Clear settings from local storage
+          clearPersistSettings();
         }
+
         return updatedStates;
       });
     }

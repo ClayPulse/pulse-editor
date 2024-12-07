@@ -1,14 +1,20 @@
+"use client";
+
 import { Button, Divider, Tooltip } from "@nextui-org/react";
 import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Icon from "@/components/icon";
 import SettingModal from "@/components/modals/settings-modal";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function EditorToolbar() {
   const { editorStates, updateEditorStates } = useEditorStatesContext();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    setIsOpen(true);
+  }, []);
 
   return (
     <div
@@ -36,7 +42,9 @@ export default function EditorToolbar() {
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
                   onPress={() => {
                     if (editorStates) {
-                      updateEditorStates({ isDrawing: !editorStates.isDrawing });
+                      updateEditorStates({
+                        isDrawing: !editorStates.isDrawing,
+                      });
                     }
                   }}
                   variant={editorStates?.isDrawing ? "solid" : "light"}
