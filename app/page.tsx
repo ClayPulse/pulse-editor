@@ -12,7 +12,7 @@ import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
 import AgentChatTerminalView from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
-import { ViewRef } from "@/lib/types";
+import { ViewDocument, ViewRef } from "@/lib/types";
 import EditorToolbar from "@/components/editor-toolbar";
 import { getPlatform } from "@/lib/platforms/platform-checker";
 import { EditorContext } from "@/components/providers/editor-context-provider";
@@ -20,7 +20,7 @@ import { EditorContext } from "@/components/providers/editor-context-provider";
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
-  const viewMap = useRef<Map<string, ViewRef | null>>(new Map());
+  // const viewMap = useRef<Map<string, ViewRef | null>>(new Map());
   const editorContext = useContext(EditorContext);
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
@@ -61,7 +61,7 @@ export default function Home() {
           llmModelRef.current,
           ttsModelRef.current,
         );
-        const codeEditor = viewMap.current.get("1") as CodeEditorViewRef;
+        const codeEditor = editorContext?.getViewById("1") as CodeEditorViewRef;
         const viewDocument = codeEditor?.getViewDocument();
         editorContext?.setEditorStates((prev) => ({
           ...prev,
@@ -84,7 +84,9 @@ export default function Home() {
             }));
 
             // Apply changes
-            const codeEditor = viewMap.current.get("1") as CodeEditorViewRef;
+            const codeEditor = editorContext?.getViewById(
+              "1",
+            ) as CodeEditorViewRef;
             codeEditor?.applyChanges(changes);
 
             // Play the audio in the blob
@@ -182,6 +184,31 @@ export default function Home() {
     }
   }, [editorContext?.editorStates, vad]);
 
+  useEffect(() => {
+    const url = "/test.tsx";
+    if (url) {
+      fetch(url)
+        .then((res) => res.text())
+        .then((text) => {
+          const viewId = "1";
+
+          // Init a new viewDocument
+          const viewDocument: ViewDocument = {
+            fileContent: text,
+            filePath: url,
+          };
+
+          // Get the code editor view
+          const codeEditor = editorContext?.getViewById(
+            viewId,
+          ) as CodeEditorViewRef;
+
+          // Set the viewDocument
+          codeEditor?.setViewDocument(viewDocument);
+        });
+    }
+  }, []);
+
   return (
     <div className="flex h-full w-full flex-col">
       <EditorToolbar />
@@ -192,16 +219,17 @@ export default function Home() {
             className={`min-h-0 w-full flex-grow`}
             style={{
               cursor:
-              editorContext?.editorStates?.isDrawing && !isCanvasReady ? "wait" : "auto",
+                editorContext?.editorStates?.isDrawing && !isCanvasReady
+                  ? "wait"
+                  : "auto",
             }}
           >
             <CodeEditorView
               ref={(ref) => {
-                viewMap.current.set("1", ref);
+                if (ref) editorContext?.addView("1", ref);
               }}
               width="100%"
               height="100%"
-              url="/test.tsx"
               isDrawingMode={editorContext?.editorStates?.isDrawing}
               isDownloadClip={editorContext?.editorStates?.isDownloadClip}
               isDrawHulls={editorContext?.editorStates?.isDrawHulls}
@@ -219,9 +247,8 @@ export default function Home() {
               >
                 <AgentChatTerminalView
                   ref={(ref) => {
-                    viewMap.current.set("2", ref);
+                    if (ref) editorContext?.addView("2", ref);
                   }}
-                  viewMap={viewMap}
                 />
               </motion.div>
             )}

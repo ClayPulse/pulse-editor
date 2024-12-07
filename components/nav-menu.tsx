@@ -2,6 +2,10 @@ import { Button } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
 import { useFileSystem } from "@/lib/hooks/use-file-system";
+import { ViewDocument } from "@/lib/types";
+import { CodeEditorViewRef } from "./views/code-editor-view";
+import { EditorContext } from "./providers/editor-context-provider";
+import { useContext } from "react";
 
 function MenuPanel({ children }: { children?: React.ReactNode }) {
   const isDesktop = useMediaQuery({
@@ -54,6 +58,8 @@ function MenuPanel({ children }: { children?: React.ReactNode }) {
 export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
   const { projectPath, openFilePicker, readFile } = useFileSystem();
 
+  const editorContext = useContext(EditorContext);
+
   return (
     <AnimatePresence>
       {isMenuOpen && (
@@ -80,11 +86,23 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
                     onPress={() => {
                       openFilePicker(false).then((filePaths) => {
                         console.log(filePaths);
+                        const filePath = filePaths[0];
                         // Open the first file
-                        readFile(filePaths[0]).then((file) => {
+                        readFile(filePath).then((file) => {
                           console.log(file);
                           file.text().then((text) => {
                             console.log("File content:\n" + text);
+                            const viewDocument: ViewDocument = {
+                              fileContent: text,
+                              filePath: filePath,
+                            };
+                            // Get the code editor view
+                            const codeEditor = editorContext?.getViewById(
+                              "1",
+                            ) as CodeEditorViewRef;
+
+                            // Set the viewDocument
+                            codeEditor?.setViewDocument(viewDocument);
                           });
                         });
                       });

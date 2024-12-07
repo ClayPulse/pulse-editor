@@ -12,19 +12,8 @@ import {
   useState,
 } from "react";
 import ViewLayout from "./layout";
-import {
-  AgentConfig,
-  ChatMessage,
-  ViewDocument,
-  ViewRef,
-} from "@/lib/types";
-import {
-  Avatar,
-  Button,
-  Divider,
-  Input,
-  Tooltip,
-} from "@nextui-org/react";
+import { AgentConfig, ChatMessage, ViewDocument, ViewRef } from "@/lib/types";
+import { Avatar, Button, Divider, Input, Tooltip } from "@nextui-org/react";
 import Icon from "../icon";
 import { getModelLLM } from "@/lib/llm/llm";
 import toast from "react-hot-toast";
@@ -261,10 +250,7 @@ function TerminalNavBar({
 }
 
 const AgentChatTerminalView = forwardRef(
-  (
-    { viewMap }: AgentChatTerminalViewProps,
-    ref: React.Ref<AgentChatTerminalViewRef>,
-  ) => {
+  ({}, ref: React.Ref<AgentChatTerminalViewRef>) => {
     useImperativeHandle(ref, () => ({
       getType: () => "AgentChatTerminalView",
     }));
@@ -347,14 +333,14 @@ const AgentChatTerminalView = forwardRef(
       setIsThinking(true);
 
       // Get all code editor views and their content
+      const codeEditorViews =
+        editorContext?.getViewByType("CodeEditorView") ?? [];
       const viewDocuments: ViewDocument[] = [];
-      viewMap.current.forEach((view) => {
-        if (view?.getType() === "CodeEditorView") {
-          const codeEditorView = view as CodeEditorViewRef;
-          const viewDocument = codeEditorView.getViewDocument();
-          if (viewDocument) {
-            viewDocuments.push(viewDocument);
-          }
+      codeEditorViews.forEach((view) => {
+        const codeEditorView = view as CodeEditorViewRef;
+        const viewDocument = codeEditorView.getViewDocument();
+        if (viewDocument) {
+          viewDocuments.push(viewDocument);
         }
       });
 

@@ -39,7 +39,6 @@ import { EditorContext } from "../providers/editor-context-provider";
 interface CodeEditorViewProps {
   width?: string;
   height?: string;
-  url?: string;
   isDrawingMode?: boolean;
   isDownloadClip?: boolean;
   isDrawHulls?: boolean;
@@ -48,6 +47,7 @@ interface CodeEditorViewProps {
 
 export type CodeEditorViewRef = ViewRef & {
   getViewDocument: () => ViewDocument | undefined;
+  setViewDocument: (document: ViewDocument) => void;
   applyChanges: (changes: LineChange[]) => void;
 };
 
@@ -56,7 +56,6 @@ const CodeEditorView = forwardRef(
     {
       width,
       height,
-      url,
       isDrawingMode,
       isDownloadClip,
       isDrawHulls,
@@ -68,6 +67,9 @@ const CodeEditorView = forwardRef(
       getType: () => "CodeEditorView",
       getViewDocument: () => {
         return viewDocument;
+      },
+      setViewDocument: (document: ViewDocument) => {
+        setViewDocument(document);
       },
       applyChanges: (changes: LineChange[]) => {
         console.log("Applying changes", changes);
@@ -154,24 +156,6 @@ const CodeEditorView = forwardRef(
     const inlineSuggestionAgentRef = useRef<InlineSuggestionAgent | undefined>(
       undefined,
     );
-
-    useEffect(() => {
-      if (url) {
-        fetch(url)
-          .then((res) => res.text())
-          .then((text) => {
-            const viewId = "1";
-
-            // Init a new viewDocument
-            const viewDocument: ViewDocument = {
-              fileContent: text,
-              filePath: url,
-              selections: [],
-            };
-            setViewDocument(viewDocument);
-          });
-      }
-    }, [url]);
 
     useEffect(() => {
       if (resolvedTheme === "dark") {
@@ -343,7 +327,7 @@ const CodeEditorView = forwardRef(
 
         return {
           ...prev,
-          selections: [...prev.selections, newInfo],
+          selections: [...(prev.selections ?? []), newInfo],
         };
       });
     }, []);

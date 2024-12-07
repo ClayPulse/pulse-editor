@@ -74,7 +74,7 @@ export interface InlineSuggestionResult {
 export interface ViewDocument {
   fileContent: string;
   filePath: string;
-  selections: SelectionInformation[];
+  selections?: SelectionInformation[];
   suggestedLines?: LineChange[];
 }
 
@@ -112,4 +112,8 @@ export interface EditorContextType {
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
   persistSettings: PersistSettings | undefined;
   setPersistSettings: Dispatch<SetStateAction<PersistSettings | undefined>>;
+  addView: (viewId: string, view: ViewRef) => void;
+  getViewById: (viewId: string) => ViewRef | undefined;
+  getViewByType: (viewType: string) => ViewRef[];
+  deleteView: (viewId: string) => void;
 }

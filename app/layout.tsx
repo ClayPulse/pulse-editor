@@ -30,19 +30,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const editorStates: EditorStates = {
-    isDrawing: false,
-    isDrawHulls: true,
-    isDownloadClip: false,
-    isInlineChat: false,
-    isOpenChatView: false,
-    isRecording: false,
-    isListening: false,
-    isThinking: false,
-    isSpeaking: false,
-    isMuted: false,
-  };
-
   return (
     <html lang="en">
       <body
@@ -50,7 +37,7 @@ export default function RootLayout({
       >
         <CapacitorProvider>
           <WrappedNextUIProvider>
-            <EditorContextProvider defaultEditorStates={editorStates}>
+            <EditorContextProvider>
               <Toaster />
               <Nav>{children}</Nav>
             </EditorContextProvider>
