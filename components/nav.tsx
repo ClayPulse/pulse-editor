@@ -2,7 +2,6 @@
 
 import { Button, colors } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import {
   BounceLoader,
   ClockLoader,
@@ -10,13 +9,14 @@ import {
   PulseLoader,
 } from "react-spinners";
 import Icon from "./icon";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import PasswordScreen from "./modals/password-modal";
 import { useTheme } from "next-themes";
 import NavMenu from "./nav-menu";
+import { EditorContext } from "./providers/editor-context-provider";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
-  const { editorStates } = useEditorStatesContext();
+  const editorContext = useContext(EditorContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPasswordScreenOpen, setIsPasswordScreenOpen] = useState(false);
 
@@ -25,12 +25,12 @@ export default function Nav({ children }: { children: React.ReactNode }) {
   // Open PasswordScreen if password is set
   useEffect(() => {
     if (
-      editorStates?.settings?.isUsePassword &&
-      !editorStates?.settings?.password
+      editorContext?.persistSettings?.isUsePassword &&
+      !editorContext?.persistSettings?.password
     ) {
       setIsPasswordScreenOpen(true);
     }
-  }, [editorStates]);
+  }, [editorContext?.persistSettings]);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
@@ -63,7 +63,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
           </div>
           <div className="col-start-2">
             <AnimatePresence>
-              {editorStates?.isRecording && (
+              {editorContext?.editorStates?.isRecording && (
                 <motion.div
                   initial={{ y: -56 }}
                   animate={{ y: 0 }}
@@ -73,11 +73,11 @@ export default function Nav({ children }: { children: React.ReactNode }) {
                 >
                   <div className="flex h-10 w-40 items-center rounded-full bg-content2 px-4">
                     <div className="flex w-12 items-center justify-center">
-                      {editorStates?.isListening ? (
+                      {editorContext?.editorStates?.isListening ? (
                         <BounceLoader color={colors.red["300"]} size={24} />
-                      ) : editorStates?.isThinking ? (
+                      ) : editorContext?.editorStates?.isThinking ? (
                         <PulseLoader color={colors.blue["300"]} size={8} />
-                      ) : editorStates?.isSpeaking ? (
+                      ) : editorContext?.editorStates?.isSpeaking ? (
                         <PuffLoader color={colors.green["300"]} size={24} />
                       ) : (
                         <ClockLoader
@@ -87,11 +87,11 @@ export default function Nav({ children }: { children: React.ReactNode }) {
                       )}
                     </div>
                     <p className="w-full text-center text-xl text-content2-foreground">
-                      {editorStates?.isListening
+                      {editorContext?.editorStates?.isListening
                         ? "Listening"
-                        : editorStates?.isThinking
+                        : editorContext?.editorStates?.isThinking
                           ? "Thinking"
-                          : editorStates.isSpeaking
+                          : editorContext?.editorStates.isSpeaking
                             ? "Speaking"
                             : "Waiting"}
                     </p>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
-import EditorStatesProvider from "@/components/providers/editor-states-provider";
+import EditorContextProvider from "@/components/providers/editor-context-provider";
 import { Toaster } from "react-hot-toast";
 import { EditorStates } from "@/lib/types";
 import "material-icons/iconfont/material-icons.css";
@@ -50,10 +50,10 @@ export default function RootLayout({
       >
         <CapacitorProvider>
           <WrappedNextUIProvider>
-            <EditorStatesProvider defaultEditorStates={editorStates}>
+            <EditorContextProvider defaultEditorStates={editorStates}>
               <Toaster />
               <Nav>{children}</Nav>
-            </EditorStatesProvider>
+            </EditorContextProvider>
           </WrappedNextUIProvider>
         </CapacitorProvider>
       </body>

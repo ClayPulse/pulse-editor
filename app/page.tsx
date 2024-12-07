@@ -3,11 +3,10 @@
 import CodeEditorView, {
   CodeEditorViewRef,
 } from "@/components/views/code-editor-view";
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
 import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
@@ -16,12 +15,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ViewRef } from "@/lib/types";
 import EditorToolbar from "@/components/editor-toolbar";
 import { getPlatform } from "@/lib/platforms/platform-checker";
+import { EditorContext } from "@/components/providers/editor-context-provider";
 
 export default function Home() {
   const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   const viewMap = useRef<Map<string, ViewRef | null>>(new Map());
-  const { editorStates, updateEditorStates } = useEditorStatesContext();
+  const editorContext = useContext(EditorContext);
 
   const sttModelRef = useRef<BaseSTT | undefined>(undefined);
   const llmModelRef = useRef<BaseLLM | undefined>(undefined);
@@ -39,7 +39,10 @@ export default function Home() {
     modelURL: "/vad/silero_vad.onnx",
     onSpeechStart: () => {
       if (!isProcessing) {
-        updateEditorStates({ isListening: true });
+        editorContext?.setEditorStates((prev) => ({
+          ...prev,
+          isListening: true,
+        }));
       }
     },
     onSpeechEnd: (audio) => {
@@ -60,7 +63,11 @@ export default function Home() {
         );
         const codeEditor = viewMap.current.get("1") as CodeEditorViewRef;
         const viewDocument = codeEditor?.getViewDocument();
-        updateEditorStates({ isListening: false, isThinking: true });
+        editorContext?.setEditorStates((prev) => ({
+          ...prev,
+          isListening: false,
+          isThinking: true,
+        }));
         agent
           .generateAgentCompletion(
             viewDocument?.fileContent || "",
@@ -71,7 +78,10 @@ export default function Home() {
           )
           .then((result) => {
             const changes = agent.getLineChanges(result.text.codeCompletion);
-            updateEditorStates({ isThinking: false });
+            editorContext?.setEditorStates((prev) => ({
+              ...prev,
+              isThinking: false,
+            }));
 
             // Apply changes
             const codeEditor = viewMap.current.get("1") as CodeEditorViewRef;
@@ -82,10 +92,16 @@ export default function Home() {
               const audio = new Audio(URL.createObjectURL(result.audio));
               audio.onended = () => {
                 console.log("Audio ended");
-                updateEditorStates({ isSpeaking: false });
+                editorContext?.setEditorStates((prev) => ({
+                  ...prev,
+                  isSpeaking: false,
+                }));
                 setIsProcessing(false);
               };
-              updateEditorStates({ isSpeaking: true });
+              editorContext?.setEditorStates((prev) => ({
+                ...prev,
+                isSpeaking: true,
+              }));
               audio.play();
               return;
             }
@@ -103,17 +119,17 @@ export default function Home() {
 
   // Load models
   useEffect(() => {
-    if (editorStates?.settings) {
+    if (editorContext?.persistSettings) {
       // Load STT
       if (
-        editorStates.settings.sttAPIKey &&
-        editorStates.settings.sttProvider &&
-        editorStates.settings.sttModel
+        editorContext?.persistSettings.sttAPIKey &&
+        editorContext?.persistSettings.sttProvider &&
+        editorContext?.persistSettings.sttModel
       ) {
         const model = getModelSTT(
-          editorStates.settings.sttAPIKey,
-          editorStates.settings.sttProvider,
-          editorStates.settings.sttModel,
+          editorContext?.persistSettings.sttAPIKey,
+          editorContext?.persistSettings.sttProvider,
+          editorContext?.persistSettings.sttModel,
         );
         sttModelRef.current = model;
       } else {
@@ -122,14 +138,14 @@ export default function Home() {
 
       // Load LLM
       if (
-        editorStates.settings.llmAPIKey &&
-        editorStates.settings.llmProvider &&
-        editorStates.settings.llmModel
+        editorContext?.persistSettings.llmAPIKey &&
+        editorContext?.persistSettings.llmProvider &&
+        editorContext?.persistSettings.llmModel
       ) {
         const model = getModelLLM(
-          editorStates.settings.llmAPIKey,
-          editorStates.settings.llmProvider,
-          editorStates.settings.llmModel,
+          editorContext?.persistSettings.llmAPIKey,
+          editorContext?.persistSettings.llmProvider,
+          editorContext?.persistSettings.llmModel,
           0.85,
         );
         llmModelRef.current = model;
@@ -139,32 +155,32 @@ export default function Home() {
 
       // Load TTS
       if (
-        editorStates.settings.ttsAPIKey &&
-        editorStates.settings.ttsProvider &&
-        editorStates.settings.ttsModel &&
-        editorStates.settings.ttsVoice
+        editorContext?.persistSettings.ttsAPIKey &&
+        editorContext?.persistSettings.ttsProvider &&
+        editorContext?.persistSettings.ttsModel &&
+        editorContext?.persistSettings.ttsVoice
       ) {
         const model = getModelTTS(
-          editorStates.settings.ttsAPIKey,
-          editorStates.settings.ttsProvider,
-          editorStates.settings.ttsModel,
-          editorStates.settings.ttsVoice,
+          editorContext?.persistSettings.ttsAPIKey,
+          editorContext?.persistSettings.ttsProvider,
+          editorContext?.persistSettings.ttsModel,
+          editorContext?.persistSettings.ttsVoice,
         );
         ttsModelRef.current = model;
       } else {
         toast.error("Please set TTS Provider, Model and API key in settings");
       }
     }
-  }, [editorStates]);
+  }, [editorContext?.persistSettings]);
 
   // Toggle recording
   useEffect(() => {
-    if (editorStates?.isRecording) {
+    if (editorContext?.editorStates?.isRecording) {
       vad.start();
     } else {
       vad.stop();
     }
-  }, [editorStates, vad]);
+  }, [editorContext?.editorStates, vad]);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -176,7 +192,7 @@ export default function Home() {
             className={`min-h-0 w-full flex-grow`}
             style={{
               cursor:
-                editorStates?.isDrawing && !isCanvasReady ? "wait" : "auto",
+              editorContext?.editorStates?.isDrawing && !isCanvasReady ? "wait" : "auto",
             }}
           >
             <CodeEditorView
@@ -186,14 +202,14 @@ export default function Home() {
               width="100%"
               height="100%"
               url="/test.tsx"
-              isDrawingMode={editorStates?.isDrawing}
-              isDownloadClip={editorStates?.isDownloadClip}
-              isDrawHulls={editorStates?.isDrawHulls}
+              isDrawingMode={editorContext?.editorStates?.isDrawing}
+              isDownloadClip={editorContext?.editorStates?.isDownloadClip}
+              isDrawHulls={editorContext?.editorStates?.isDrawHulls}
               setIsCanvasReady={setIsCanvasReady}
             />
           </div>
           <AnimatePresence>
-            {editorStates?.isOpenChatView && (
+            {editorContext?.editorStates?.isOpenChatView && (
               <motion.div
                 className="h-full min-h-[60%] w-full pb-14"
                 // Enter from bottom and exit to bottom

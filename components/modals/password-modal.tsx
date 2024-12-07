@@ -1,19 +1,17 @@
 import {
   Button,
   Input,
-  Modal,
   ModalBody,
-  ModalContent,
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { decrypt, encrypt } from "@/lib/security/simple-password";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import Icon from "../icon";
 import ModalWrapper from "./modal-wrapper";
+import { EditorContext } from "../providers/editor-context-provider";
 
 export default function PasswordScreen({
   isOpen,
@@ -22,18 +20,15 @@ export default function PasswordScreen({
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }) {
-  const { editorStates, updateEditorStates } = useEditorStatesContext();
+  const editorContext = useContext(EditorContext);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const { getValue, setValue } = useLocalStorage();
 
   return (
-    <ModalWrapper
-      isOpen={isOpen}
-      setIsOpen={setIsOpen}
-    >
+    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
       <>
         <ModalHeader className="flex flex-col gap-1">
-          {editorStates?.settings?.isPasswordSet
+          {editorContext?.persistSettings?.isPasswordSet
             ? "Enter your password"
             : "Set a password"}
         </ModalHeader>
@@ -54,9 +49,10 @@ export default function PasswordScreen({
             onPress={() => {
               setIsOpen(false);
               // Reset all settings
-              updateEditorStates({
+              editorContext?.setEditorStates((prev) => ({
+                ...prev,
                 settings: undefined,
-              });
+              }));
             }}
             variant="light"
             disableRipple
@@ -73,16 +69,18 @@ export default function PasswordScreen({
               }
 
               setIsOpen(false);
-              if (!editorStates?.settings?.isPasswordSet) {
+              if (!editorContext?.persistSettings?.isPasswordSet) {
                 // Set password if not already set
-                const settings = editorStates?.settings ?? {};
-                updateEditorStates({
+                const settings = editorContext?.persistSettings ?? {};
+                editorContext?.setEditorStates((prev) => ({
+                  ...prev,
                   settings: {
                     ...settings,
                     isPasswordSet: true,
                     password: password,
                   },
-                });
+                }));
+
                 // Encrypt API tokens
                 const sttAPIKey = settings.sttAPIKey
                   ? encrypt(settings.sttAPIKey, password)
@@ -113,8 +111,9 @@ export default function PasswordScreen({
                   : undefined;
 
                 // Load password to context if the password was set
-                const settings = editorStates?.settings ?? {};
-                updateEditorStates({
+                const settings = editorContext?.persistSettings ?? {};
+                editorContext?.setEditorStates((prev) => ({
+                  ...prev,
                   settings: {
                     ...settings,
                     sttAPIKey: sttAPIKey,
@@ -122,7 +121,7 @@ export default function PasswordScreen({
                     ttsAPIKey: ttsAPIKey,
                     password: password,
                   },
-                });
+                }));
               }
             }}
           >

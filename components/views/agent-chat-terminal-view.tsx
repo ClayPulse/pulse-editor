@@ -5,6 +5,7 @@ import {
   forwardRef,
   MutableRefObject,
   SetStateAction,
+  useContext,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -26,13 +27,13 @@ import {
 } from "@nextui-org/react";
 import Icon from "../icon";
 import { getModelLLM } from "@/lib/llm/llm";
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import toast from "react-hot-toast";
 import { TerminalAgent } from "@/lib/agent/terminal-agent";
 import { CodeEditorViewRef } from "./code-editor-view";
 import { motion } from "framer-motion";
 import { BeatLoader } from "react-spinners";
 import AgentConfigModal from "../modals/agent-config-modal";
+import { EditorContext } from "../providers/editor-context-provider";
 
 export type AgentChatTerminalViewRef = ViewRef;
 
@@ -283,7 +284,7 @@ const AgentChatTerminalView = forwardRef(
     const chatListRef = useRef<HTMLDivElement>(null);
     const [isThinking, setIsThinking] = useState<boolean>(false);
 
-    const { editorStates } = useEditorStatesContext();
+    const editorContext = useContext(EditorContext);
 
     useEffect(() => {
       setAgents(defaultAgents);
@@ -312,14 +313,14 @@ const AgentChatTerminalView = forwardRef(
         );
 
         if (
-          editorStates?.settings?.llmAPIKey &&
-          editorStates?.settings?.llmProvider &&
-          editorStates?.settings?.llmModel
+          editorContext?.persistSettings?.llmAPIKey &&
+          editorContext?.persistSettings?.llmProvider &&
+          editorContext?.persistSettings?.llmModel
         ) {
           const llm = getModelLLM(
-            editorStates.settings.llmAPIKey,
-            editorStates.settings.llmProvider,
-            editorStates.settings.llmModel,
+            editorContext?.persistSettings.llmAPIKey,
+            editorContext?.persistSettings.llmProvider,
+            editorContext?.persistSettings.llmModel,
             0.85,
           );
           agentRef.current = new TerminalAgent(llm, selectedAgent);

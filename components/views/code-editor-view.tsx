@@ -7,6 +7,7 @@ import ReactCodeMirror, {
 import {
   forwardRef,
   useCallback,
+  useContext,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -31,9 +32,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import toast from "react-hot-toast";
 import { codeInlineSuggestionExtension } from "@/lib/view-extensions/code-inline-suggestion";
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import { getModelLLM } from "@/lib/llm/llm";
+import { EditorContext } from "../providers/editor-context-provider";
 
 interface CodeEditorViewProps {
   width?: string;
@@ -148,7 +149,7 @@ const CodeEditorView = forwardRef(
       undefined,
     );
 
-    const { editorStates } = useEditorStatesContext();
+    const editorContext = useContext(EditorContext);
 
     const inlineSuggestionAgentRef = useRef<InlineSuggestionAgent | undefined>(
       undefined,
@@ -254,20 +255,20 @@ const CodeEditorView = forwardRef(
 
     useEffect(() => {
       if (
-        editorStates?.settings?.llmProvider &&
-        editorStates?.settings?.llmModel &&
-        editorStates?.settings?.llmAPIKey
+        editorContext?.persistSettings?.llmProvider &&
+        editorContext?.persistSettings?.llmModel &&
+        editorContext?.persistSettings?.llmAPIKey
       ) {
         const llm = getModelLLM(
-          editorStates.settings.llmAPIKey,
-          editorStates.settings.llmProvider,
-          editorStates.settings.llmModel,
+          editorContext?.persistSettings?.llmAPIKey,
+          editorContext?.persistSettings?.llmProvider,
+          editorContext?.persistSettings?.llmModel,
           0.85,
         );
 
         inlineSuggestionAgentRef.current = new InlineSuggestionAgent(llm);
       }
-    }, [editorStates]);
+    }, [editorContext?.persistSettings]);
 
     function getDrawingLocation(line: DrawnLine): {
       lineStart: number;

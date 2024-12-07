@@ -18,9 +18,6 @@ export interface EditorStates {
   isThinking: boolean;
   isSpeaking: boolean;
   isMuted: boolean;
-
-  // Settings
-  settings?: PersistSettings;
 }
 
 export interface PersistSettings {
@@ -110,7 +107,9 @@ export type Folder = {
   uri: string;
 }[];
 
-export interface EditorStatesContextType {
+export interface EditorContextType {
   editorStates: EditorStates;
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
+  persistSettings: PersistSettings | undefined;
+  setPersistSettings: Dispatch<SetStateAction<PersistSettings | undefined>>;
 }

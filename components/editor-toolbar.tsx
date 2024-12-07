@@ -1,14 +1,15 @@
 "use client";
 
 import { Button, Divider, Tooltip } from "@nextui-org/react";
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Icon from "@/components/icon";
 import SettingModal from "@/components/modals/settings-modal";
 import { AnimatePresence, motion } from "framer-motion";
+import { EditorContext } from "./providers/editor-context-provider";
 
 export default function EditorToolbar() {
-  const { editorStates, updateEditorStates } = useEditorStatesContext();
+  const editorContext = useContext(EditorContext);
+
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -41,13 +42,16 @@ export default function EditorToolbar() {
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
                   onPress={() => {
-                    if (editorStates) {
-                      updateEditorStates({
-                        isDrawing: !editorStates.isDrawing,
-                      });
+                    if (editorContext?.editorStates) {
+                      editorContext?.setEditorStates((prev) => ({
+                        ...prev,
+                        isDrawing: !editorContext?.editorStates.isDrawing,
+                      }));
                     }
                   }}
-                  variant={editorStates?.isDrawing ? "solid" : "light"}
+                  variant={
+                    editorContext?.editorStates?.isDrawing ? "solid" : "light"
+                  }
                 >
                   <Icon name="edit" variant="round" />
                 </Button>
@@ -75,10 +79,12 @@ export default function EditorToolbar() {
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
                   onPress={() => {
-                    if (editorStates) {
-                      updateEditorStates({
-                        isOpenChatView: !editorStates.isOpenChatView,
-                      });
+                    if (editorContext?.editorStates) {
+                      editorContext?.setEditorStates((prev) => ({
+                        ...prev,
+                        isOpenChatView:
+                          !editorContext?.editorStates.isOpenChatView,
+                      }));
                     }
                   }}
                 >
@@ -91,13 +97,16 @@ export default function EditorToolbar() {
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
                   onPress={() => {
-                    if (editorStates) {
-                      updateEditorStates({
-                        isRecording: !editorStates.isRecording,
-                      });
+                    if (editorContext?.editorStates) {
+                      editorContext?.setEditorStates((prev) => ({
+                        ...prev,
+                        isRecording: !editorContext?.editorStates.isRecording,
+                      }));
                     }
                   }}
-                  variant={editorStates?.isRecording ? "solid" : "light"}
+                  variant={
+                    editorContext?.editorStates?.isRecording ? "solid" : "light"
+                  }
                 >
                   <Icon name="mic" variant="outlined" />
                 </Button>

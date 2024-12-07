@@ -1,4 +1,3 @@
-import useEditorStatesContext from "@/lib/hooks/use-editor-states-context";
 import {
   Divider,
   Input,
@@ -7,12 +6,14 @@ import {
   Switch,
   Tooltip,
 } from "@nextui-org/react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { llmProviderOptions } from "@/lib/llm/options";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
+import { EditorContext } from "../providers/editor-context-provider";
+import { PersistSettings } from "@/lib/types";
 
 export default function SettingModal({
   isOpen,
@@ -21,8 +22,20 @@ export default function SettingModal({
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }) {
-  const { editorStates, updateEditorStates } = useEditorStatesContext();
+  const editorContext = useContext(EditorContext);
   const [ttl, setTTL] = useState<string>("14");
+
+  function updateEditorSettings({
+    settings,
+  }: {
+    settings: Partial<PersistSettings> | undefined;
+  }) {
+    editorContext?.setPersistSettings((prev) => ({
+      ...prev,
+      ...settings,
+    }));
+  }
+
   return (
     <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
       <>
@@ -41,10 +54,8 @@ export default function SettingModal({
                 label="Provider"
                 placeholder="Select a provider"
                 onChange={(e) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       sttProvider: e.target.value,
                       sttModel: undefined,
                       sttAPIKey: undefined,
@@ -53,8 +64,8 @@ export default function SettingModal({
                 }}
                 isRequired
                 selectedKeys={
-                  editorStates?.settings?.sttProvider
-                    ? [editorStates.settings.sttProvider]
+                  editorContext?.persistSettings?.sttProvider
+                    ? [editorContext?.persistSettings.sttProvider]
                     : []
                 }
               >
@@ -65,11 +76,12 @@ export default function SettingModal({
                 )}
               </Select>
               <Select
-                isDisabled={!editorStates?.settings?.sttProvider}
+                isDisabled={!editorContext?.persistSettings?.sttProvider}
                 items={
                   sttProviderOptions.find(
                     (provider) =>
-                      provider.provider === editorStates?.settings?.sttProvider,
+                      provider.provider ===
+                      editorContext?.persistSettings?.sttProvider,
                   )?.models ?? []
                 }
                 disabledKeys={
@@ -77,7 +89,7 @@ export default function SettingModal({
                     .find(
                       (provider) =>
                         provider.provider ===
-                        editorStates?.settings?.sttProvider,
+                        editorContext?.persistSettings?.sttProvider,
                     )
                     ?.models.filter((model) => !model.isSupported)
                     .map((model) => model.model) ?? []
@@ -86,15 +98,13 @@ export default function SettingModal({
                 placeholder="Select a model"
                 isRequired
                 selectedKeys={
-                  editorStates?.settings?.sttModel
-                    ? [editorStates.settings.sttModel]
+                  editorContext?.persistSettings?.sttModel
+                    ? [editorContext?.persistSettings.sttModel]
                     : []
                 }
                 onChange={(e) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       sttModel: e.target.value,
                     },
                   });
@@ -113,24 +123,22 @@ export default function SettingModal({
                     You can enable password again after editing API keys.
                   </p>
                 }
-                isDisabled={!editorStates?.settings?.isUsePassword}
+                isDisabled={!editorContext?.persistSettings?.isUsePassword}
               >
                 <Input
                   label="API Key"
                   size="md"
                   isRequired
-                  value={editorStates?.settings?.sttAPIKey ?? ""}
+                  value={editorContext?.persistSettings?.sttAPIKey ?? ""}
                   onValueChange={(value) => {
-                    const settings = editorStates?.settings ?? {};
-                    updateEditorStates({
+                    updateEditorSettings({
                       settings: {
-                        ...settings,
                         sttAPIKey: value,
                       },
                     });
                   }}
-                  isDisabled={!editorStates?.settings?.sttProvider}
-                  isReadOnly={editorStates?.settings?.isUsePassword}
+                  isDisabled={!editorContext?.persistSettings?.sttProvider}
+                  isReadOnly={editorContext?.persistSettings?.isUsePassword}
                 />
               </Tooltip>
             </div>
@@ -147,10 +155,8 @@ export default function SettingModal({
                 label="Provider"
                 placeholder="Select a provider"
                 onChange={(e) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       llmProvider: e.target.value,
                       llmModel: undefined,
                       llmAPIKey: undefined,
@@ -159,8 +165,8 @@ export default function SettingModal({
                 }}
                 isRequired
                 selectedKeys={
-                  editorStates?.settings?.llmProvider
-                    ? [editorStates.settings.llmProvider]
+                  editorContext?.persistSettings?.llmProvider
+                    ? [editorContext?.persistSettings.llmProvider]
                     : []
                 }
               >
@@ -171,11 +177,12 @@ export default function SettingModal({
                 )}
               </Select>
               <Select
-                isDisabled={!editorStates?.settings?.llmProvider}
+                isDisabled={!editorContext?.persistSettings?.llmProvider}
                 items={
                   llmProviderOptions.find(
                     (provider) =>
-                      provider.provider === editorStates?.settings?.llmProvider,
+                      provider.provider ===
+                      editorContext?.persistSettings?.llmProvider,
                   )?.models ?? []
                 }
                 disabledKeys={
@@ -183,7 +190,7 @@ export default function SettingModal({
                     .find(
                       (provider) =>
                         provider.provider ===
-                        editorStates?.settings?.llmProvider,
+                        editorContext?.persistSettings?.llmProvider,
                     )
                     ?.models.filter((model) => !model.isSupported)
                     .map((model) => model.model) ?? []
@@ -192,17 +199,15 @@ export default function SettingModal({
                 placeholder="Select a model"
                 isRequired
                 onChange={(e) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       llmModel: e.target.value,
                     },
                   });
                 }}
                 selectedKeys={
-                  editorStates?.settings?.llmModel
-                    ? [editorStates?.settings?.llmModel]
+                  editorContext?.persistSettings?.llmModel
+                    ? [editorContext?.persistSettings?.llmModel]
                     : []
                 }
               >
@@ -219,24 +224,22 @@ export default function SettingModal({
                     You can enable password again after editing API keys.
                   </p>
                 }
-                isDisabled={!editorStates?.settings?.isUsePassword}
+                isDisabled={!editorContext?.persistSettings?.isUsePassword}
               >
                 <Input
                   label="API Key"
                   size="md"
                   isRequired
-                  value={editorStates?.settings?.llmAPIKey ?? ""}
+                  value={editorContext?.persistSettings?.llmAPIKey ?? ""}
                   onValueChange={(value) => {
-                    const settings = editorStates?.settings ?? {};
-                    updateEditorStates({
+                    updateEditorSettings({
                       settings: {
-                        ...settings,
                         llmAPIKey: value,
                       },
                     });
                   }}
-                  isDisabled={!editorStates?.settings?.llmProvider}
-                  isReadOnly={editorStates?.settings?.isUsePassword}
+                  isDisabled={!editorContext?.persistSettings?.llmProvider}
+                  isReadOnly={editorContext?.persistSettings?.isUsePassword}
                 />
               </Tooltip>
             </div>
@@ -253,10 +256,8 @@ export default function SettingModal({
                 label="Provider"
                 placeholder="Select a provider"
                 onChange={(e) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       ttsProvider: e.target.value,
                       ttsModel: undefined,
                       ttsAPIKey: undefined,
@@ -265,8 +266,8 @@ export default function SettingModal({
                 }}
                 isRequired
                 selectedKeys={
-                  editorStates?.settings?.ttsProvider
-                    ? [editorStates?.settings?.ttsProvider]
+                  editorContext?.persistSettings?.ttsProvider
+                    ? [editorContext?.persistSettings?.ttsProvider]
                     : []
                 }
               >
@@ -277,11 +278,12 @@ export default function SettingModal({
                 )}
               </Select>
               <Select
-                isDisabled={!editorStates?.settings?.ttsProvider}
+                isDisabled={!editorContext?.persistSettings?.ttsProvider}
                 items={
                   ttsProviderOptions.find(
                     (provider) =>
-                      provider.provider === editorStates?.settings?.ttsProvider,
+                      provider.provider ===
+                      editorContext?.persistSettings?.ttsProvider,
                   )?.models ?? []
                 }
                 disabledKeys={
@@ -289,7 +291,7 @@ export default function SettingModal({
                     .find(
                       (provider) =>
                         provider.provider ===
-                        editorStates?.settings?.ttsProvider,
+                        editorContext?.persistSettings?.ttsProvider,
                     )
                     ?.models.filter((model) => !model.isSupported)
                     .map((model) => model.model) ?? []
@@ -298,17 +300,15 @@ export default function SettingModal({
                 placeholder="Select a model"
                 isRequired
                 onChange={(e) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       ttsModel: e.target.value,
                     },
                   });
                 }}
                 selectedKeys={
-                  editorStates?.settings?.ttsModel
-                    ? [editorStates?.settings?.ttsModel]
+                  editorContext?.persistSettings?.ttsModel
+                    ? [editorContext?.persistSettings?.ttsModel]
                     : []
                 }
               >
@@ -322,17 +322,15 @@ export default function SettingModal({
                 label="Voice Name"
                 size="md"
                 isRequired
-                value={editorStates?.settings?.ttsVoice ?? ""}
+                value={editorContext?.persistSettings?.ttsVoice ?? ""}
                 onValueChange={(value) => {
-                  const settings = editorStates?.settings ?? {};
-                  updateEditorStates({
+                  updateEditorSettings({
                     settings: {
-                      ...settings,
                       ttsVoice: value,
                     },
                   });
                 }}
-                isDisabled={!editorStates?.settings?.ttsProvider}
+                isDisabled={!editorContext?.persistSettings?.ttsProvider}
               />
               <Tooltip
                 content={
@@ -341,24 +339,22 @@ export default function SettingModal({
                     You can enable password again after editing API keys.
                   </p>
                 }
-                isDisabled={!editorStates?.settings?.isUsePassword}
+                isDisabled={!editorContext?.persistSettings?.isUsePassword}
               >
                 <Input
                   label="API Key"
                   size="md"
                   isRequired
-                  value={editorStates?.settings?.ttsAPIKey ?? ""}
+                  value={editorContext?.persistSettings?.ttsAPIKey ?? ""}
                   onValueChange={(value) => {
-                    const settings = editorStates?.settings ?? {};
-                    updateEditorStates({
+                    updateEditorSettings({
                       settings: {
-                        ...settings,
                         ttsAPIKey: value,
                       },
                     });
                   }}
-                  isDisabled={!editorStates?.settings?.ttsProvider}
-                  isReadOnly={editorStates?.settings?.isUsePassword}
+                  isDisabled={!editorContext?.persistSettings?.ttsProvider}
+                  isReadOnly={editorContext?.persistSettings?.isUsePassword}
                 />
               </Tooltip>
             </div>
@@ -373,21 +369,19 @@ export default function SettingModal({
             password to encrypt the API tokens as a temporary workaround.
           </p>
           <Switch
-            isSelected={editorStates?.settings?.isUsePassword ?? false}
+            isSelected={editorContext?.persistSettings?.isUsePassword ?? false}
             onChange={(e) => {
               const newValue = e.target.checked;
               if (newValue) {
                 setIsOpen(false);
-                const settings = editorStates?.settings ?? {};
-                updateEditorStates({
+                updateEditorSettings({
                   settings: {
-                    ...settings,
                     isUsePassword: newValue,
                   },
                 });
               } else {
                 // Reset all settings
-                updateEditorStates({
+                updateEditorSettings({
                   settings: undefined,
                 });
               }
@@ -421,10 +415,8 @@ export default function SettingModal({
                 toast.error("Invalid input. Using default 14 days.");
               }
 
-              const settings = editorStates?.settings ?? {};
-              updateEditorStates({
+              updateEditorSettings({
                 settings: {
-                  ...settings,
                   ttl: days === -1 ? -1 : days * 86400000,
                 },
               });

@@ -4,7 +4,7 @@ import { useLocalStorage } from "./use-local-storage";
 export default function usePersistSettings() {
   const { getValue, setValue } = useLocalStorage();
 
-  function getPersistSettings(): PersistSettings {
+  async function getPersistSettings(): Promise<PersistSettings> {
     // Load settings from local storage
     const loadedSettings: PersistSettings = {};
 
@@ -44,7 +44,7 @@ export default function usePersistSettings() {
     return loadedSettings;
   }
 
-  function setPersistSettings(settings: PersistSettings) {
+  async function setPersistSettings(settings: PersistSettings) {
     // Default TTL is set to 14 days
     if (!settings.ttl) {
       settings.ttl = 14 * 24 * 60 * 60 * 1000;
@@ -81,7 +81,7 @@ export default function usePersistSettings() {
     }
   }
 
-  function clearPersistSettings() {
+  async function clearPersistSettings() {
     // Reset all settings
     setValue("sttProvider", undefined);
     setValue("llmProvider", undefined);
