@@ -14,7 +14,6 @@ import AgentChatTerminalView from "@/components/views/agent-chat-terminal-view";
 import { AnimatePresence, motion } from "framer-motion";
 import { ViewDocument, ViewRef } from "@/lib/types";
 import EditorToolbar from "@/components/editor-toolbar";
-import { getPlatform } from "@/lib/platforms/platform-checker";
 import { EditorContext } from "@/components/providers/editor-context-provider";
 
 export default function Home() {
@@ -113,12 +112,6 @@ export default function Home() {
     },
   });
 
-  // Check platform
-  useEffect(() => {
-    const platform = getPlatform();
-    console.log("Platform:", platform);
-  }, []);
-
   // Load models
   useEffect(() => {
     if (editorContext?.persistSettings) {
@@ -184,30 +177,30 @@ export default function Home() {
     }
   }, [editorContext?.editorStates, vad]);
 
-  useEffect(() => {
-    const url = "/test.tsx";
-    if (url) {
-      fetch(url)
-        .then((res) => res.text())
-        .then((text) => {
-          const viewId = "1";
+  // useEffect(() => {
+  //   const url = "/test.tsx";
+  //   if (url) {
+  //     fetch(url)
+  //       .then((res) => res.text())
+  //       .then((text) => {
+  //         const viewId = "1";
 
-          // Init a new viewDocument
-          const viewDocument: ViewDocument = {
-            fileContent: text,
-            filePath: url,
-          };
+  //         // Init a new viewDocument
+  //         const viewDocument: ViewDocument = {
+  //           fileContent: text,
+  //           filePath: url,
+  //         };
 
-          // Get the code editor view
-          const codeEditor = editorContext?.getViewById(
-            viewId,
-          ) as CodeEditorViewRef;
+  //         // Get the code editor view
+  //         const codeEditor = editorContext?.getViewById(
+  //           viewId,
+  //         ) as CodeEditorViewRef;
 
-          // Set the viewDocument
-          codeEditor?.setViewDocument(viewDocument);
-        });
-    }
-  }, []);
+  //         // Set the viewDocument
+  //         codeEditor?.setViewDocument(viewDocument);
+  //       });
+  //   }
+  // }, []);
 
   return (
     <div className="flex h-full w-full flex-col">

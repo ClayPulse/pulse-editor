@@ -4,7 +4,6 @@ import { convexHull, Point } from "@/lib/canvas/convex-hull";
 import { DrawnLine } from "@/lib/types";
 import Konva from "konva";
 import { Stage as StageType } from "konva/lib/Stage";
-import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
 import { recognizeText } from "@/lib/image-processing/ocr";

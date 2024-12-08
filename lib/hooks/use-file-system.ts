@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Folder } from "@/lib/types";
-import { getPlatform } from "../platforms/platform-checker";
-import { PlatformEnum } from "../platforms/available-platforms";
-import { CapacitorAPI } from "../platforms/capacitor/capacitor-api";
-import { AbstractPlatformAPI } from "../platforms/abstract-platform-api";
-import { ElectronAPI } from "../platforms/electron/electron-api";
-import { VSCodeAPI } from "../platforms/vscode-extension/vscode-api";
-import { WebAPI } from "../platforms/web/web-api";
+import { getPlatform } from "../platform-api/platform-checker";
+import { PlatformEnum } from "../platform-api/available-platforms";
+import { CapacitorAPI } from "../platform-api/capacitor/capacitor-api";
+import { AbstractPlatformAPI } from "../platform-api/abstract-platform-api";
+import { ElectronAPI } from "../platform-api/electron/electron-api";
+import { VSCodeAPI } from "../platform-api/vscode-extension/vscode-api";
+import { WebAPI } from "../platform-api/web/web-api";
 
 export function useFileSystem() {
   const [projectPath, setProjectPath] = useState<string | undefined>(undefined);

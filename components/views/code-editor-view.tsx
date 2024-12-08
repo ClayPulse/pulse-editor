@@ -5,7 +5,9 @@ import ReactCodeMirror, {
   TransactionSpec,
 } from "@uiw/react-codemirror";
 import {
+  Dispatch,
   forwardRef,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -17,7 +19,6 @@ import { javascript } from "@codemirror/lang-javascript";
 import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
-import { Progress } from "@nextui-org/react";
 import {
   DrawnLine,
   LineChange,
@@ -35,6 +36,7 @@ import { codeInlineSuggestionExtension } from "@/lib/view-extensions/code-inline
 import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import { getModelLLM } from "@/lib/llm/llm";
 import { EditorContext } from "../providers/editor-context-provider";
+import Loading from "../loading";
 
 interface CodeEditorViewProps {
   width?: string;
@@ -47,8 +49,11 @@ interface CodeEditorViewProps {
 
 export type CodeEditorViewRef = ViewRef & {
   getViewDocument: () => ViewDocument | undefined;
-  setViewDocument: (document: ViewDocument) => void;
+  setViewDocument: Dispatch<SetStateAction<ViewDocument | undefined>>;
   applyChanges: (changes: LineChange[]) => void;
+  setViewDocumentChangeCallback: (
+    callback: ((viewDocument: ViewDocument | undefined) => void) | undefined,
+  ) => void;
 };
 
 const CodeEditorView = forwardRef(
@@ -68,9 +73,7 @@ const CodeEditorView = forwardRef(
       getViewDocument: () => {
         return viewDocument;
       },
-      setViewDocument: (document: ViewDocument) => {
-        setViewDocument(document);
-      },
+      setViewDocument,
       applyChanges: (changes: LineChange[]) => {
         console.log("Applying changes", changes);
         const cmView = cmRef.current?.view;
@@ -139,6 +142,13 @@ const CodeEditorView = forwardRef(
 
         cmView.dispatch(...transactions);
       },
+      setViewDocumentChangeCallback: (
+        callback:
+          | ((viewDocument: ViewDocument | undefined) => void)
+          | undefined,
+      ) => {
+        onViewDocumentChangeRef.current = callback;
+      },
     }));
 
     /* Set up theme */
@@ -156,6 +166,10 @@ const CodeEditorView = forwardRef(
     const inlineSuggestionAgentRef = useRef<InlineSuggestionAgent | undefined>(
       undefined,
     );
+
+    // Callbacks
+    const onViewDocumentChangeRef =
+      useRef<(viewDocument: ViewDocument | undefined) => void>();
 
     useEffect(() => {
       if (resolvedTheme === "dark") {
@@ -298,10 +312,16 @@ const CodeEditorView = forwardRef(
           return prev;
         }
 
-        return {
+        const newDoc = {
           ...prev,
           fileContent: value,
         };
+
+        if (onViewDocumentChangeRef.current) {
+          onViewDocumentChangeRef.current(newDoc);
+        }
+
+        return newDoc;
       });
     }
 
@@ -372,7 +392,7 @@ const CodeEditorView = forwardRef(
     return (
       <ViewLayout width={width} height={height}>
         <div className="relative h-full w-full overflow-hidden rounded-lg bg-content2">
-          {viewDocument?.fileContent ? (
+          {viewDocument?.fileContent !== undefined ? (
             <ReactCodeMirror
               ref={cmRef}
               value={viewDocument?.fileContent}
@@ -391,18 +411,7 @@ const CodeEditorView = forwardRef(
               }}
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center">
-              <Progress
-                isIndeterminate={true}
-                className="w-1/2"
-                color="default"
-                size="md"
-                label="Loading..."
-                classNames={{
-                  label: "w-full text-center",
-                }}
-              />
-            </div>
+            <Loading />
           )}
         </div>
       </ViewLayout>

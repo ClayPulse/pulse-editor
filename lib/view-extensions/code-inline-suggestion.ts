@@ -164,7 +164,6 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         })
         .catch((err) => {
           if (err.name === "AbortError") {
-            console.log("Previous suggestion aborted.");
             return;
           }
           throw err;
@@ -195,7 +194,6 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
       }
 
       this.abortController = new AbortController();
-      console.log("Fetching suggestion...");
       const result = await agent.generateInlineSuggestion(
         content,
         cursorX,
@@ -204,6 +202,7 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         this.abortController.signal,
       );
       this.abortController = null;
+      console.log("Suggestion fetched", result);
 
       return result;
     }

@@ -4,7 +4,6 @@ import "./globals.css";
 import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
 import EditorContextProvider from "@/components/providers/editor-context-provider";
 import { Toaster } from "react-hot-toast";
-import { EditorStates } from "@/lib/types";
 import "material-icons/iconfont/material-icons.css";
 import CapacitorProvider from "@/components/providers/capacitor-provider";
 import Nav from "@/components/nav";
@@ -31,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen antialiased`}
       >
