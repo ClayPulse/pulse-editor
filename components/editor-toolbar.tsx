@@ -1,30 +1,37 @@
 "use client";
 
 import { Button, Divider, Tooltip } from "@nextui-org/react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import Icon from "@/components/icon";
 import SettingModal from "@/components/modals/settings-modal";
 import { AnimatePresence, motion } from "framer-motion";
 import { EditorContext } from "./providers/editor-context-provider";
+import { getPlatform } from "@/lib/platform-api/platform-checker";
+import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import toast from "react-hot-toast";
 
 export default function EditorToolbar() {
   const editorContext = useContext(EditorContext);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  useEffect(() => {
-    setIsOpen(true);
-  }, []);
+  function setIsOpen(val: boolean) {
+    if (editorContext) {
+      editorContext.setEditorStates((prev) => ({
+        ...prev,
+        isToolbarOpen: val,
+      }));
+    }
+  }
 
   return (
     <div
       className={
-        "fixed bottom-0 left-0 z-10 flex w-full flex-col items-center justify-center space-y-0.5 pb-1"
+        "fixed bottom-0 left-1/2 z-10 flex w-fit -translate-x-1/2 flex-col items-center justify-center space-y-0.5 pb-1"
       }
     >
       <AnimatePresence>
-        {isOpen && (
+        {editorContext?.editorStates.isToolbarOpen && (
           <motion.div
             initial={{
               y: 60,
@@ -65,25 +72,23 @@ export default function EditorToolbar() {
                   <Icon name="comment" variant="outlined" />
                 </Button>
               </Tooltip>
-              {/* <Button variant="light"
-      isIconOnly
-      className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-    >
-      <IconErase />
-    </Button> */}
 
               <Divider className="mx-1" orientation="vertical" />
               <Tooltip content={"Open Chat View"}>
                 <Button
-                  variant="light"
+                  variant={
+                    editorContext?.editorStates?.isChatViewOpen
+                      ? "solid"
+                      : "light"
+                  }
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
                   onPress={() => {
                     if (editorContext?.editorStates) {
                       editorContext?.setEditorStates((prev) => ({
                         ...prev,
-                        isOpenChatView:
-                          !editorContext?.editorStates.isOpenChatView,
+                        isChatViewOpen:
+                          !editorContext?.editorStates.isChatViewOpen,
                       }));
                     }
                   }}
@@ -97,6 +102,13 @@ export default function EditorToolbar() {
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
                   onPress={() => {
+                    if (getPlatform() === PlatformEnum.VSCode) {
+                      toast.error(
+                        "Voice Chat is not supported in VSCode Extension. Please use other versions for Voice Chat.",
+                      );
+                      return;
+                    }
+
                     if (editorContext?.editorStates) {
                       editorContext?.setEditorStates((prev) => ({
                         ...prev,
@@ -164,7 +176,7 @@ export default function EditorToolbar() {
         )}
       </AnimatePresence>
 
-      {isOpen ? (
+      {editorContext?.editorStates.isToolbarOpen ? (
         <Button
           isIconOnly
           className="h-4 w-10 bg-content2"

@@ -2,10 +2,13 @@ import { Button } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
 import { useFileSystem } from "@/lib/hooks/use-file-system";
-import { ViewDocument } from "@/lib/types";
 import { CodeEditorViewRef } from "./views/code-editor-view";
 import { EditorContext } from "./providers/editor-context-provider";
 import { useContext } from "react";
+import { ViewTypeEnum } from "@/lib/views/available-views";
+import { ViewDocument } from "@/lib/types";
+import { View } from "@/lib/views/view";
+import { ViewManager } from "@/lib/views/view-manager";
 
 function MenuPanel({ children }: { children?: React.ReactNode }) {
   const isDesktop = useMediaQuery({
@@ -96,13 +99,21 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
                               fileContent: text,
                               filePath: filePath,
                             };
-                            // Get the code editor view
-                            const codeEditor = editorContext?.getViewById(
-                              "1",
-                            ) as CodeEditorViewRef;
+                            const view = new View(
+                              ViewTypeEnum.Code,
+                              viewDocument,
+                            );
 
-                            // Set the viewDocument
-                            codeEditor?.setViewDocument(viewDocument);
+                            // Notify state update
+                            editorContext?.setViewManager((prev) => {
+                              const newVM = ViewManager.copy(prev);
+                              // Add view to view manager
+                              newVM?.addView(view);
+                              // Set the view as active
+                              newVM?.setActiveView(view);
+                              return newVM;
+                            });
+                            
                           });
                         });
                       });

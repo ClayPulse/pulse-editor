@@ -5,9 +5,7 @@ import ReactCodeMirror, {
   TransactionSpec,
 } from "@uiw/react-codemirror";
 import {
-  Dispatch,
   forwardRef,
-  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -32,48 +30,42 @@ import html2canvas from "html2canvas";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import toast from "react-hot-toast";
-import { codeInlineSuggestionExtension } from "@/lib/view-extensions/code-inline-suggestion";
+import { codeInlineSuggestionExtension } from "@/lib/codemirror-extensions/code-inline-suggestion";
 import { InlineSuggestionAgent } from "@/lib/agent/inline-suggestion-agent";
 import { getModelLLM } from "@/lib/llm/llm";
 import { EditorContext } from "../providers/editor-context-provider";
 import Loading from "../loading";
+import { ViewTypeEnum } from "@/lib/views/available-views";
+import { View } from "@/lib/views/view";
 
 interface CodeEditorViewProps {
   width?: string;
   height?: string;
-  isDrawingMode?: boolean;
-  isDownloadClip?: boolean;
-  isDrawHulls?: boolean;
-  setIsCanvasReady: (isReady: boolean) => void;
+  view: View;
 }
 
 export type CodeEditorViewRef = ViewRef & {
-  getViewDocument: () => ViewDocument | undefined;
-  setViewDocument: Dispatch<SetStateAction<ViewDocument | undefined>>;
   applyChanges: (changes: LineChange[]) => void;
-  setViewDocumentChangeCallback: (
-    callback: ((viewDocument: ViewDocument | undefined) => void) | undefined,
-  ) => void;
 };
 
 const CodeEditorView = forwardRef(
   (
-    {
-      width,
-      height,
-      isDrawingMode,
-      isDownloadClip,
-      isDrawHulls,
-      setIsCanvasReady,
-    }: CodeEditorViewProps,
+    { width, height, view }: CodeEditorViewProps,
     ref: React.Ref<CodeEditorViewRef>,
   ) => {
     useImperativeHandle(ref, () => ({
-      getType: () => "CodeEditorView",
-      getViewDocument: () => {
-        return viewDocument;
+      getType: () => ViewTypeEnum.Code,
+      updateViewDocument(viewDocument) {
+        setViewDocument((prev) => {
+          if (!prev) {
+            return prev;
+          }
+          return {
+            ...prev,
+            ...viewDocument,
+          };
+        });
       },
-      setViewDocument,
       applyChanges: (changes: LineChange[]) => {
         console.log("Applying changes", changes);
         const cmView = cmRef.current?.view;
@@ -89,12 +81,6 @@ const CodeEditorView = forwardRef(
           if (change.status === "added") {
             const from = cmView.state.doc.line(change.index + 1).from;
 
-            // cmView.dispatch({
-            //   changes: {
-            //     from: from,
-            //     insert: change.content + "\n",
-            //   },
-            // });
             transactions.push({
               changes: {
                 from: from,
@@ -105,13 +91,6 @@ const CodeEditorView = forwardRef(
             const from = cmView.state.doc.line(change.index).from;
             const to = cmView.state.doc.line(change.index + 1).from;
 
-            // cmView.dispatch({
-            //   changes: {
-            //     from: from,
-            //     to: to,
-            //     insert: "",
-            //   },
-            // });
             transactions.push({
               changes: {
                 from: from,
@@ -123,13 +102,6 @@ const CodeEditorView = forwardRef(
             const from = cmView.state.doc.line(change.index).from;
             const to = cmView.state.doc.line(change.index).to;
 
-            // cmView.dispatch({
-            //   changes: {
-            //     from: from,
-            //     to: to,
-            //     insert: change.content,
-            //   },
-            // });
             transactions.push({
               changes: {
                 from: from,
@@ -142,13 +114,6 @@ const CodeEditorView = forwardRef(
 
         cmView.dispatch(...transactions);
       },
-      setViewDocumentChangeCallback: (
-        callback:
-          | ((viewDocument: ViewDocument | undefined) => void)
-          | undefined,
-      ) => {
-        onViewDocumentChangeRef.current = callback;
-      },
     }));
 
     /* Set up theme */
@@ -158,7 +123,7 @@ const CodeEditorView = forwardRef(
 
     /* Set editor content */
     const [viewDocument, setViewDocument] = useState<ViewDocument | undefined>(
-      undefined,
+      view.viewDocument,
     );
 
     const editorContext = useContext(EditorContext);
@@ -167,9 +132,7 @@ const CodeEditorView = forwardRef(
       undefined,
     );
 
-    // Callbacks
-    const onViewDocumentChangeRef =
-      useRef<(viewDocument: ViewDocument | undefined) => void>();
+    const [isCanvasReady, setIsCanvasReady] = useState(false);
 
     useEffect(() => {
       if (resolvedTheme === "dark") {
@@ -181,7 +144,7 @@ const CodeEditorView = forwardRef(
 
     useEffect(() => {
       // reset drawing info when drawing mode is off
-      if (!isDrawingMode) {
+      if (!editorContext?.editorStates.isDrawing) {
         setViewDocument((prev) => {
           // Return undefined if viewDocument is not set
           if (!prev) {
@@ -249,7 +212,7 @@ const CodeEditorView = forwardRef(
           ),
         );
       });
-    }, [isDrawingMode, resolvedTheme]);
+    }, [editorContext?.editorStates.isDrawing, resolvedTheme]);
 
     useEffect(() => {
       if (
@@ -267,6 +230,13 @@ const CodeEditorView = forwardRef(
         inlineSuggestionAgentRef.current = new InlineSuggestionAgent(llm);
       }
     }, [editorContext?.persistSettings]);
+
+    // Update view upon view document changes
+    useEffect(() => {
+      if (viewDocument !== undefined) {
+        view.viewDocument = viewDocument;
+      }
+    }, [viewDocument]);
 
     function getDrawingLocation(line: DrawnLine): {
       lineStart: number;
@@ -317,8 +287,9 @@ const CodeEditorView = forwardRef(
           fileContent: value,
         };
 
-        if (onViewDocumentChangeRef.current) {
-          onViewDocumentChangeRef.current(newDoc);
+        if (view.onChange) {
+          console.log("Calling view document change callback");
+          view.onChange(newDoc);
         }
 
         return newDoc;
@@ -368,8 +339,10 @@ const CodeEditorView = forwardRef(
           >
             <CanvasEditor
               onTextExtracted={onTextExtracted}
-              isDownloadClip={isDownloadClip ?? false}
-              isDrawHulls={isDrawHulls ?? false}
+              isDownloadClip={
+                editorContext?.editorStates.isDownloadClip ?? false
+              }
+              isDrawHulls={editorContext?.editorStates.isDrawHulls ?? false}
               editorCanvas={editorCanvas}
               theme={theme}
             />
@@ -391,7 +364,15 @@ const CodeEditorView = forwardRef(
 
     return (
       <ViewLayout width={width} height={height}>
-        <div className="relative h-full w-full overflow-hidden rounded-lg bg-content2">
+        <div
+          className="relative h-full w-full overflow-hidden rounded-lg bg-content2"
+          style={{
+            cursor:
+              editorContext?.editorStates?.isDrawing && !isCanvasReady
+                ? "wait"
+                : "auto",
+          }}
+        >
           {viewDocument?.fileContent !== undefined ? (
             <ReactCodeMirror
               ref={cmRef}

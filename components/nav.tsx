@@ -17,8 +17,10 @@ import { EditorContext } from "./providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import Loading from "./loading";
-import { CodeEditorViewRef } from "./views/code-editor-view";
 import { ViewDocument } from "@/lib/types";
+import { View } from "@/lib/views/view";
+import { ViewTypeEnum } from "@/lib/views/available-views";
+import { ViewManager } from "@/lib/views/view-manager";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -83,16 +85,10 @@ export default function Nav({ children }: { children: React.ReactNode }) {
       if (message.command === "updateChiselText") {
         const text: string = message.text;
         console.log("Received text from VSCode:", text);
-        const view = editorContext?.getViewById("1") as CodeEditorViewRef;
+        const view = editorContext?.viewManager?.getActiveView();
         if (view) {
-          view.setViewDocument((prev) => {
-            if (!prev) {
-              return undefined;
-            }
-            return {
-              ...prev,
-              fileContent: text,
-            };
+          view.updateViewDocument({
+            fileContent: text,
           });
         }
       } else if (message.command === "openFile") {
@@ -101,41 +97,37 @@ export default function Nav({ children }: { children: React.ReactNode }) {
         console.log(
           "Received file from VSCode. Path: " + path + " Text: " + text,
         );
-        const view = editorContext?.getViewById("1") as CodeEditorViewRef;
-        if (view) {
-          const newDoc: ViewDocument = {
-            fileContent: text,
-            filePath: path,
-          };
-          view.setViewDocument(newDoc);
 
-          // Send a message to parent iframe to notify changes made in Chisel
-          const callback = (viewDocument: ViewDocument | undefined) => {
-            if (!viewDocument) {
-              return;
-            }
-            window.parent.postMessage(
-              {
-                command: "updateVSCodeText",
-                text: viewDocument.fileContent,
-                from: "chisel",
-              },
-              "*",
-            );
-          };
-          view.setViewDocumentChangeCallback(callback);
-        }
+        const doc: ViewDocument = {
+          fileContent: text,
+          filePath: path,
+        };
+        const newView = new View(ViewTypeEnum.Code, doc);
+        // Send a message to parent iframe to notify changes made in Chisel
+        const callback = (viewDocument: ViewDocument) => {
+          if (!viewDocument) {
+            return;
+          }
+          window.parent.postMessage(
+            {
+              command: "updateVSCodeText",
+              text: viewDocument.fileContent,
+              from: "chisel",
+            },
+            "*",
+          );
+        };
+        newView.setViewDocumentChangeCallback(callback);
+
+        // Add to view manager
+        editorContext?.setViewManager((prev) => {
+          const newVM = new ViewManager();
+          newVM?.addView(newView);
+          newVM?.setActiveView(newView);
+          return newVM;
+        });
       }
     });
-
-    // Notify VSCode that Chisel is ready
-    window.parent.postMessage(
-      {
-        command: "chiselReady",
-        from: "chisel",
-      },
-      "*",
-    );
   }
 
   return (

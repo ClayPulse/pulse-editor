@@ -1,4 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
+import { ViewManager } from "./views/view-manager";
+import { AIModelConfig } from "./ai-model-config";
+import { ViewTypeEnum } from "./views/available-views";
 
 export interface EditorStates {
   // Selection by drawing
@@ -7,10 +10,10 @@ export interface EditorStates {
   isDownloadClip: boolean;
 
   // Inline/popover chat
-  isInlineChat: boolean;
+  isInlineChatEnabled: boolean;
 
   // Open chat view
-  isOpenChatView: boolean;
+  isChatViewOpen: boolean;
 
   // Voice agent
   isRecording: boolean;
@@ -18,6 +21,9 @@ export interface EditorStates {
   isThinking: boolean;
   isSpeaking: boolean;
   isMuted: boolean;
+
+  // Toolbar
+  isToolbarOpen: boolean;
 }
 
 export interface PersistSettings {
@@ -99,7 +105,8 @@ export interface AgentConfig {
 }
 
 export type ViewRef = {
-  getType: () => string;
+  getType: () => ViewTypeEnum;
+  updateViewDocument: (viewDocument: Partial<ViewDocument>) => void;
 };
 
 export type Folder = {
@@ -112,8 +119,8 @@ export interface EditorContextType {
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
   persistSettings: PersistSettings | undefined;
   setPersistSettings: Dispatch<SetStateAction<PersistSettings | undefined>>;
-  addView: (viewId: string, view: ViewRef) => void;
-  getViewById: (viewId: string) => ViewRef | undefined;
-  getViewByType: (viewType: string) => ViewRef[];
-  deleteView: (viewId: string) => void;
+  viewManager: ViewManager | undefined;
+  setViewManager: Dispatch<SetStateAction<ViewManager | undefined>>;
+  // notifyViewManagerUpdate: () => void;
+  aiModelConfig: AIModelConfig;
 }

@@ -18,11 +18,11 @@ import Icon from "../icon";
 import { getModelLLM } from "@/lib/llm/llm";
 import toast from "react-hot-toast";
 import { TerminalAgent } from "@/lib/agent/terminal-agent";
-import { CodeEditorViewRef } from "./code-editor-view";
 import { motion } from "framer-motion";
 import { BeatLoader } from "react-spinners";
 import AgentConfigModal from "../modals/agent-config-modal";
 import { EditorContext } from "../providers/editor-context-provider";
+import { ViewTypeEnum } from "@/lib/views/available-views";
 
 export type AgentChatTerminalViewRef = ViewRef;
 
@@ -251,10 +251,6 @@ function TerminalNavBar({
 
 const AgentChatTerminalView = forwardRef(
   ({}, ref: React.Ref<AgentChatTerminalViewRef>) => {
-    useImperativeHandle(ref, () => ({
-      getType: () => "AgentChatTerminalView",
-    }));
-
     const [agents, setAgents] = useState<AgentConfig[]>([]);
     const [selectedAgent, setSelectedAgent] = useState<AgentConfig | undefined>(
       undefined,
@@ -333,12 +329,12 @@ const AgentChatTerminalView = forwardRef(
       setIsThinking(true);
 
       // Get all code editor views and their content
-      const codeEditorViews =
-        editorContext?.getViewByType("CodeEditorView") ?? [];
+      const codeEditorViews = editorContext?.viewManager?.getViewByType(
+        ViewTypeEnum.Code,
+      );
       const viewDocuments: ViewDocument[] = [];
-      codeEditorViews.forEach((view) => {
-        const codeEditorView = view as CodeEditorViewRef;
-        const viewDocument = codeEditorView.getViewDocument();
+      codeEditorViews?.forEach((view) => {
+        const viewDocument = view.viewDocument;
         if (viewDocument) {
           viewDocuments.push(viewDocument);
         }

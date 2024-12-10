@@ -184,7 +184,6 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
       }
 
       if (delay) {
-        console.log("Waiting for " + delay + "ms");
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
 
