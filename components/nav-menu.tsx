@@ -70,10 +70,10 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
           <div className="h-full w-full bg-content2 p-2">
             <div className="flex h-full w-full flex-col items-center space-y-1">
               {!projectPath && (
-                <div className="flex w-full flex-wrap justify-center gap-x-0.5 gap-y-0.5">
-                  <Button size="sm">New Project</Button>
+                <div className="flex w-full flex-wrap justify-center gap-x-1 gap-y-1">
+                  <Button className="w-40">New Project</Button>
                   <Button
-                    size="sm"
+                    className="w-40"
                     onPress={() => {
                       openFilePicker(true).then((folderPaths) => {
                         console.log(folderPaths);
@@ -82,10 +82,10 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
                   >
                     Open Project
                   </Button>
-                  <Button size="sm">Save Project</Button>
-                  <Button size="sm">New File</Button>
+                  <Button className="w-40">Save Project</Button>
+                  <Button className="w-40">New File</Button>
                   <Button
-                    size="sm"
+                    className="w-40"
                     onPress={() => {
                       openFilePicker(false).then((filePaths) => {
                         console.log(filePaths);
@@ -113,7 +113,6 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
                               newVM?.setActiveView(view);
                               return newVM;
                             });
-                            
                           });
                         });
                       });
@@ -121,7 +120,7 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
                   >
                     Open File
                   </Button>
-                  <Button size="sm">Save File</Button>
+                  <Button className="w-40">Save File</Button>
                 </div>
               )}
             </div>

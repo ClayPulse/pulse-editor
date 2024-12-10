@@ -49,10 +49,7 @@ export default function PasswordScreen({
             onPress={() => {
               setIsOpen(false);
               // Reset all settings
-              editorContext?.setEditorStates((prev) => ({
-                ...prev,
-                settings: undefined,
-              }));
+              editorContext?.setPersistSettings(undefined);
             }}
             variant="light"
             disableRipple
@@ -72,14 +69,13 @@ export default function PasswordScreen({
               if (!editorContext?.persistSettings?.isPasswordSet) {
                 // Set password if not already set
                 const settings = editorContext?.persistSettings ?? {};
-                editorContext?.setEditorStates((prev) => ({
-                  ...prev,
-                  settings: {
-                    ...settings,
+                editorContext?.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
                     isPasswordSet: true,
                     password: password,
-                  },
-                }));
+                  };
+                });
 
                 // Encrypt API tokens
                 const sttAPIKey = settings.sttAPIKey
@@ -111,17 +107,15 @@ export default function PasswordScreen({
                   : undefined;
 
                 // Load password to context if the password was set
-                const settings = editorContext?.persistSettings ?? {};
-                editorContext?.setEditorStates((prev) => ({
-                  ...prev,
-                  settings: {
-                    ...settings,
+                editorContext?.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
                     sttAPIKey: sttAPIKey,
                     llmAPIKey: llmAPIKey,
                     ttsAPIKey: ttsAPIKey,
                     password: password,
-                  },
-                }));
+                  };
+                });
               }
             }}
           >

@@ -36,9 +36,13 @@ export default function ViewDisplayArea() {
       <div className="flex h-full w-full flex-col items-start justify-between gap-1.5 overflow-hidden rounded-xl bg-default p-2">
         <div className={`min-h-0 w-full flex-grow`}>
           {editorContext?.viewManager?.viewCount() === 0 ? (
-            <div>
-              <h1>Chisel Editor</h1>
-              <p>Start by opening a file or project.</p>
+            <div className="flex h-full w-full flex-col items-center justify-center gap-y-1 pb-12 text-default-foreground">
+              <h1 className="text-center text-2xl font-bold">
+                Welcome to Chisel Editor!
+              </h1>
+              <p className="text-center text-lg font-normal">
+                Start by opening a file or project.
+              </p>
             </div>
           ) : (
             editorContext?.viewManager
@@ -73,7 +77,7 @@ export default function ViewDisplayArea() {
             >
               <AgentChatTerminalView
                 ref={(ref) => {
-                  // if (ref) editorContext?.viewManager?.addView("2", ref);
+                  // TODO: Refactor this to use view manager
                 }}
               />
             </motion.div>

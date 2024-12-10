@@ -381,9 +381,7 @@ export default function SettingModal({
                 });
               } else {
                 // Reset all settings
-                updateEditorSettings({
-                  settings: undefined,
-                });
+                editorContext?.setPersistSettings(undefined);
               }
             }}
           >
