@@ -7,6 +7,8 @@ import AgentChatTerminalView from "./views/agent-chat-terminal-view";
 import { ViewTypeEnum } from "@/lib/views/available-views";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import { ViewDocument } from "@/lib/types";
+import { View } from "@/lib/views/view";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);
@@ -17,19 +19,87 @@ export default function ViewDisplayArea() {
       // If running in VSCode extension, notify VSCode that Chisel is ready,
       // and create view manager later when VSCode sends a message.
       if (getPlatform() === PlatformEnum.VSCode) {
-        window.parent.postMessage(
-          {
-            command: "chiselReady",
-            from: "chisel",
-          },
-          "*",
-        );
+        notifyVSCode();
+        addVSCodeHandlers();
       } else {
         const viewManager = new ViewManager();
         editorContext?.setViewManager(viewManager);
       }
     }
   }, []);
+
+  function notifyVSCode() {
+    window.parent.postMessage(
+      {
+        command: "chiselReady",
+        from: "chisel",
+      },
+      "*",
+    );
+  }
+
+  function addVSCodeHandlers() {
+    // Listen for ctrl+alt+s to switch back to VSCode original editor
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.altKey && e.code === "KeyS") {
+        // Send a message to parent iframe
+        window.parent.postMessage(
+          { command: "switchToTextEditor", from: "chisel" },
+          "*",
+        );
+      }
+    });
+
+    // Add a listener to listen messages from VSCode Extension
+    window.addEventListener("message", (e) => {
+      const message = e.data;
+      if (message.command === "updateChiselText") {
+        const text: string = message.text;
+        console.log("Received text from VSCode:", text);
+        const view = editorContext?.viewManager?.getActiveView();
+        if (view) {
+          view.updateViewDocument({
+            fileContent: text,
+          });
+        }
+      } else if (message.command === "openFile") {
+        const text: string = message.text;
+        const path: string = message.path;
+        console.log(
+          "Received file from VSCode. Path: " + path + " Text: " + text,
+        );
+
+        const doc: ViewDocument = {
+          fileContent: text,
+          filePath: path,
+        };
+        const newView = new View(ViewTypeEnum.Code, doc);
+        // Send a message to parent iframe to notify changes made in Chisel
+        const callback = (viewDocument: ViewDocument) => {
+          if (!viewDocument) {
+            return;
+          }
+          window.parent.postMessage(
+            {
+              command: "updateVSCodeText",
+              text: viewDocument.fileContent,
+              from: "chisel",
+            },
+            "*",
+          );
+        };
+        newView.setViewDocumentChangeCallback(callback);
+
+        // Add to view manager
+        editorContext?.setViewManager((prev) => {
+          const newVM = new ViewManager();
+          newVM?.addView(newView);
+          newVM?.setActiveView(newView);
+          return newVM;
+        });
+      }
+    });
+  }
 
   return (
     <div className="flex h-full w-full flex-col p-1">

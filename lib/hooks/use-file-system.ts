@@ -7,7 +7,6 @@ import { PlatformEnum } from "../platform-api/available-platforms";
 import { CapacitorAPI } from "../platform-api/capacitor/capacitor-api";
 import { AbstractPlatformAPI } from "../platform-api/abstract-platform-api";
 import { ElectronAPI } from "../platform-api/electron/electron-api";
-import { VSCodeAPI } from "../platform-api/vscode-extension/vscode-api";
 import { WebAPI } from "../platform-api/web/web-api";
 
 export function useFileSystem() {
@@ -21,10 +20,11 @@ export function useFileSystem() {
       platformApi.current = new CapacitorAPI();
     } else if (platform === PlatformEnum.Electron) {
       platformApi.current = new ElectronAPI();
-    } else if (platform === PlatformEnum.VSCode) {
-      platformApi.current = new VSCodeAPI();
     } else if (platform === PlatformEnum.Web) {
       platformApi.current = new WebAPI();
+    } else if (platform === PlatformEnum.VSCode) {
+      // platformApi.current = new VSCodeAPI();
+      throw new Error("VSCode API not implemented");
     } else {
       throw new Error("Unknown platform");
     }

@@ -2,9 +2,9 @@
 
 import { AIModelConfig } from "@/lib/ai-model-config";
 import usePersistSettings from "@/lib/hooks/use-persist-settings";
-import { BaseLLM, getModelLLM } from "@/lib/llm/llm";
-import { BaseSTT, getModelSTT } from "@/lib/stt/stt";
-import { BaseTTS, getModelTTS } from "@/lib/tts/tts";
+import {  getModelLLM } from "@/lib/llm/llm";
+import {  getModelSTT } from "@/lib/stt/stt";
+import {  getModelTTS } from "@/lib/tts/tts";
 import { EditorStates, EditorContextType, PersistSettings } from "@/lib/types";
 import { ViewManager } from "@/lib/views/view-manager";
 import { createContext, useEffect, useRef, useState } from "react";
