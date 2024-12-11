@@ -155,7 +155,9 @@ export default function Nav({ children }: { children: React.ReactNode }) {
       <div
         className={`flex h-full w-full overflow-hidden ${isShowNavbar ? "pt-[48px]" : ""}`}
       >
-        {isShowNavbar && <NavMenu isMenuOpen={isMenuOpen} />}
+        {isShowNavbar && (
+          <NavMenu isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+        )}
 
         <div className="min-w-0 flex-grow">{children}</div>
       </div>

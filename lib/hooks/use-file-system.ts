@@ -30,20 +30,12 @@ export function useFileSystem() {
     }
   }, []);
 
-  async function openFilePicker(isFolder: boolean): Promise<string[]> {
+  async function openFolder(): Promise<Folder | undefined> {
     if (platformApi.current === undefined) {
       throw new Error("Platform API not initialized");
     }
 
-    return await platformApi.current.openFilePicker(isFolder);
-  }
-
-  async function openFolder(uri: string): Promise<Folder> {
-    if (platformApi.current === undefined) {
-      throw new Error("Platform API not initialized");
-    }
-
-    return await platformApi.current.openFolder(uri);
+    return await platformApi.current.openFolder();
   }
 
   async function saveFolder(folder: Folder, uriPrefix: string) {
@@ -54,12 +46,12 @@ export function useFileSystem() {
     platformApi.current.saveFolder(folder, uriPrefix);
   }
 
-  async function readFile(uri: string): Promise<File> {
+  async function openFile(): Promise<File | undefined> {
     if (platformApi.current === undefined) {
       throw new Error("Platform API not initialized");
     }
 
-    return platformApi.current.readFile(uri);
+    return platformApi.current.openFile();
   }
 
   async function writeFile(file: File, uri: string) {
@@ -72,10 +64,9 @@ export function useFileSystem() {
 
   return {
     projectPath,
-    openFilePicker,
     openFolder,
     saveFolder,
-    readFile,
+    openFile,
     writeFile,
   };
 }

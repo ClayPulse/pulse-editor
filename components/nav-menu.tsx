@@ -2,7 +2,6 @@ import { Button } from "@nextui-org/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
 import { useFileSystem } from "@/lib/hooks/use-file-system";
-import { CodeEditorViewRef } from "./views/code-editor-view";
 import { EditorContext } from "./providers/editor-context-provider";
 import { useContext } from "react";
 import { ViewTypeEnum } from "@/lib/views/available-views";
@@ -58,8 +57,14 @@ function MenuPanel({ children }: { children?: React.ReactNode }) {
   );
 }
 
-export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
-  const { projectPath, openFilePicker, readFile } = useFileSystem();
+export default function NavMenu({
+  isMenuOpen,
+  setIsMenuOpen,
+}: {
+  isMenuOpen: boolean;
+  setIsMenuOpen: (isOpen: boolean) => void;
+}) {
+  const { projectPath, openFile } = useFileSystem();
 
   const editorContext = useContext(EditorContext);
 
@@ -72,14 +77,7 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
               {!projectPath && (
                 <div className="flex w-full flex-wrap justify-center gap-x-1 gap-y-1">
                   <Button className="w-40">New Project</Button>
-                  <Button
-                    className="w-40"
-                    onPress={() => {
-                      openFilePicker(true).then((folderPaths) => {
-                        console.log(folderPaths);
-                      });
-                    }}
-                  >
+                  <Button className="w-40" onPress={() => {}}>
                     Open Project
                   </Button>
                   <Button className="w-40">Save Project</Button>
@@ -87,33 +85,31 @@ export default function NavMenu({ isMenuOpen }: { isMenuOpen: boolean }) {
                   <Button
                     className="w-40"
                     onPress={() => {
-                      openFilePicker(false).then((filePaths) => {
-                        console.log(filePaths);
-                        const filePath = filePaths[0];
-                        // Open the first file
-                        readFile(filePath).then((file) => {
-                          console.log(file);
-                          file.text().then((text) => {
-                            console.log("File content:\n" + text);
-                            const viewDocument: ViewDocument = {
-                              fileContent: text,
-                              filePath: filePath,
-                            };
-                            const view = new View(
-                              ViewTypeEnum.Code,
-                              viewDocument,
-                            );
+                      openFile().then((file) => {
+                        console.log(file);
+                        file?.text().then((text) => {
+                          console.log("File content:\n" + text);
+                          const viewDocument: ViewDocument = {
+                            fileContent: text,
+                            filePath: file.name,
+                          };
+                          const view = new View(
+                            ViewTypeEnum.Code,
+                            viewDocument,
+                          );
 
-                            // Notify state update
-                            editorContext?.setViewManager((prev) => {
-                              const newVM = ViewManager.copy(prev);
-                              // Add view to view manager
-                              newVM?.addView(view);
-                              // Set the view as active
-                              newVM?.setActiveView(view);
-                              return newVM;
-                            });
+                          // Notify state update
+                          editorContext?.setViewManager((prev) => {
+                            const newVM = ViewManager.copy(prev);
+                            newVM?.clearView();
+                            // Add view to view manager
+                            newVM?.addView(view);
+                            // Set the view as active
+                            newVM?.setActiveView(view);
+                            return newVM;
                           });
+
+                          setIsMenuOpen(false);
                         });
                       });
                     }}

@@ -12,6 +12,7 @@ import { View } from "@/lib/views/view";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);
+  const [activeView, setActiveView] = useState<View | undefined>(undefined);
 
   // Initialize view manager
   useEffect(() => {
@@ -27,6 +28,14 @@ export default function ViewDisplayArea() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (editorContext?.viewManager) {
+      const activeView = editorContext.viewManager.getActiveView();
+      console.log("Active view:", activeView?.viewDocument.filePath);
+      setActiveView(activeView);
+    }
+  }, [editorContext?.viewManager]);
 
   function notifyVSCode() {
     window.parent.postMessage(
@@ -105,7 +114,7 @@ export default function ViewDisplayArea() {
     <div className="flex h-full w-full flex-col p-1">
       <div className="flex h-full w-full flex-col items-start justify-between gap-1.5 overflow-hidden rounded-xl bg-default p-2">
         <div className={`min-h-0 w-full flex-grow`}>
-          {editorContext?.viewManager?.viewCount() === 0 ? (
+          {!activeView ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-y-1 pb-12 text-default-foreground">
               <h1 className="text-center text-2xl font-bold">
                 Welcome to Chisel Editor!
@@ -115,19 +124,15 @@ export default function ViewDisplayArea() {
               </p>
             </div>
           ) : (
-            editorContext?.viewManager
-              ?.getViewByType(ViewTypeEnum.Code)
-              .map((view, index) => (
-                <CodeEditorView
-                  key={index}
-                  ref={(ref) => {
-                    if (ref) view.viewRef = ref;
-                  }}
-                  width="100%"
-                  height="100%"
-                  view={view}
-                />
-              ))
+            <CodeEditorView
+              key={activeView.viewDocument.filePath}
+              ref={(ref) => {
+                if (ref) activeView.viewRef = ref;
+              }}
+              width="100%"
+              height="100%"
+              view={activeView}
+            />
           )}
         </div>
 

@@ -48,6 +48,10 @@ export class ViewManager {
     }
   }
 
+  public clearView() {
+    this.views = [];
+  }
+
   public viewCount(): number {
     return this.views.length;
   }
