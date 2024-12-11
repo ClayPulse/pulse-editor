@@ -1,7 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import serve from "electron-serve";
 import { join } from "path";
-
 import { fileURLToPath } from "url";
 import path from "path";
 import { nativeTheme } from "electron/main";

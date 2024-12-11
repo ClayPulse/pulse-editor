@@ -1,0 +1,75 @@
+name: Build Electron Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Web App
+        run: |
+          npm run build
+
+      - name: Build Electron App
+        run: |
+          npm run desktop-build
+
+      - name: Zip the build (Linux)
+        run: |
+          ZIP_NAME="linux-x64.zip"
+          cd out-desktop
+          zip -r "../$ZIP_NAME" .
+        shell: bash
+        if: runner.os == 'Linux'
+
+      - name: Zip the build (Windows)
+        run: |
+          $ZipName = "windows-x64.zip"
+          Set-Location out-desktop
+          Compress-Archive -Path * -DestinationPath "../$ZipName" -Force
+        shell: pwsh
+        if: runner.os == 'Windows'
+
+      - name: Zip the build (macOS)
+        run: |
+          ZIP_NAME="macos-arm64.zip"
+          cd out-desktop
+          zip -r "../$ZIP_NAME" .
+        shell: bash
+        if: runner.os == 'macOS'
+
+      - name: Create Release Build (Linux)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: linux-x64.zip
+        if: runner.os == 'Linux'
+
+      - name: Create Release Build (Windows)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: windows-x64.zip
+        if: runner.os == 'Windows'
+
+      - name: Create Release Build (macOS)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: macos-arm64.zip
+        if: runner.os == 'macOS'
