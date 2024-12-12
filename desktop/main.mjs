@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import serve from "electron-serve";
-import { join } from "path";
+import path from "path";
 import { fileURLToPath } from "url";
 import { nativeTheme } from "electron/main";
 
@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const appServe = serve({
-  directory: join(process.resourcesPath, "app/out-next"),
+  directory: path.join(process.resourcesPath, "app/out-next"),
 });
 
 const createWindow = () => {
