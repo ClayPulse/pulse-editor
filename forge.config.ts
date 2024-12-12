@@ -16,7 +16,7 @@ const electronModules = ["electron-serve"];
 const config: ForgeConfig = {
   outDir: "out-desktop",
   packagerConfig: {
-    icon: "/public/icons/electron/chisel_logo_round",
+    icon: path.join(__dirname, "/public/icons/electron/chisel_logo_round"),
     // Do not package anything but the app/out-next directory
     // using Regular Expressions
     ignore: (path) => {
