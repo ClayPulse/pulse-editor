@@ -13,6 +13,7 @@ function removeNextjsModules(exceptionList: string[], nodeModulesPath: string) {
 const config: ForgeConfig = {
   outDir: "out-desktop",
   packagerConfig: {
+    icon: "/public/icons/electron/chisel_logo_round",
     // Do not package anything but the app/out-next directory
     // using Regular Expressions
     ignore: (path) => {
@@ -59,6 +60,16 @@ const config: ForgeConfig = {
       },
     ],
   },
+  makers: [
+    {
+      name: "@electron-forge/maker-deb",
+      config: {
+        options: {
+          icon: "/public/icons/electron/chisel-logo",
+        },
+      },
+    },
+  ],
 };
 
 export default config;

@@ -40,3 +40,6 @@ next-env.d.ts
 # electron
 /out-desktop/
 certificates
+
+# capacitor
+resources/android/**/*

@@ -2,7 +2,6 @@ import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import serve from "electron-serve";
 import { join } from "path";
 import { fileURLToPath } from "url";
-import path from "path";
 import { nativeTheme } from "electron/main";
 
 import fs from "fs";
@@ -22,12 +21,13 @@ const createWindow = () => {
     width: 960,
     height: 600,
     webPreferences: {
-      preload: join(__dirname, "preload.mjs"),
+      preload: path.join(__dirname, "preload.mjs"),
     },
     titleBarOverlay: {
       color: "#00000000",
       symbolColor: "#74b1be",
     },
+    icon: path.join(__dirname, "../public/icons/electron/chisel_logo_round")
   });
 
   win.menuBarVisible = false;
