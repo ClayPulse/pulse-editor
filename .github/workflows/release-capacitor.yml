@@ -1,6 +1,9 @@
 name: Build Capacitor Release
 
-on: push
+on:
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
@@ -52,11 +55,10 @@ jobs:
       - name: Build Capacitor App
         run: npx cap build android --keystorepath .keystore/keystore.jks --keystorepass ${{ secrets.ANDROID_KEYSTORE_PASS }} --androidreleasetype APK
 
-    #   - name: Create Release Build
-    #     uses: softprops/action-gh-release@v2
-    #     with:
-    #     files: |
-    #       android.zip
-    #       ios.zip
-    #     env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Move APK
+        run: mv android/app/build/outputs/apk/release/app-release-signed.apk chisel-editor.apk
+
+      - name: Create Release Build (Android)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: chisel-editor.apk
