@@ -43,3 +43,7 @@ certificates
 
 # capacitor
 resources/android/**/*
+
+.keystore
+# act cli secrets for testing github actions locally
+*.secrets

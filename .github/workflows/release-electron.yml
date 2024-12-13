@@ -24,10 +24,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Web App
-        run: |
-          npm run build
-
       - name: Build Electron App
         run: |
           npm run desktop-build

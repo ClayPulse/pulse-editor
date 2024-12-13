@@ -11,7 +11,7 @@
     "lint": "next lint",
     "android": "next build && npx cap sync && npx cap run android",
     "desktop-dev": "electron .",
-    "desktop-build": "electron-forge package"
+    "desktop-build": "next build && electron-forge package"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
