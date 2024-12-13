@@ -1,8 +1,20 @@
 ## About
 Chisel Editor is an editor designed to build and work with AI more naturally on cross-platform devices. 
 
-## Getting Started
+## Getting Started -- User Guide
+### Web Client
+There is a web deployment at https://chisel.claypulse.ai
+### Mobile Client
+Android client is available in release page.
+>Current we only support Android, although it is technically possible to have an iOS build (see developer guide below).
+### Desktop Client
+Linux, MacOS, Windows clients are available in release page.
+>Only Windows is tested in alpha release.
+### VSCode Extension
+A VSCode Webview Extension with limited features is available [here](https://marketplace.visualstudio.com/items?itemName=shellishack.chisel-editor).
 
+
+## Getting Started -- Development Guide
 ### Web Development
 Chisel Editor uses Next.js as the frontend (and backend -- TBD). 
 You can get started with local development by running: 

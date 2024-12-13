@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { ChiselEditorProvider } from "./chisel-editor";
+import { ChiselEditorProvider } from "./chisel-editor-provider";
 import { getCurrentEditorUri, getCurrentTabIndex } from "./util";
 
 // This method is called when your extension is activated

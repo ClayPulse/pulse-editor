@@ -27,7 +27,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   public static readonly viewType = "chisel.editorWebview";
-  private readonly chisel_editor = "http://localhost:3000";
+  private readonly chisel_editor = "https://chisel.claypulse.ai";
 
   constructor(
     private readonly context: vscode.ExtensionContext,
