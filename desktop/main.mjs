@@ -27,7 +27,7 @@ const createWindow = () => {
       color: "#00000000",
       symbolColor: "#74b1be",
     },
-    icon: path.join(__dirname, "../public/icons/electron/chisel_logo_round")
+    icon: path.join(__dirname, "../public/icons/electron/pulse_logo_round")
   });
 
   win.menuBarVisible = false;

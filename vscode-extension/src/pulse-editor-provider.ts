@@ -13,25 +13,25 @@ import { getNonce } from "./util";
  * - Loading scripts and styles in a custom editor.
  * - Synchronizing changes between a text document and a custom editor.
  */
-export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
+export class PulseEditorProvider implements vscode.CustomTextEditorProvider {
   public static register(
     context: vscode.ExtensionContext,
-    setIsEditInChisel: (isEditInChisel: boolean) => void,
+    setIsEditInPulse: (isEditInPulse: boolean) => void,
   ): vscode.Disposable {
-    const provider = new ChiselEditorProvider(context, setIsEditInChisel);
+    const provider = new PulseEditorProvider(context, setIsEditInPulse);
     const providerRegistration = vscode.window.registerCustomEditorProvider(
-      ChiselEditorProvider.viewType,
+      PulseEditorProvider.viewType,
       provider,
     );
     return providerRegistration;
   }
 
-  public static readonly viewType = "chisel.editorWebview";
-  private readonly chisel_editor = "https://chisel.claypulse.ai";
+  public static readonly viewType = "pulse.editorWebview";
+  private readonly pulse_editor = "https://pulse.claypulse.ai";
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly setIsEditInChisel: (isEditInChisel: boolean) => void,
+    private readonly setIsEditInPulse: (isEditInPulse: boolean) => void,
   ) {}
 
   /**
@@ -61,7 +61,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
     // Receive message from the webview
     webviewPanel.webview.onDidReceiveMessage((e) => {
       if (e.command === "switchToTextEditor") {
-        vscode.commands.executeCommand("chisel.editInVSCode");
+        vscode.commands.executeCommand("pulse.editInVSCode");
       } else if (e.command === "updateVSCodeText") {
         const text = e.text;
         const edit = new vscode.WorkspaceEdit();
@@ -73,7 +73,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
         vscode.workspace.applyEdit(edit);
       } else if (e.command === "log") {
         vscode.window.showInformationMessage(e.message);
-      } else if (e.command === "chiselReady") {
+      } else if (e.command === "pulseReady") {
         webviewPanel.webview.postMessage({
           command: "openFile",
           path: document.uri.toString(),
@@ -87,16 +87,16 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
       if (e.webviewPanel.active) {
         vscode.commands.executeCommand(
           "setContext",
-          "chisel.isEditInChisel",
+          "pulse.isEditInPulse",
           true,
         );
-        this.setIsEditInChisel(true);
+        this.setIsEditInPulse(true);
       }
     });
 
-    // Set isEditInChisel context to true when the editor is opened
-    vscode.commands.executeCommand("setContext", "chisel.isEditInChisel", true);
-    this.setIsEditInChisel(true);
+    // Set isEditInPulse context to true when the editor is opened
+    vscode.commands.executeCommand("setContext", "pulse.isEditInPulse", true);
+    this.setIsEditInPulse(true);
 
     // Hook up event handlers so that we can synchronize the webview with the text document.
     //
@@ -108,7 +108,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
     function updateWebview() {
       if (webviewPanel.active) {
         webviewPanel.webview.postMessage({
-          command: "updateChiselText",
+          command: "updatePulseText",
           text: document.getText(),
           from: "extension",
         });
@@ -140,7 +140,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
       vscode.Uri.joinPath(
         this.context.extensionUri,
         "media",
-        "chisel-editor.css",
+        "pulse-editor.css",
       ),
     );
 
@@ -157,13 +157,13 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
 				Use a content security policy to only allow loading images from https or from our extension directory,
 				and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; frame-src ${this.chisel_editor};">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; frame-src ${this.pulse_editor};">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <link href="${styleUri}" rel="stylesheet">
 
-				<title>Chisel Editor</title>
+				<title>Pulse Editor</title>
         <script nonce="${nonce}">
           (function() {
             const vscode = acquireVsCodeApi();
@@ -183,20 +183,20 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
               const message = e.data;
               const from = message.from;
               if(from === 'extension') {
-                if (message.command === 'updateChiselText') {
+                if (message.command === 'updatePulseText') {
                   const text = message.text;
                   // Pass the text to the iframe
-                  const iframe = document.getElementById('iframe-chisel');
+                  const iframe = document.getElementById('iframe-pulse');
                   iframe.contentWindow.postMessage({
-                    command: 'updateChiselText',
+                    command: 'updatePulseText',
                     text
                   }, '*');
-                  console.log("updateChiselText from webview listener");
+                  console.log("updatePulseText from webview listener");
                 } 
                 else if (message.command === 'openFile') {
                   const path = message.path;
                   const text = message.text;
-                  const iframe = document.getElementById('iframe-chisel');
+                  const iframe = document.getElementById('iframe-pulse');
                   iframe.contentWindow.postMessage({
                     command: 'openFile',
                     path,
@@ -205,7 +205,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
                   console.log("openFile from webview listener");
                 }
               }
-              else if (from === 'chisel') {
+              else if (from === 'pulse') {
                 if (message.command === 'switchToTextEditor') {
                   vscode.postMessage({
                     command: 'switchToTextEditor'
@@ -220,11 +220,11 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
                     });
                   console.log("updateVsCodeText from iframe listener");
                 }
-                else if(message.command === 'chiselReady') {
+                else if(message.command === 'pulseReady') {
                   vscode.postMessage({
-                    command: 'chiselReady'
+                    command: 'pulseReady'
                   });
-                  console.log("chiselReady from iframe listener");
+                  console.log("pulseReady from iframe listener");
                 }
               }
               else {
@@ -240,7 +240,7 @@ export class ChiselEditorProvider implements vscode.CustomTextEditorProvider {
         </script>
 			</head>
 			<body>
-          <iframe id="iframe-chisel" src="${this.chisel_editor}?vscode=true&theme=${theme}"></iframe>
+          <iframe id="iframe-pulse" src="${this.pulse_editor}?vscode=true&theme=${theme}"></iframe>
 			</body>
 			</html>`;
   }

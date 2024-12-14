@@ -16,7 +16,7 @@ const electronModules = ["electron-serve"];
 const config: ForgeConfig = {
   outDir: "out-desktop",
   packagerConfig: {
-    icon: path.join(__dirname, "/public/icons/electron/chisel_logo_round"),
+    icon: path.join(__dirname, "/public/icons/electron/pulse_logo_round"),
     // Do not package anything but the app/out-next directory
     // using Regular Expressions
     ignore: (path) => {
@@ -44,7 +44,7 @@ const config: ForgeConfig = {
         } else if (platform === "darwin") {
           moveModule(
             electronModules,
-            path.join(extractPath, "chisel-editor.app/Contents/Resources"),
+            path.join(extractPath, "pulse-editor.app/Contents/Resources"),
           )
         } else if (platform === "linux") {
           moveModule(
@@ -62,7 +62,7 @@ const config: ForgeConfig = {
       name: "@electron-forge/maker-deb",
       config: {
         options: {
-          icon: "/public/icons/electron/chisel-logo",
+          icon: "/public/icons/electron/pulse-logo",
         },
       },
     },

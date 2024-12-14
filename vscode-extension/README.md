@@ -1,15 +1,15 @@
-# Chisel Editor
+# Pulse Editor
 
-Chisel Editor is an editor designed to build and work with AI more naturally on cross-platform devices.
+Pulse Editor is an editor designed to build and work with AI more naturally on cross-platform devices.
 
 ## Features
 
 This VSCode Extension has limited features.
-> To use more advanced features on other platforms, try our cross-platform app. https://github.com/Shellishack/chisel-editor
+> To use more advanced features on other platforms, try our cross-platform app. https://github.com/Shellishack/pulse-editor
 
 
 ## Extension Settings
-Enter your AI API credentials inside the settings in Chisel Editor.
+Enter your AI API credentials inside the settings in Pulse Editor.
 
 ## Known Issues
 
