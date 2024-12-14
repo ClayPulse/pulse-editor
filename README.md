@@ -3,7 +3,7 @@ Pulse Editor is an editor designed to build and work with AI more naturally on c
 
 ## Getting Started -- User Guide
 ### Web Client
-There is a web deployment at https://pulse.claypulse.ai
+There is a web deployment at https://editor.claypulse.ai
 ### Mobile Client
 Android client is available in release page.
 >Current we only support Android, although it is technically possible to have an iOS build (see developer guide below).
