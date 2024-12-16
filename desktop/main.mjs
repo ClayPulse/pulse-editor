@@ -27,7 +27,7 @@ const createWindow = () => {
       color: "#00000000",
       symbolColor: "#74b1be",
     },
-    icon: path.join(__dirname, "../public/icons/electron/pulse_logo_round")
+    icon: path.join(__dirname, "../public/icons/electron/pulse_logo_round"),
   });
 
   win.menuBarVisible = false;
@@ -57,13 +57,21 @@ function handleSetTitle(event, title) {
   return title[0];
 }
 
-async function handleOpenFilePicker(event, isFolder) {
+async function handleShowOpenFileDialog(event, config) {
   const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: isFolder ? ["openDirectory"] : ["openFile"],
+    properties: config?.isFolder ? ["openDirectory"] : ["openFile"],
   });
   if (!canceled) {
     return filePaths;
   }
+}
+
+async function handleShowSaveFileDialog(event, config) {
+  const { canceled, filePath } = await dialog.showSaveDialog({});
+  if (!canceled) {
+    return filePath;
+  }
+  return undefined;
 }
 
 async function handleReadFile(event, path) {
@@ -73,11 +81,18 @@ async function handleReadFile(event, path) {
   return data;
 }
 
+async function handleWriteFile(event, data, path) {
+  // Write the data at path
+  await fs.promises.writeFile(path, data);
+}
+
 app.whenReady().then(() => {
   nativeTheme.themeSource = "light";
 
-  ipcMain.handle("open-file-picker", handleOpenFilePicker);
+  ipcMain.handle("show-open-file-dialog", handleShowOpenFileDialog);
+  ipcMain.handle("show-save-file-dialog", handleShowSaveFileDialog);
   ipcMain.handle("read-file", handleReadFile);
+  ipcMain.handle("write-file", handleWriteFile);
   createWindow();
 });
 

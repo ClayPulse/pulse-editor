@@ -8,6 +8,7 @@ import { ViewTypeEnum } from "@/lib/views/available-views";
 import { ViewDocument } from "@/lib/types";
 import { View } from "@/lib/views/view";
 import { ViewManager } from "@/lib/views/view-manager";
+import toast from "react-hot-toast";
 
 function MenuPanel({ children }: { children?: React.ReactNode }) {
   const isDesktop = useMediaQuery({
@@ -64,7 +65,13 @@ export default function NavMenu({
   isMenuOpen: boolean;
   setIsMenuOpen: (isOpen: boolean) => void;
 }) {
-  const { projectPath, openFile } = useFileSystem();
+  const {
+    projectPath,
+    showOpenFileDialog,
+    showSaveFileDialog,
+    openFile,
+    writeFile,
+  } = useFileSystem();
 
   const editorContext = useContext(EditorContext);
 
@@ -112,13 +119,14 @@ export default function NavMenu({
                   <Button
                     className="w-40"
                     onPress={() => {
-                      openFile().then((file) => {
-                        console.log(file);
-                        file?.text().then((text) => {
+                      showOpenFileDialog().then((files) => {
+                        console.log(files);
+                        const firstFile = files[0];
+                        firstFile?.text().then((text) => {
                           console.log("File content:\n" + text);
                           const viewDocument: ViewDocument = {
                             fileContent: text,
-                            filePath: file.name,
+                            filePath: firstFile.name,
                           };
                           openDocumentInView(viewDocument);
                         });
@@ -127,7 +135,28 @@ export default function NavMenu({
                   >
                     Open File
                   </Button>
-                  <Button className="w-40">Save File</Button>
+                  <Button
+                    className="w-40"
+                    onPress={() => {
+                      const viewDocument =
+                        editorContext?.viewManager?.getActiveView()
+                          ?.viewDocument;
+                      if (viewDocument) {
+                        showSaveFileDialog().then((filePath) => {
+                          if (filePath) {
+                            writeFile(
+                              new File([viewDocument.fileContent], filePath),
+                              filePath,
+                            ).then(() => {
+                              toast.success("File saved successfully");
+                            });
+                          }
+                        });
+                      }
+                    }}
+                  >
+                    Save File
+                  </Button>
                 </div>
               )}
             </div>

@@ -1,4 +1,8 @@
-import { Folder } from "@/lib/types";
+import {
+  OpenFileDialogConfig,
+  Folder,
+  SaveFileDialogConfig,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
 export class WebAPI extends AbstractPlatformAPI {
@@ -6,31 +10,14 @@ export class WebAPI extends AbstractPlatformAPI {
     super();
   }
 
-  async openFolder(): Promise<Folder | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  async openFile(): Promise<File | undefined> {
-    const files = await this.openFilePicker(false);
-    if (files.length === 0) {
-      return undefined;
-    }
-    return files[0];
-  }
-  async writeFile(file: File, uri: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-
-  private async openFilePicker(isFolder: boolean): Promise<File[]> {
+  async showOpenFileDialog(config?: OpenFileDialogConfig): Promise<File[]> {
     return new Promise((resolve, reject) => {
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.style.display = "none";
       fileInput.multiple = true;
 
-      if (isFolder) {
+      if (config?.isFolder) {
         fileInput.setAttribute("webkitdirectory", "");
       }
 
@@ -48,5 +35,24 @@ export class WebAPI extends AbstractPlatformAPI {
       // Open file picker
       fileInput.click();
     });
+  }
+
+  async showSaveFileDialog(
+    config?: SaveFileDialogConfig,
+  ): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  async openFolder(uri: string): Promise<Folder | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  async openFile(uri: string): Promise<File | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  async writeFile(file: File, uri: string): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

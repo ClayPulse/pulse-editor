@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Folder } from "@/lib/types";
+import {
+  OpenFileDialogConfig,
+  Folder,
+  SaveFileDialogConfig,
+} from "@/lib/types";
 import { getPlatform } from "../platform-api/platform-checker";
 import { PlatformEnum } from "../platform-api/available-platforms";
 import { CapacitorAPI } from "../platform-api/capacitor/capacitor-api";
@@ -30,12 +34,32 @@ export function useFileSystem() {
     }
   }, []);
 
-  async function openFolder(): Promise<Folder | undefined> {
+  async function showOpenFileDialog(
+    config?: OpenFileDialogConfig,
+  ): Promise<File[]> {
     if (platformApi.current === undefined) {
       throw new Error("Platform API not initialized");
     }
 
-    return await platformApi.current.openFolder();
+    return await platformApi.current.showOpenFileDialog(config);
+  }
+
+  async function showSaveFileDialog(
+    config?: SaveFileDialogConfig,
+  ): Promise<string | undefined> {
+    if (platformApi.current === undefined) {
+      throw new Error("Platform API not initialized");
+    }
+
+    return await platformApi.current.showSaveFileDialog(config);
+  }
+
+  async function openFolder(uri: string): Promise<Folder | undefined> {
+    if (platformApi.current === undefined) {
+      throw new Error("Platform API not initialized");
+    }
+
+    return await platformApi.current.openFolder(uri);
   }
 
   async function saveFolder(folder: Folder, uriPrefix: string) {
@@ -46,12 +70,12 @@ export function useFileSystem() {
     platformApi.current.saveFolder(folder, uriPrefix);
   }
 
-  async function openFile(): Promise<File | undefined> {
+  async function openFile(uri: string): Promise<File | undefined> {
     if (platformApi.current === undefined) {
       throw new Error("Platform API not initialized");
     }
 
-    return platformApi.current.openFile();
+    return platformApi.current.openFile(uri);
   }
 
   async function writeFile(file: File, uri: string) {
@@ -64,6 +88,8 @@ export function useFileSystem() {
 
   return {
     projectPath,
+    showOpenFileDialog,
+    showSaveFileDialog,
     openFolder,
     saveFolder,
     openFile,
