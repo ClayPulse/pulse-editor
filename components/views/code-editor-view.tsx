@@ -79,16 +79,30 @@ const CodeEditorView = forwardRef(
         // Apply changes to the editor
         for (const change of changes) {
           if (change.status === "added") {
-            const from = cmView.state.doc.line(change.index + 1).from;
-
-            transactions.push({
-              changes: {
-                from: from,
-                insert: change.content + "\n",
-              },
-            });
+            // If the addition is in the middle of document, insert it
+            if (change.index <= cmView.state.doc.lines) {
+              // The start of inserted line
+              const location = cmView.state.doc.line(change.index).from;
+              transactions.push({
+                changes: {
+                  from: location,
+                  insert: change.content + "\n",
+                },
+              });
+            }
+            // Else the addition is at the end of document, append it
+            else {
+              transactions.push({
+                changes: {
+                  from: cmView.state.doc.length,
+                  insert: "\n" + change.content,
+                },
+              });
+            }
           } else if (change.status === "deleted") {
+            // The start of deleted line
             const from = cmView.state.doc.line(change.index).from;
+            // The start of next line
             const to = cmView.state.doc.line(change.index + 1).from;
 
             transactions.push({
@@ -99,7 +113,9 @@ const CodeEditorView = forwardRef(
               },
             });
           } else if (change.status === "modified") {
+            // The start of modified line
             const from = cmView.state.doc.line(change.index).from;
+            // The end of modified line
             const to = cmView.state.doc.line(change.index).to;
 
             transactions.push({
