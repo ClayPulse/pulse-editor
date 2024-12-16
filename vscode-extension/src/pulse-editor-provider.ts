@@ -27,7 +27,7 @@ export class PulseEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   public static readonly viewType = "pulse.editorWebview";
-  private readonly pulse_editor = "https://pulse.claypulse.ai";
+  private readonly pulse_editor = "https://editor.claypulse.ai";
 
   constructor(
     private readonly context: vscode.ExtensionContext,

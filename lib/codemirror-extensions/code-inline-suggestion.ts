@@ -13,16 +13,17 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@uiw/react-codemirror";
+import toast from "react-hot-toast";
 
 /* A config facet for various inline suggestion settings */
 const codeInlineSuggestionConfig = Facet.define<
   {
     delay?: number;
-    agent: InlineSuggestionAgent;
+    agent?: InlineSuggestionAgent;
   },
   {
     delay?: number;
-    agent: InlineSuggestionAgent;
+    agent?: InlineSuggestionAgent;
   }
 >({
   combine(configs) {
@@ -156,6 +157,13 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
       const { delay, agent } = update.view.state.facet(
         codeInlineSuggestionConfig,
       );
+
+      if (!agent) {
+        toast.error("LLM not configured for code completion.", {
+          id: "llm-not-configured",
+        });
+        return;
+      }
 
       this.getSuggestion(agent, doc.toString(), cursorX, cursorY, 1, delay)
         .then((suggestion) => {
@@ -328,7 +336,7 @@ export function codeInlineSuggestionExtension({
   agent,
 }: {
   delay: number;
-  agent: InlineSuggestionAgent;
+  agent?: InlineSuggestionAgent;
 }) {
   const config = codeInlineSuggestionConfig.of({ delay, agent });
   return [

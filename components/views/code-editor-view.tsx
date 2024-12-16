@@ -382,7 +382,7 @@ const CodeEditorView = forwardRef(
                 javascript({ jsx: true }),
                 codeInlineSuggestionExtension({
                   delay: 1000,
-                  agent: inlineSuggestionAgentRef.current!,
+                  agent: inlineSuggestionAgentRef.current,
                 }),
               ]}
               theme={theme}

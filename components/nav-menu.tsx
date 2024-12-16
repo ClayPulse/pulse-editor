@@ -68,6 +68,22 @@ export default function NavMenu({
 
   const editorContext = useContext(EditorContext);
 
+  function openDocumentInView(doc: ViewDocument) {
+    const view = new View(ViewTypeEnum.Code, doc);
+    // Notify state update
+    editorContext?.setViewManager((prev) => {
+      const newVM = ViewManager.copy(prev);
+      newVM?.clearView();
+      // Add view to view manager
+      newVM?.addView(view);
+      // Set the view as active
+      newVM?.setActiveView(view);
+      return newVM;
+    });
+
+    setIsMenuOpen(false);
+  }
+
   return (
     <AnimatePresence>
       {isMenuOpen && (
@@ -81,7 +97,18 @@ export default function NavMenu({
                     Open Project
                   </Button>
                   <Button className="w-40">Save Project</Button>
-                  <Button className="w-40">New File</Button>
+                  <Button
+                    className="w-40"
+                    onPress={() => {
+                      const viewDocument: ViewDocument = {
+                        fileContent: "",
+                        filePath: "Untitled",
+                      };
+                      openDocumentInView(viewDocument);
+                    }}
+                  >
+                    New File
+                  </Button>
                   <Button
                     className="w-40"
                     onPress={() => {
@@ -93,23 +120,7 @@ export default function NavMenu({
                             fileContent: text,
                             filePath: file.name,
                           };
-                          const view = new View(
-                            ViewTypeEnum.Code,
-                            viewDocument,
-                          );
-
-                          // Notify state update
-                          editorContext?.setViewManager((prev) => {
-                            const newVM = ViewManager.copy(prev);
-                            newVM?.clearView();
-                            // Add view to view manager
-                            newVM?.addView(view);
-                            // Set the view as active
-                            newVM?.setActiveView(view);
-                            return newVM;
-                          });
-
-                          setIsMenuOpen(false);
+                          openDocumentInView(viewDocument);
                         });
                       });
                     }}
