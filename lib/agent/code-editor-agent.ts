@@ -96,14 +96,15 @@ export class CodeEditorAgent {
   \`\`\`
   
   Finally, you must return a JSON containing the code completion and give an \
-  explanation in the following format:
+  explanation in the following format. If there is quotation mark in the json's values, \
+  you must escape it with a backslash. \
   \`\`\`
   {
     "codeCompletion": "The code completion goes here which includes lines of code you created. \
 You must use the same programming language as the code file. \
 It must print out line number and change status if any, each line ends with a new line character. \
 When coming up with the code completion, remember to add line number \
-in the following format: \`[+\\-*] line \\d+\\|\`. \
+in the following format: \`[+\\-*] line \\d+\\| (line content here)\`. \
 If you have added/deleted/modified any line, you must indicate the line number where it happened. \
 '+' means added, '-' means deleted, and '*' means modified.
 e.g. if you have added a comment "this is for later" in line 5, it should be: \`+ line5|//this is for later\`;

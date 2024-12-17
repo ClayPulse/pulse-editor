@@ -66,8 +66,8 @@ const CodeEditorView = forwardRef(
           };
         });
       },
-      applyChanges: (changes: LineChange[]) => {
-        console.log("Applying changes", changes);
+      applyChanges: (lineChanges: LineChange[]) => {
+        console.log("Applying changes", lineChanges);
         const cmView = cmRef.current?.view;
 
         if (!cmView) {
@@ -75,59 +75,107 @@ const CodeEditorView = forwardRef(
           return;
         }
 
-        const transactions: TransactionSpec[] = [];
-        // Apply changes to the editor
-        for (const change of changes) {
+        const addedLines: LineChange[] = [];
+        const deletedLines: LineChange[] = [];
+        const modifiedLines: LineChange[] = [];
+
+        for (const change of lineChanges) {
           if (change.status === "added") {
-            // If the addition is in the middle of document, insert it
-            if (change.index <= cmView.state.doc.lines) {
-              // The start of inserted line
-              const location = cmView.state.doc.line(change.index).from;
-              transactions.push({
-                changes: {
-                  from: location,
-                  insert: change.content + "\n",
-                },
-              });
-            }
-            // Else the addition is at the end of document, append it
-            else {
-              transactions.push({
-                changes: {
-                  from: cmView.state.doc.length,
-                  insert: "\n" + change.content,
-                },
-              });
-            }
+            addedLines.push(change);
           } else if (change.status === "deleted") {
-            // The start of deleted line
-            const from = cmView.state.doc.line(change.index).from;
-            // The start of next line
-            const to = cmView.state.doc.line(change.index + 1).from;
-
-            transactions.push({
-              changes: {
-                from: from,
-                to: to,
-                insert: "",
-              },
-            });
+            deletedLines.push(change);
           } else if (change.status === "modified") {
-            // The start of modified line
-            const from = cmView.state.doc.line(change.index).from;
-            // The end of modified line
-            const to = cmView.state.doc.line(change.index).to;
-
-            transactions.push({
-              changes: {
-                from: from,
-                to: to,
-                insert: change.content,
-              },
-            });
+            modifiedLines.push(change);
           }
         }
 
+        // Process added lines
+        const indexNormalizedAddedLines: LineChange[] = [];
+        const sortedAddedLines = addedLines.sort((a, b) => a.index - b.index);
+        let currentLine = 0;
+        console.log("Sorted added lines", sortedAddedLines);
+        for (let i = 0; i < sortedAddedLines.length; i++) {
+          // The doc does not change between each transaction or change in one dispatch.
+          // So we need to calculate the location based on the state of the doc before
+          // applying the dispatch.
+          console.log("Current line", currentLine);
+          if (i === 0) {
+            currentLine = sortedAddedLines[i].index;
+            indexNormalizedAddedLines.push(sortedAddedLines[i]);
+            continue;
+          }
+
+          // The current line continues the previous line
+          if (sortedAddedLines[i].index === currentLine + i) {
+            const normalizedLine: LineChange = {
+              index: currentLine,
+              content:
+                indexNormalizedAddedLines.pop()?.content +
+                "\n" +
+                sortedAddedLines[i].content,
+              status: "added",
+            };
+            indexNormalizedAddedLines.push(normalizedLine);
+            console.log("Condensing lines", normalizedLine);
+            continue;
+          }
+
+          // The current line is not continuous with the previous line,
+          // i.e. there is a gap between the lines
+          currentLine = sortedAddedLines[i].index - i - 1;
+
+          indexNormalizedAddedLines.push(sortedAddedLines[i]);
+        }
+
+        const insertTransactions: TransactionSpec[] = [];
+        for (const line of indexNormalizedAddedLines) {
+          const location = cmView.state.doc.line(line.index).from;
+
+          insertTransactions.push({
+            changes: {
+              from: location,
+              insert: line.content + "\n",
+            },
+          });
+        }
+
+        // TODO: A temporary workaround to fix the out of transaction after insertion
+        cmView.dispatch(...insertTransactions);
+
+        const transactions: TransactionSpec[] = [];
+        // Process deleted lines
+        for (const line of deletedLines) {
+          // The start of deleted line
+          const from = cmView.state.doc.line(line.index).from;
+          // The end of deleted line
+          const to = cmView.state.doc.line(line.index).to;
+
+          transactions.push({
+            changes: {
+              from: from,
+              to: to,
+              insert: "",
+            },
+          });
+        }
+
+        // Process modified lines
+        for (const line of modifiedLines) {
+          // The start of modified line
+          const from = cmView.state.doc.line(line.index).from;
+          // The end of modified line
+          const to = cmView.state.doc.line(line.index).to;
+
+          transactions.push({
+            changes: {
+              from: from,
+              to: to,
+              insert: line.content,
+            },
+          });
+        }
+
+        // Apply changes to the editor
         cmView.dispatch(...transactions);
       },
     }));
