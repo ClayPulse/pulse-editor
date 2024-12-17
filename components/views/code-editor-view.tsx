@@ -13,8 +13,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
 import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
@@ -38,6 +36,7 @@ import { EditorContext } from "../providers/editor-context-provider";
 import Loading from "../loading";
 import { ViewTypeEnum } from "@/lib/views/available-views";
 import { View } from "@/lib/views/view";
+import { getLanguageExtension } from "@/lib/codemirror-extensions/get-language-extension";
 
 interface CodeEditorViewProps {
   width?: string;
@@ -427,6 +426,10 @@ const CodeEditorView = forwardRef(
       return container;
     }
 
+    const cmFileExtension = viewDocument
+      ? getLanguageExtension(viewDocument.filePath)
+      : undefined;
+
     return (
       <ViewLayout width={width} height={height}>
         <div
@@ -443,14 +446,22 @@ const CodeEditorView = forwardRef(
               ref={cmRef}
               value={viewDocument?.fileContent}
               onChange={onContentChange}
-              extensions={[
-                javascript({ jsx: true }),
-                python(),
-                codeInlineSuggestionExtension({
-                  delay: 1000,
-                  agent: inlineSuggestionAgentRef.current,
-                }),
-              ]}
+              extensions={
+                cmFileExtension
+                  ? [
+                      cmFileExtension,
+                      codeInlineSuggestionExtension({
+                        delay: 1000,
+                        agent: inlineSuggestionAgentRef.current,
+                      }),
+                    ]
+                  : [
+                      codeInlineSuggestionExtension({
+                        delay: 1000,
+                        agent: inlineSuggestionAgentRef.current,
+                      }),
+                    ]
+              }
               theme={theme}
               height="100%"
               style={{
