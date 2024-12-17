@@ -21,6 +21,7 @@
     "@capacitor/screen-orientation": "^6.0.3",
     "@capacitor/status-bar": "^6.0.2",
     "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/lang-python": "^6.1.6",
     "@langchain/anthropic": "^0.3.10",
     "@langchain/community": "^0.3.19",
     "@nextui-org/react": "^2.6.8",

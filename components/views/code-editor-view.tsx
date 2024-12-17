@@ -14,6 +14,7 @@ import {
   useState,
 } from "react";
 import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
 import ViewLayout from "./layout";
 import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode";
 import { useTheme } from "next-themes";
@@ -444,6 +445,7 @@ const CodeEditorView = forwardRef(
               onChange={onContentChange}
               extensions={[
                 javascript({ jsx: true }),
+                python(),
                 codeInlineSuggestionExtension({
                   delay: 1000,
                   agent: inlineSuggestionAgentRef.current,
