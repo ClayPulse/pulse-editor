@@ -3,7 +3,7 @@
 const nextConfig = {
   reactStrictMode: true,
   output: "export",
-  distDir: "out-next",
+  distDir: "build/next",
   webpack: (config) => {
     // Add external configuration
     config.externals = [...config.externals, { canvas: "canvas" }]; // required to make Konva & react-konva work

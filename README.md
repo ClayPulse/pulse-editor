@@ -41,7 +41,7 @@ npm run desktop-dev
 npm run desktop-build
 ```
 
-If you run `npm run desktop-build` for a production build, you can find an executable file inside `out-desktop`.
+If you run `npm run desktop-build` for a production build, you can find an executable file inside `build/desktop`.
 
 ### VSCode Extension Development
 Pulse Editor uses VSCode Webview API to create a VSCode Extension. To develop VScode Extension locally, open the `vscode-extension` in a separate VSCode window. Then press F5 to launch debug task.

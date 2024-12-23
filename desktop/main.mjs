@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const appServe = serve({
-  directory: path.join(process.resourcesPath, "app/out-next"),
+  directory: path.join(process.resourcesPath, "app/build/next"),
 });
 
 const createWindow = () => {

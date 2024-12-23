@@ -11,8 +11,7 @@
 
 # next.js
 /.next/
-/out/
-/out-next/
+
 
 # production
 /build
@@ -38,7 +37,6 @@ yarn-error.log*
 next-env.d.ts
 
 # electron
-/out-desktop/
 certificates
 
 # capacitor
@@ -47,3 +45,6 @@ resources/android/**/*
 .keystore
 # act cli secrets for testing github actions locally
 *.secrets
+
+# Build folder
+/build/

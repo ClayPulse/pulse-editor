@@ -14,15 +14,15 @@ function moveModule(moduleList: string[], resourcePath: string) {
 const electronModules = ["electron-serve"];
 
 const config: ForgeConfig = {
-  outDir: "out-desktop",
+  outDir: "build/desktop",
   packagerConfig: {
     icon: path.join(__dirname, "/public/icons/electron/pulse_logo_round"),
-    // Do not package anything but the app/out-next directory
+    // Do not package anything but the app/build directory
     // using Regular Expressions
     ignore: (path) => {
       if (!path) {
         return false;
-      } else if (path.match(/out-next/)) {
+      } else if (path.match(/build/)) {
         return false;
       } else if (path.match(/package.json/)) {
         return false;
