@@ -17,7 +17,7 @@ export default function ViewDisplayArea() {
   // Initialize view manager
   useEffect(() => {
     if (!editorContext?.viewManager) {
-      // If running in VSCode extension, notify VSCode that Chisel is ready,
+      // If running in VSCode extension, notify VSCode that Pulse is ready,
       // and create view manager later when VSCode sends a message.
       if (getPlatform() === PlatformEnum.VSCode) {
         notifyVSCode();
@@ -40,8 +40,8 @@ export default function ViewDisplayArea() {
   function notifyVSCode() {
     window.parent.postMessage(
       {
-        command: "chiselReady",
-        from: "chisel",
+        command: "pulseReady",
+        from: "pulse",
       },
       "*",
     );
@@ -53,7 +53,7 @@ export default function ViewDisplayArea() {
       if (e.ctrlKey && e.altKey && e.code === "KeyS") {
         // Send a message to parent iframe
         window.parent.postMessage(
-          { command: "switchToTextEditor", from: "chisel" },
+          { command: "switchToTextEditor", from: "pulse" },
           "*",
         );
       }
@@ -62,7 +62,7 @@ export default function ViewDisplayArea() {
     // Add a listener to listen messages from VSCode Extension
     window.addEventListener("message", (e) => {
       const message = e.data;
-      if (message.command === "updateChiselText") {
+      if (message.command === "updatePulseText") {
         const text: string = message.text;
         console.log("Received text from VSCode:", text);
         const view = editorContext?.viewManager?.getActiveView();
@@ -83,7 +83,7 @@ export default function ViewDisplayArea() {
           filePath: path,
         };
         const newView = new View(ViewTypeEnum.Code, doc);
-        // Send a message to parent iframe to notify changes made in Chisel
+        // Send a message to parent iframe to notify changes made in Pulse
         const callback = (viewDocument: ViewDocument) => {
           if (!viewDocument) {
             return;
@@ -92,7 +92,7 @@ export default function ViewDisplayArea() {
             {
               command: "updateVSCodeText",
               text: viewDocument.fileContent,
-              from: "chisel",
+              from: "pulse",
             },
             "*",
           );
@@ -117,7 +117,7 @@ export default function ViewDisplayArea() {
           {!activeView ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-y-1 pb-12 text-default-foreground">
               <h1 className="text-center text-2xl font-bold">
-                Welcome to Chisel Editor!
+                Welcome to Pulse Editor!
               </h1>
               <p className="text-center text-lg font-normal">
                 Start by opening a file or project.

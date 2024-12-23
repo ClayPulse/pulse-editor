@@ -31,12 +31,19 @@ interface AgentChatTerminalViewProps {
 }
 
 const defaultAgents: AgentConfig[] = [
+  // {
+  //   name: "Online Search Agent",
+  //   icon: "language",
+  //   description: "An agent searches information online",
+  //   prompt:
+  //     "You are an agent who searches online for the given query. User says {userMessage}. {viewContent}",
+  // },
   {
-    name: "Online Search Agent",
+    name: "General Code Agent",
     icon: "language",
-    description: "An agent searches information online",
+    description: "A helpful assistant agent to help user with coding.",
     prompt:
-      "You are an agent who searches online for the given query. User says {userMessage}. {viewContent}",
+      "You are a helpful assistant agent to help user with coding. User says {userMessage}. {viewContent}",
   },
   {
     name: "Test Agent",

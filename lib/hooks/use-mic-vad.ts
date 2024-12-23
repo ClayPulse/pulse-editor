@@ -4,7 +4,7 @@
 */
 
 import type { RealTimeVADOptions } from "@ricky0123/vad-web";
-import { MicVAD, defaultRealTimeVADOptions } from "@ricky0123/vad-web";
+import { MicVAD, getDefaultRealTimeVADOptions } from "@ricky0123/vad-web";
 import React, { useEffect, useReducer, useState } from "react";
 
 export { utils } from "@ricky0123/vad-web";
@@ -23,12 +23,12 @@ const defaultReactOptions: ReactOptions = {
 };
 
 export const defaultReactRealTimeVADOptions = {
-  ...defaultRealTimeVADOptions,
+  ...getDefaultRealTimeVADOptions("v5"),
   ...defaultReactOptions,
 };
 
 const reactOptionKeys = Object.keys(defaultReactOptions);
-const vadOptionKeys = Object.keys(defaultRealTimeVADOptions);
+const vadOptionKeys = Object.keys(getDefaultRealTimeVADOptions("v5"));
 
 const _filter = (keys: string[], obj: any) => {
   return keys.reduce(

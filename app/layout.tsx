@@ -9,7 +9,7 @@ import CapacitorProvider from "@/components/providers/capacitor-provider";
 import Nav from "@/components/nav";
 
 export const metadata: Metadata = {
-  title: "Chisel Editor",
+  title: "Pulse Editor",
   description: "AI powered editor to boost your creativity",
 };
 

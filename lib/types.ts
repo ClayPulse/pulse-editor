@@ -124,3 +124,12 @@ export interface EditorContextType {
   // notifyViewManagerUpdate: () => void;
   aiModelConfig: AIModelConfig;
 }
+
+export interface OpenFileDialogConfig {
+  isFolder?: boolean;
+  isMultiple?: boolean;
+}
+
+export interface SaveFileDialogConfig {
+  extension?: string;
+}

@@ -19,11 +19,9 @@ export default function Home() {
   const isProcessingRef = useRef(false);
   const vad = useMicVAD({
     startOnLoad: false,
-    ortConfig(ort) {
-      ort.env.wasm.wasmPaths = "/vad/";
-    },
-    workletURL: "/vad/vad.worklet.bundle.min.js",
-    modelURL: "/vad/silero_vad.onnx",
+    baseAssetPath: "/vad/",
+    onnxWASMBasePath: "/vad/",
+    positiveSpeechThreshold: 0.75,
     onSpeechStart: () => {
       if (!isProcessingRef.current) {
         const sttModel = editorContext?.aiModelConfig.getSTTModel();

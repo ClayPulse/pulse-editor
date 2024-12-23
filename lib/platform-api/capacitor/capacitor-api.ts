@@ -1,4 +1,8 @@
-import { Folder } from "@/lib/types";
+import {
+  OpenFileDialogConfig as OpenFileDialogConfig,
+  Folder,
+  SaveFileDialogConfig,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 import { Filesystem } from "@capacitor/filesystem";
 
@@ -7,24 +11,7 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     super();
   }
 
-  async openFolder(): Promise<Folder | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  async openFile(): Promise<File | undefined> {
-    const files = await this.openFilePicker();
-    if (files.length === 0) {
-      return undefined;
-    }
-    return files[0];
-  }
-  async writeFile(file: File, uri: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-
-  private async openFilePicker(): Promise<File[]> {
+  async showOpenFileDialog(config?: OpenFileDialogConfig): Promise<File[]> {
     const hasPermission = await Filesystem.requestPermissions();
     if (hasPermission.publicStorage !== "granted") {
       return [];
@@ -49,5 +36,24 @@ export class CapacitorAPI extends AbstractPlatformAPI {
       // Open file picker
       fileInput.click();
     });
+  }
+
+  async showSaveFileDialog(
+    config?: SaveFileDialogConfig,
+  ): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  async openFolder(uri: string): Promise<Folder | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  async openFile(uri: string): Promise<File | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  async writeFile(file: File, uri: string): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

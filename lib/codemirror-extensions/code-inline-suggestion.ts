@@ -13,16 +13,17 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@uiw/react-codemirror";
+import toast from "react-hot-toast";
 
 /* A config facet for various inline suggestion settings */
 const codeInlineSuggestionConfig = Facet.define<
   {
     delay?: number;
-    agent: InlineSuggestionAgent;
+    agent?: InlineSuggestionAgent;
   },
   {
     delay?: number;
-    agent: InlineSuggestionAgent;
+    agent?: InlineSuggestionAgent;
   }
 >({
   combine(configs) {
@@ -157,10 +158,20 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         codeInlineSuggestionConfig,
       );
 
+      if (!agent) {
+        toast.error("LLM not configured for code completion.", {
+          id: "llm-not-configured",
+        });
+        return;
+      }
+
       this.getSuggestion(agent, doc.toString(), cursorX, cursorY, 1, delay)
         .then((suggestion) => {
           // Dispatch effect to update the StateField
-          this.dispatchSuggestion(update.view, suggestion.snippets[0]);
+          const snippet = suggestion.snippets[0];
+          // Find the intersection of doc and snippet, then trim the snippet.
+          const trimmedSnippet = this.trimSnippet(doc.toString(), snippet);
+          this.dispatchSuggestion(update.view, trimmedSnippet);
         })
         .catch((err) => {
           if (err.name === "AbortError") {
@@ -237,6 +248,19 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         });
       });
     }
+
+    private trimSnippet(doc: string, snippet: string) {
+      // Move the snippet one character at a time to the left and check if it is an affix of the doc.
+      let trimmedStart = 0;
+      for (let i = 0; i < snippet.length; i++) {
+        const snippetPrefix = snippet.slice(0, i);
+        if (doc.endsWith(snippetPrefix)) {
+          trimmedStart = i;
+        }
+      }
+
+      return snippet.slice(trimmedStart);
+    }
   },
 );
 
@@ -287,37 +311,77 @@ const decorationPlugin = ViewPlugin.fromClass(
   },
 );
 
+/* Mobile swipe action plugin */
+const mobileSwipeActionPlugin = ViewPlugin.fromClass(
+  class {
+    // Detect "swipe right" gesture to accept suggestion
+    view: EditorView;
+    startX: number;
+    startY: number;
+
+    constructor(view: EditorView) {
+      this.view = view;
+      this.startX = 0;
+      this.startY = 0;
+
+      view.dom.addEventListener("touchstart", this.onTouchStart.bind(this));
+      view.dom.addEventListener("touchend", this.onTouchEnd.bind(this));
+    }
+
+    onTouchStart(e: TouchEvent) {
+      const touch = e.touches[0];
+      this.startX = touch.clientX;
+      this.startY = touch.clientY;
+    }
+
+    onTouchEnd(e: TouchEvent) {
+      const touch = e.changedTouches[0];
+      const endX = touch.clientX;
+      const endY = touch.clientY;
+
+      const dx = endX - this.startX;
+      const dy = endY - this.startY;
+
+      if (dx > 0 && Math.abs(dx) > Math.abs(dy)) {
+        acceptSuggestion(this.view);
+      }
+    }
+  },
+);
+
+const acceptSuggestion = (view: EditorView) => {
+  const suggestionField = view.state.field(codeInlineSuggestionField);
+  const suggestion = suggestionField.suggestion;
+
+  const { selection } = view.state;
+  const anchor = selection.main.anchor;
+  const head = selection.main.head;
+  const cursorEnd = Math.max(anchor, head);
+
+  if (suggestion) {
+    // Insert the suggestion at the cursor end and
+    // move the cursor to the end of the suggestion.
+    view.dispatch({
+      changes: {
+        from: cursorEnd,
+        to: cursorEnd,
+        insert: suggestion,
+      },
+      selection: {
+        anchor: cursorEnd + suggestion.length,
+        head: cursorEnd + suggestion.length,
+      },
+    });
+  }
+  return true;
+};
+
 /* A key map which maps tab to suggestion accept */
 const codeInlineSuggestionKeymap = Prec.highest(
   keymap.of([
     {
       key: "Tab",
-      run: (view) => {
-        const suggestionField = view.state.field(codeInlineSuggestionField);
-        const suggestion = suggestionField.suggestion;
-
-        const { selection } = view.state;
-        const anchor = selection.main.anchor;
-        const head = selection.main.head;
-        const cursorEnd = Math.max(anchor, head);
-
-        if (suggestion) {
-          // Insert the suggestion at the cursor end and
-          // move the cursor to the end of the suggestion.
-          view.dispatch({
-            changes: {
-              from: cursorEnd,
-              to: cursorEnd,
-              insert: suggestion,
-            },
-            selection: {
-              anchor: cursorEnd + suggestion.length,
-              head: cursorEnd + suggestion.length,
-            },
-          });
-        }
-        return true;
-      },
+      run: acceptSuggestion,
     },
   ]),
 );
@@ -328,7 +392,7 @@ export function codeInlineSuggestionExtension({
   agent,
 }: {
   delay: number;
-  agent: InlineSuggestionAgent;
+  agent?: InlineSuggestionAgent;
 }) {
   const config = codeInlineSuggestionConfig.of({ delay, agent });
   return [
@@ -337,5 +401,6 @@ export function codeInlineSuggestionExtension({
     codeInlineSuggestionField,
     decorationPlugin,
     getSuggestionPlugin,
+    mobileSwipeActionPlugin,
   ];
 }

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.chisel.app",
-  appName: "Chisel Editor",
+  appId: "com.pulse.app",
+  appName: "Pulse Editor",
   webDir: "out-next",
   android: {
     buildOptions: {
