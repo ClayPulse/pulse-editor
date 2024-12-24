@@ -1,14 +1,17 @@
 {
     "name": "pulse-editor",
     "version": "0.0.1",
+    "private": true,
     "workspaces": [
         "web",
-        "desktop"
+        "desktop",
+        "mobile"
     ],
     "scripts": {
         "web-dev": "npm run dev --workspace=web",
         "web-build": "npm run build --workspace=web",
         "desktop-dev": "npm run dev --workspace=desktop",
-        "desktop-build": "npm run web-build && npm run build --workspace=desktop"
+        "desktop-build": "npm run web-build && npm run build --workspace=desktop",
+        "android-build": "npm run web-build && npm run build --workspace=mobile"
     }
 }

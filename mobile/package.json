@@ -1,0 +1,12 @@
+{
+  "name": "pulse-editor-mobile",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npx cap sync && npx cap run android"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
