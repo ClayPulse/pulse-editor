@@ -5,7 +5,8 @@
     "workspaces": [
         "web",
         "desktop",
-        "mobile"
+        "mobile",
+        "vscode-extension"
     ],
     "scripts": {
         "web-dev": "npm run dev --workspace=web",

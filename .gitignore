@@ -2,16 +2,6 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
-
-# testing
-/coverage
-
-# next.js
-/.next/
-
 
 # production
 /build
@@ -20,31 +10,13 @@
 .DS_Store
 *.pem
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # local env files
 .env*.local
 .env
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# electron
-certificates
-
-# capacitor
-resources/android/**/*
+# electron certs
+/certificates
 
 .keystore
 # act cli secrets for testing github actions locally
 *.secrets
-
-# Build folder
-/build/
