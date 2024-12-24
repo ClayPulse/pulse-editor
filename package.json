@@ -1,63 +1,11 @@
 {
-  "name": "pulse-editor",
-  "version": "0.1.0",
-  "private": true,
-  "main": "./desktop/main.mjs",
-  "type": "module",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "android": "next build && npx cap sync && npx cap run android",
-    "desktop-dev": "electron .",
-    "desktop-build": "next build && electron-forge package"
-  },
-  "dependencies": {
-    "@capacitor/android": "^6.2.0",
-    "@capacitor/cli": "^6.2.0",
-    "@capacitor/core": "^6.2.0",
-    "@capacitor/filesystem": "^6.0.2",
-    "@capacitor/screen-orientation": "^6.0.3",
-    "@capacitor/status-bar": "^6.0.2",
-    "@codemirror/lang-javascript": "^6.2.2",
-    "@codemirror/lang-python": "^6.1.6",
-    "@langchain/anthropic": "^0.3.10",
-    "@langchain/community": "^0.3.19",
-    "@nextui-org/react": "^2.6.8",
-    "@ricky0123/vad-web": "^0.0.21",
-    "@uiw/codemirror-theme-vscode": "^4.23.7",
-    "@uiw/react-codemirror": "^4.23.7",
-    "electron-serve": "^2.1.1",
-    "elevenlabs": "^1.50.2",
-    "framer-motion": "^11.15.0",
-    "html2canvas": "^1.4.1",
-    "is-electron": "^2.2.2",
-    "konva": "^9.3.16",
-    "langchain": "^0.3.7",
-    "material-icons": "^1.13.12",
-    "next": "15.1.0",
-    "next-themes": "^0.4.4",
-    "react": "^19",
-    "react-dom": "^19",
-    "react-hot-toast": "^2.4.1",
-    "react-konva": "^19.0.1",
-    "react-responsive": "^10.0.0",
-    "react-spinners": "^0.15.0",
-    "tesseract.js": "^5.1.1"
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^7.6.0",
-    "@types/node": "^22",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "electron": "^33.2.1",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.0",
-    "postcss": "^8",
-    "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.9",
-    "tailwindcss": "^3.4.16",
-    "typescript": "^5"
-  }
+    "name": "pulse-editor",
+    "version": "0.0.1",
+    "workspaces": [
+        "web"
+    ],
+    "scripts": {
+        "web-dev": "npm run dev --workspace=web",
+        "web-build": "npm run build --workspace=web"
+    }
 }
