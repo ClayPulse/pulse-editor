@@ -6,7 +6,7 @@ function moveModule(moduleList: string[], resourcePath: string) {
   moduleList.forEach((module) => {
     fs.moveSync(
       path.join(resourcePath, module),
-      path.join(resourcePath, "app/node_modules", module),
+      path.join(resourcePath, "app/node_modules", module)
     );
   });
 }
@@ -14,24 +14,13 @@ function moveModule(moduleList: string[], resourcePath: string) {
 const electronModules = ["electron-serve"];
 
 const config: ForgeConfig = {
-  outDir: "build/desktop",
+  outDir: "../build/desktop",
   packagerConfig: {
-    icon: path.join(__dirname, "/public/icons/electron/pulse_logo_round"),
-    // Do not package anything but the app/build directory
-    // using Regular Expressions
-    ignore: (path) => {
-      if (!path) {
-        return false;
-      } else if (path.match(/build/)) {
-        return false;
-      } else if (path.match(/package.json/)) {
-        return false;
-      } else if (path.match(/desktop/)) {
-        return false;
-      }
-      return true;
-    },
-    extraResource: electronModules.map((module) => `node_modules/${module}`),
+    icon: path.join(__dirname, "../shared/icons/electron/pulse_logo_round"),
+    // Copy the electron modules and the nextjs build to the electron build.
+    extraResource: electronModules
+      .map((module) => `../node_modules/${module}`)
+      .concat("../build/next"),
     afterComplete: [
       (extractPath, electronVersion, platform, arch, done) => {
         // We need electron-serve to exist inside the electron build's node_modules.
@@ -62,7 +51,7 @@ const config: ForgeConfig = {
       name: "@electron-forge/maker-deb",
       config: {
         options: {
-          icon: "/public/icons/electron/pulse-logo",
+          icon: path.join(__dirname, "../shared/icons/electron/pulse_logo_round"),
         },
       },
     },

@@ -2,10 +2,13 @@
     "name": "pulse-editor",
     "version": "0.0.1",
     "workspaces": [
-        "web"
+        "web",
+        "desktop"
     ],
     "scripts": {
         "web-dev": "npm run dev --workspace=web",
-        "web-build": "npm run build --workspace=web"
+        "web-build": "npm run build --workspace=web",
+        "desktop-dev": "npm run dev --workspace=desktop",
+        "desktop-build": "npm run web-build && npm run build --workspace=desktop"
     }
 }

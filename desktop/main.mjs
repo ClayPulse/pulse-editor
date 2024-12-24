@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const appServe = serve({
-  directory: path.join(process.resourcesPath, "app/build/next"),
+  directory: path.join(process.resourcesPath, "next"),
 });
 
 const createWindow = () => {
@@ -27,7 +27,7 @@ const createWindow = () => {
       color: "#00000000",
       symbolColor: "#74b1be",
     },
-    icon: path.join(__dirname, "../public/icons/electron/pulse_logo_round"),
+    icon: path.join(__dirname, "../shared/icons/electron/pulse_logo_round"),
   });
 
   win.menuBarVisible = false;
