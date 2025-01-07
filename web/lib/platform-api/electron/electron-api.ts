@@ -1,4 +1,8 @@
-import { OpenFileDialogConfig, Folder, SaveFileDialogConfig } from "@/lib/types";
+import {
+  OpenFileDialogConfig,
+  Folder,
+  SaveFileDialogConfig,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
 export class ElectronAPI extends AbstractPlatformAPI {
@@ -13,6 +17,10 @@ export class ElectronAPI extends AbstractPlatformAPI {
     // Open a file dialogue and return the selected folder
     const paths: string[] = await this.electronAPI.showOpenFileDialog(config);
 
+    if (!paths) {
+      return [];
+    }
+
     const files = [];
     for (const path of paths) {
       const data: string = await this.electronAPI.readFile(path);
@@ -23,12 +31,6 @@ export class ElectronAPI extends AbstractPlatformAPI {
     return files;
   }
 
-  async showSaveFileDialog(
-    config?: SaveFileDialogConfig,
-  ): Promise<string | undefined> {
-    return await this.electronAPI.showSaveFileDialog(config);
-  }
-
   async openFolder(uri: string): Promise<Folder | undefined> {
     throw new Error("Method not implemented.");
   }
@@ -36,11 +38,15 @@ export class ElectronAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
   async openFile(uri: string): Promise<File | undefined> {
-    const data: string = await this.electronAPI.readFile(uri);
-    const file = new File([data], uri);
-    return file;
+    throw new Error("Method not implemented.");
   }
-  async writeFile(file: File, uri: string): Promise<void> {
+
+  /**
+   * Write a file to the file system.
+   * @param file
+   * @param uri
+   */
+  async saveFile(file: File, uri: string): Promise<void> {
     const data = await file.text();
     await this.electronAPI.writeFile(data, uri);
   }

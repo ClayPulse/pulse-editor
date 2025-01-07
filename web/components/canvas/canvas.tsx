@@ -260,8 +260,8 @@ export default function Canvas({
         // Get cursor based on theme
         cursor:
           theme === "light"
-            ? "url(/pencil-light.png) 0 24, auto"
-            : "url(/pencil-dark.png) 0 24, auto",
+            ? "url(/icons/pencil-light.png) 0 24, auto"
+            : "url(/icons/pencil-dark.png) 0 24, auto",
       }}
     >
       <Stage

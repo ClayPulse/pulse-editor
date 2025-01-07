@@ -1,7 +1,6 @@
 import {
   OpenFileDialogConfig,
   Folder,
-  SaveFileDialogConfig,
 } from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
@@ -37,12 +36,7 @@ export class WebAPI extends AbstractPlatformAPI {
     });
   }
 
-  async showSaveFileDialog(
-    config?: SaveFileDialogConfig,
-  ): Promise<string | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
+  // Reserved for cloud environment implementation
   async openFolder(uri: string): Promise<Folder | undefined> {
     throw new Error("Method not implemented.");
   }
@@ -52,7 +46,7 @@ export class WebAPI extends AbstractPlatformAPI {
   async openFile(uri: string): Promise<File | undefined> {
     throw new Error("Method not implemented.");
   }
-  async writeFile(file: File, uri: string): Promise<void> {
+  async saveFile(file: File, uri: string): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

@@ -3,7 +3,7 @@ import { ViewManager } from "./views/view-manager";
 import { AIModelConfig } from "./ai-model-config";
 import { ViewTypeEnum } from "./views/available-views";
 
-export interface EditorStates {
+export type EditorStates = {
   // Selection by drawing
   isDrawing: boolean;
   isDrawHulls: boolean;
@@ -24,9 +24,9 @@ export interface EditorStates {
 
   // Toolbar
   isToolbarOpen: boolean;
-}
+};
 
-export interface PersistSettings {
+export type PersistSettings = {
   sttProvider?: string;
   llmProvider?: string;
   ttsProvider?: string;
@@ -45,76 +45,72 @@ export interface PersistSettings {
   ttl?: number;
 
   ttsVoice?: string;
-}
+};
 
-export interface DrawnLine {
+export type DrawnLine = {
   points: {
     x: number;
     y: number;
   }[];
-}
+};
 
-export interface SelectionInformation {
+export type SelectionInformation = {
   lineStart: number;
   lineEnd: number;
   text: string;
-}
+};
 
-export interface CodeCompletionInstruction {
+export type CodeCompletionInstruction = {
   text?: string;
   audio?: Blob;
-}
+};
 
-export interface CodeCompletionResult {
+export type CodeCompletionResult = {
   text: {
     codeCompletion: string;
     explanation: string;
   };
   audio?: Blob;
-}
+};
 
-export interface InlineSuggestionResult {
+export type InlineSuggestionResult = {
   snippets: string[];
-}
+};
 
-export interface ViewDocument {
+export type ViewDocument = {
   fileContent: string;
   filePath: string;
   selections?: SelectionInformation[];
   suggestedLines?: LineChange[];
-}
+};
 
-export interface LineChange {
+export type LineChange = {
   // Index starts from 1
   index: number;
   content: string;
   status: "added" | "deleted" | "modified";
-}
+};
 
-export interface ChatMessage {
+export type ChatMessage = {
   from: string;
   content: string;
   datetime: string;
-}
+};
 
-export interface AgentConfig {
+export type AgentConfig = {
   name: string;
   icon?: string;
   description?: string;
   prompt: string;
-}
+};
 
 export type ViewRef = {
   getType: () => ViewTypeEnum;
   updateViewDocument: (viewDocument: Partial<ViewDocument>) => void;
 };
 
-export type Folder = {
-  file: File;
-  uri: string;
-}[];
 
-export interface EditorContextType {
+export type EditorContextType = {
   editorStates: EditorStates;
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
   persistSettings: PersistSettings | undefined;
@@ -123,13 +119,28 @@ export interface EditorContextType {
   setViewManager: Dispatch<SetStateAction<ViewManager | undefined>>;
   // notifyViewManagerUpdate: () => void;
   aiModelConfig: AIModelConfig;
-}
+};
 
-export interface OpenFileDialogConfig {
+
+/* File system */
+export type OpenFileDialogConfig = {
   isFolder?: boolean;
   isMultiple?: boolean;
-}
+};
 
-export interface SaveFileDialogConfig {
+export type SaveFileDialogConfig = {
   extension?: string;
-}
+};
+
+export type FileSystemObject = {
+  name: string;
+  extension?: string;
+  file?: File;
+  isFolder: boolean;
+  subDirItems?: FileSystemObject[];
+};
+
+export type Folder = {
+  file: File;
+  uri: string;
+}[];
