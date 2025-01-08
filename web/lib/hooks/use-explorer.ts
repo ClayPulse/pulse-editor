@@ -16,9 +16,6 @@ export default function useExplorer() {
             projectHomePath: path,
           };
         });
-        platformApi.listPathFolders(path).then((folders) => {
-          console.log(folders);
-        });
       }
     });
   }

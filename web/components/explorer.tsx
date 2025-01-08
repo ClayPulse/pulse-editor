@@ -1,7 +1,7 @@
 "use client";
 
 import { ViewDocument } from "@/lib/types";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "./providers/editor-context-provider";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
@@ -11,6 +11,7 @@ import { ViewTypeEnum } from "@/lib/views/available-views";
 import { ViewManager } from "@/lib/views/view-manager";
 import { Button } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
+import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 
 export default function Explorer({
   setIsMenuOpen,
@@ -20,6 +21,19 @@ export default function Explorer({
   const platform = getPlatform();
   const editorContext = useContext(EditorContext);
   const { selectAndSetProjectHome } = useExplorer();
+  const { platformApi } = usePlatformApi();
+  const [projects, setProjects] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (platformApi) {
+      const homePath = editorContext?.persistSettings?.projectHomePath;
+      if (homePath) {
+        platformApi.listPathFolders(homePath).then((projects) => {
+          setProjects(projects);
+        });
+      }
+    }
+  }, [editorContext?.persistSettings, platformApi]);
 
   async function discoverFiles() {
     // const fileSystemObject = await platformApi.openProject();
@@ -82,11 +96,16 @@ export default function Explorer({
   return (
     <>
       {editorContext?.persistSettings?.projectHomePath ? (
-        <div className="h-full w-full space-y-2 bg-content2 p-4">
+        <div className="h-full w-full space-y-2 bg-content2 p-4 overflow-y-auto">
           <Button className="w-full">New Project</Button>
           <div className="grid w-full grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div className="h-24 rounded-lg bg-default" key={index}></div>
+            {projects.map((project, index) => (
+              <div className="flex h-28 w-full flex-col gap-y-0.5" key={index}>
+                <div className="h-full w-full rounded-lg bg-default"></div>
+                <div>
+                  <p className="text-center">{project}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
