@@ -18,6 +18,7 @@ export default function usePersistSettings() {
     const isPasswordSet = getValue<boolean>("isPasswordSet");
     const ttl = getValue<number>("ttl");
     const ttsVoice = getValue<string>("ttsVoice");
+    const projectHomePath = getValue<string>("projectHomePath");
 
     loadedSettings.sttProvider = sttProvider ?? undefined;
     loadedSettings.llmProvider = llmProvider ?? undefined;
@@ -29,6 +30,7 @@ export default function usePersistSettings() {
     loadedSettings.isPasswordSet = isPasswordSet ?? undefined;
     loadedSettings.ttl = ttl ?? undefined;
     loadedSettings.ttsVoice = ttsVoice ?? undefined;
+    loadedSettings.projectHomePath = projectHomePath ?? undefined;
 
     // Only load API keys here if password is not set.
     // If password is set, API keys will be loaded after password is entered.
@@ -60,6 +62,7 @@ export default function usePersistSettings() {
     setValue("isPasswordSet", settings.isPasswordSet);
     setValue("ttl", settings.ttl); // 14 days
     setValue("ttsVoice", settings.ttsVoice);
+    setValue("projectHomePath", settings.projectHomePath);
 
     // Do not allow API token editing after password is set
     if (!settings.isPasswordSet) {
@@ -96,6 +99,7 @@ export default function usePersistSettings() {
     setValue("isPasswordSet", undefined);
     setValue("ttl", undefined);
     setValue("ttsVoice", undefined);
+    setValue("projectHomePath", undefined);
   }
 
   return {

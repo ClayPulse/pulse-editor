@@ -1,8 +1,4 @@
-import {
-  OpenFileDialogConfig,
-  Folder,
-  SaveFileDialogConfig,
-} from "@/lib/types";
+import { FileSystemObject, OpenFileDialogConfig } from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
 export class ElectronAPI extends AbstractPlatformAPI {
@@ -13,28 +9,15 @@ export class ElectronAPI extends AbstractPlatformAPI {
     this.electronAPI = window.electronAPI;
   }
 
-  async showOpenFileDialog(config?: OpenFileDialogConfig): Promise<File[]> {
-    // Open a file dialogue and return the selected folder
-    const paths: string[] = await this.electronAPI.showOpenFileDialog(config);
-
-    if (!paths) {
-      return [];
-    }
-
-    const files = [];
-    for (const path of paths) {
-      const data: string = await this.electronAPI.readFile(path);
-      const file = new File([data], path);
-      files.push(file);
-    }
-
-    return files;
+  async selectPath(): Promise<string | undefined> {
+    return await this.electronAPI.selectPath();
   }
 
-  async openFolder(uri: string): Promise<Folder | undefined> {
-    throw new Error("Method not implemented.");
+  async listPathFolders(uri: string): Promise<string[]> {
+    return await this.electronAPI.listPathFolders(uri);
   }
-  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
+
+  async openProject(uri: string): Promise<FileSystemObject | undefined> {
     throw new Error("Method not implemented.");
   }
   async openFile(uri: string): Promise<File | undefined> {

@@ -24,6 +24,8 @@ export type EditorStates = {
 
   // Toolbar
   isToolbarOpen: boolean;
+
+  project?: string;
 };
 
 export type PersistSettings = {
@@ -45,6 +47,8 @@ export type PersistSettings = {
   ttl?: number;
 
   ttsVoice?: string;
+
+  projectHomePath?: string;
 };
 
 export type DrawnLine = {
@@ -109,7 +113,6 @@ export type ViewRef = {
   updateViewDocument: (viewDocument: Partial<ViewDocument>) => void;
 };
 
-
 export type EditorContextType = {
   editorStates: EditorStates;
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
@@ -120,7 +123,6 @@ export type EditorContextType = {
   // notifyViewManagerUpdate: () => void;
   aiModelConfig: AIModelConfig;
 };
-
 
 /* File system */
 export type OpenFileDialogConfig = {
@@ -139,8 +141,3 @@ export type FileSystemObject = {
   isFolder: boolean;
   subDirItems?: FileSystemObject[];
 };
-
-export type Folder = {
-  file: File;
-  uri: string;
-}[];

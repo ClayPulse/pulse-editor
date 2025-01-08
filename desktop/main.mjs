@@ -86,13 +86,30 @@ async function handleWriteFile(event, data, path) {
   await fs.promises.writeFile(path, data);
 }
 
-app.whenReady().then(() => {
-  nativeTheme.themeSource = "light";
+async function handleSelectPath(event) {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
+  if (!canceled) {
+    return filePaths[0];
+  }
+}
 
-  ipcMain.handle("show-open-file-dialog", handleShowOpenFileDialog);
-  ipcMain.handle("show-save-file-dialog", handleShowSaveFileDialog);
+// List all folders in a path
+async function handleListPathFolders(event, uri) {
+  const files = await fs.promises.readdir(uri, { withFileTypes: true });
+  const folders = files
+    .filter((file) => file.isDirectory())
+    .map((file) => file.name);
+
+  return folders;
+}
+
+app.whenReady().then(() => {
   ipcMain.handle("read-file", handleReadFile);
   ipcMain.handle("write-file", handleWriteFile);
+  ipcMain.handle("select-path", handleSelectPath);
+  ipcMain.handle("list-path-folders", handleListPathFolders);
   createWindow();
 });
 

@@ -1,4 +1,5 @@
 import {
+  Button,
   Divider,
   Input,
   Select,
@@ -14,6 +15,8 @@ import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
 import { PersistSettings } from "@/lib/types";
+import Icon from "../icon";
+import useExplorer from "@/lib/hooks/use-explorer";
 
 export default function SettingModal({
   isOpen,
@@ -24,6 +27,7 @@ export default function SettingModal({
 }) {
   const editorContext = useContext(EditorContext);
   const [ttl, setTTL] = useState<string>("14");
+  const { selectAndSetProjectHome } = useExplorer();
 
   function updateEditorSettings({
     settings,
@@ -43,6 +47,51 @@ export default function SettingModal({
           Settings
         </p>
         <div className="mt-2 flex w-full flex-col gap-2">
+          <div>
+            <p className="text-small text-foreground">Editor Settings</p>
+            <div className="w-full space-y-2">
+              {editorContext?.persistSettings?.projectHomePath ? (
+                <Input
+                  label="Project Home Path"
+                  size="md"
+                  isRequired
+                  value={editorContext?.persistSettings?.projectHomePath}
+                  onValueChange={(value) => {
+                    updateEditorSettings({
+                      settings: {
+                        projectHomePath: value,
+                      },
+                    });
+                  }}
+                  endContent={
+                    <Button
+                      onPress={() => {
+                        selectAndSetProjectHome();
+                      }}
+                      isIconOnly
+                      variant="light"
+                    >
+                      <Icon name="folder" />
+                    </Button>
+                  }
+                />
+              ) : (
+                <div className="space-y-1">
+                  <p className="text-sm text-content4-foreground">
+                    All your projects will be saved in this folder.
+                  </p>
+                  <Button
+                    className="w-full"
+                    onPress={() => {
+                      selectAndSetProjectHome();
+                    }}
+                  >
+                    Select Project Home Path
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
           <div>
             <p className="text-small text-foreground">STT</p>
             <div className="w-full space-y-2">
