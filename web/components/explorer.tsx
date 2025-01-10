@@ -1,6 +1,6 @@
 "use client";
 
-import { ViewDocument } from "@/lib/types";
+import { ProjectInfo, ViewDocument } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "./providers/editor-context-provider";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
@@ -22,7 +22,7 @@ export default function Explorer({
   const editorContext = useContext(EditorContext);
   const { selectAndSetProjectHome } = useExplorer();
   const { platformApi } = usePlatformApi();
-  const [projects, setProjects] = useState<string[]>([]);
+  const [projects, setProjects] = useState<ProjectInfo[]>([]);
 
   useEffect(() => {
     if (platformApi) {
@@ -35,8 +35,20 @@ export default function Explorer({
     }
   }, [editorContext?.persistSettings, platformApi]);
 
-  async function discoverFiles() {
-    // const fileSystemObject = await platformApi.openProject();
+  function openProject(projectName: string) {
+    const uri =
+      editorContext?.persistSettings?.projectHomePath + "/" + projectName;
+
+    platformApi?.discoverProjectContent(uri).then((objects) => {
+      console.log(objects);
+      editorContext?.setEditorStates((prev) => {
+        return {
+          ...prev,
+          project: projectName,
+          projectContent: objects,
+        };
+      });
+    });
   }
 
   function saveFile() {
@@ -93,19 +105,39 @@ export default function Explorer({
     setIsMenuOpen(false);
   }
 
+  function formatDateTime(date: Date) {
+    const year = date.getFullYear();
+    const month = (1 + date.getMonth()).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const hour = date.getHours().toString().padStart(2, "0");
+    const minute = date.getMinutes().toString().padStart(2, "0");
+
+    return year + "-" + month + "-" + day + " " + hour + ":" + minute;
+  }
+
   return (
     <>
       {editorContext?.persistSettings?.projectHomePath ? (
-        <div className="h-full w-full space-y-2 bg-content2 p-4 overflow-y-auto">
+        <div className="h-full w-full space-y-2 overflow-y-auto bg-content2 p-4">
           <Button className="w-full">New Project</Button>
-          <div className="grid w-full grid-cols-2 gap-4">
+          <div className="flex w-full flex-col gap-2">
             {projects.map((project, index) => (
-              <div className="flex h-28 w-full flex-col gap-y-0.5" key={index}>
-                <div className="h-full w-full rounded-lg bg-default"></div>
-                <div>
-                  <p className="text-center">{project}</p>
+              <Button
+                className="w-full"
+                key={index}
+                variant="light"
+                onPress={() => {
+                  openProject(project.name);
+                }}
+              >
+                <div className="flex w-full flex-col items-start justify-center">
+                  <p>{project.name}</p>
+                  <p className="text-xs">
+                    {/* Format date time to YYYY-mm-DD HH-MM */}
+                    {"Created: " + formatDateTime(project.ctime)}
+                  </p>
                 </div>
-              </div>
+              </Button>
             ))}
           </div>
         </div>

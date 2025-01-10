@@ -1,4 +1,4 @@
-import { FileSystemObject, OpenFileDialogConfig } from "@/lib/types";
+import { FileSystemObject, OpenFileDialogConfig, ProjectInfo } from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
 export class ElectronAPI extends AbstractPlatformAPI {
@@ -13,8 +13,12 @@ export class ElectronAPI extends AbstractPlatformAPI {
     return await this.electronAPI.selectPath();
   }
 
-  async listPathFolders(uri: string): Promise<string[]> {
+  async listPathFolders(uri: string): Promise<ProjectInfo[]> {
     return await this.electronAPI.listPathFolders(uri);
+  }
+
+  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
+    return await this.electronAPI.discoverProjectContent(uri);
   }
 
   async openProject(uri: string): Promise<FileSystemObject | undefined> {

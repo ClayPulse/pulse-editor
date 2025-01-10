@@ -1,4 +1,8 @@
-import { FileSystemObject, OpenFileDialogConfig } from "@/lib/types";
+import {
+  FileSystemObject,
+  OpenFileDialogConfig,
+  ProjectInfo,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 import toast from "react-hot-toast";
 
@@ -12,7 +16,12 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
-  async listPathFolders(uri: string): Promise<string[]> {
+  async listPathFolders(uri: string): Promise<ProjectInfo[]> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
+
+  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
   }

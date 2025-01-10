@@ -26,6 +26,7 @@ export type EditorStates = {
   isToolbarOpen: boolean;
 
   project?: string;
+  projectContent?: FileSystemObject[];
 };
 
 export type PersistSettings = {
@@ -140,4 +141,9 @@ export type FileSystemObject = {
   file?: File;
   isFolder: boolean;
   subDirItems?: FileSystemObject[];
+};
+
+export type ProjectInfo = {
+  name: string;
+  ctime: Date;
 };

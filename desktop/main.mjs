@@ -100,9 +100,40 @@ async function handleListPathFolders(event, uri) {
   const files = await fs.promises.readdir(uri, { withFileTypes: true });
   const folders = files
     .filter((file) => file.isDirectory())
-    .map((file) => file.name);
+    .map((file) => file.name)
+    .map((projectName) => ({
+      name: projectName,
+      ctime: fs.statSync(path.join(uri, projectName)).ctime,
+    }));
 
   return folders;
+}
+
+async function discoverProjectContent(uri) {
+  const files = await fs.promises.readdir(uri, { withFileTypes: true });
+
+  const promise = files.map(async (file) => {
+    const name = file.name;
+    if (file.isDirectory()) {
+      return {
+        name: name,
+        isFolder: true,
+        subDirItems: await discoverProjectContent(path.join(uri, name)),
+      };
+    } else {
+      return {
+        name,
+        isFolder: false,
+      };
+    }
+  });
+
+  return Promise.all(promise);
+}
+
+// Discover the content of a project
+async function handleDiscoverProjectContent(event, uri) {
+  return await discoverProjectContent(uri);
 }
 
 app.whenReady().then(() => {
@@ -110,6 +141,7 @@ app.whenReady().then(() => {
   ipcMain.handle("write-file", handleWriteFile);
   ipcMain.handle("select-path", handleSelectPath);
   ipcMain.handle("list-path-folders", handleListPathFolders);
+  ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
   createWindow();
 });
 

@@ -1,8 +1,11 @@
+import { PlatformEnum } from "../platform-api/available-platforms";
+import { getPlatform } from "../platform-api/platform-checker";
 import { PersistSettings } from "../types";
 import { useLocalStorage } from "./use-local-storage";
 
 export default function usePersistSettings() {
   const { getValue, setValue } = useLocalStorage();
+  const platform = getPlatform();
 
   async function getPersistSettings(): Promise<PersistSettings> {
     // Load settings from local storage

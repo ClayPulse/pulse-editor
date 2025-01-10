@@ -153,7 +153,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
       )}
 
       <div
-        className={`flex h-full w-full overflow-hidden ${isShowNavbar ? "pt-[48px]" : ""}`}
+        className={`relative flex h-full w-full overflow-hidden ${isShowNavbar ? "pt-[48px]" : ""}`}
       >
         {isShowNavbar && (
           <NavMenu isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
