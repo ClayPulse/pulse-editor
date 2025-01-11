@@ -1,4 +1,4 @@
-import { FileSystemObject, ProjectInfo } from "../types";
+import { FileSystemObject, PersistentSettings, ProjectInfo } from "../types";
 
 export abstract class AbstractPlatformAPI {
   // Show a selection dialogue
@@ -11,4 +11,8 @@ export abstract class AbstractPlatformAPI {
   // abstract saveFolder(folder: Folder, uriPrefix: string): Promise<void>;
   abstract openFile(uri: string): Promise<File | undefined>;
   abstract saveFile(file: File, uri: string): Promise<void>;
+
+  abstract getPersistentSettings(): Promise<PersistentSettings>;
+  abstract setPersistentSettings(settings: PersistentSettings): Promise<void>;
+  abstract resetPersistentSettings(): Promise<void>;
 }

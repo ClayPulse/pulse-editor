@@ -2,9 +2,12 @@ import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import serve from "electron-serve";
 import path from "path";
 import { fileURLToPath } from "url";
-import { nativeTheme } from "electron/main";
 
 import fs from "fs";
+
+// Change path to "Pulse Studio" 
+app.setName("Pulse Studio");
+app.setPath("userData", app.getPath("userData").replace("pulse-editor-desktop", "Pulse Studio"));
 
 // Get the file path of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -16,7 +19,7 @@ const appServe = serve({
   directory: path.join(process.resourcesPath, "next"),
 });
 
-const createWindow = () => {
+function createWindow() {
   const win = new BrowserWindow({
     width: 960,
     height: 600,
@@ -46,32 +49,15 @@ const createWindow = () => {
       win.webContents.reloadIgnoringCache();
     });
   }
-};
+
+  ipcMain.on("set-title", handleSetTitle);
+}
 
 function handleSetTitle(event, title) {
   console.log("Setting title:", title);
   const webContents = event.sender;
   const win = BrowserWindow.fromWebContents(webContents);
   win.setTitle(title);
-
-  return title[0];
-}
-
-async function handleShowOpenFileDialog(event, config) {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: config?.isFolder ? ["openDirectory"] : ["openFile"],
-  });
-  if (!canceled) {
-    return filePaths;
-  }
-}
-
-async function handleShowSaveFileDialog(event, config) {
-  const { canceled, filePath } = await dialog.showSaveDialog({});
-  if (!canceled) {
-    return filePath;
-  }
-  return undefined;
 }
 
 async function handleReadFile(event, path) {
@@ -136,12 +122,31 @@ async function handleDiscoverProjectContent(event, uri) {
   return await discoverProjectContent(uri);
 }
 
+// Settings
+const userDataPath = app.getPath("userData");
+const settingsPath = path.join(userDataPath, "settings.json");
+
+function saveSettings(settings) {
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+}
+
+function loadSettings() {
+  if (fs.existsSync(settingsPath)) {
+    const data = fs.readFileSync(settingsPath, "utf-8");
+    return JSON.parse(data);
+  }
+  return {};
+}
+
+
 app.whenReady().then(() => {
   ipcMain.handle("read-file", handleReadFile);
   ipcMain.handle("write-file", handleWriteFile);
   ipcMain.handle("select-path", handleSelectPath);
   ipcMain.handle("list-path-folders", handleListPathFolders);
   ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
+  ipcMain.handle("load-settings", () => loadSettings());
+  ipcMain.handle("save-settings", (_, settings) => saveSettings(settings));
   createWindow();
 });
 

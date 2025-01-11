@@ -29,7 +29,7 @@ export type EditorStates = {
   projectContent?: FileSystemObject[];
 };
 
-export type PersistSettings = {
+export type PersistentSettings = {
   sttProvider?: string;
   llmProvider?: string;
   ttsProvider?: string;
@@ -117,8 +117,8 @@ export type ViewRef = {
 export type EditorContextType = {
   editorStates: EditorStates;
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
-  persistSettings: PersistSettings | undefined;
-  setPersistSettings: Dispatch<SetStateAction<PersistSettings | undefined>>;
+  persistSettings: PersistentSettings | undefined;
+  setPersistSettings: Dispatch<SetStateAction<PersistentSettings | undefined>>;
   viewManager: ViewManager | undefined;
   setViewManager: Dispatch<SetStateAction<ViewManager | undefined>>;
   // notifyViewManagerUpdate: () => void;

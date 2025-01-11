@@ -1,4 +1,4 @@
-import { FileSystemObject, ProjectInfo } from "@/lib/types";
+import { FileSystemObject, PersistentSettings, ProjectInfo } from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
 import { FilePicker } from "@capawesome/capacitor-file-picker";
@@ -94,5 +94,37 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     } catch (e) {
       console.error("Error writing file", e);
     }
+  }
+
+  async getPersistentSettings(): Promise<PersistentSettings> {
+    try {
+      const res = await Filesystem.readFile({
+        path: "settings.json",
+        directory: Directory.Data,
+        encoding: Encoding.UTF8,
+      });
+
+      const settings = JSON.parse(res.data as string);
+
+      return settings;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  async setPersistentSettings(settings: PersistentSettings): Promise<void> {
+    await Filesystem.writeFile({
+      data: JSON.stringify(settings),
+      path: "settings.json",
+      directory: Directory.Data,
+      encoding: Encoding.UTF8,
+    });
+  }
+
+  async resetPersistentSettings(): Promise<void> {
+    await Filesystem.deleteFile({
+      path: "settings.json",
+      directory: Directory.Data,
+    });
   }
 }

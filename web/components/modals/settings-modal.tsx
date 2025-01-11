@@ -14,7 +14,7 @@ import { ttsProviderOptions } from "@/lib/tts/options";
 import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
-import { PersistSettings } from "@/lib/types";
+import { PersistentSettings } from "@/lib/types";
 import Icon from "../icon";
 import useExplorer from "@/lib/hooks/use-explorer";
 
@@ -32,7 +32,7 @@ export default function SettingModal({
   function updateEditorSettings({
     settings,
   }: {
-    settings: Partial<PersistSettings> | undefined;
+    settings: Partial<PersistentSettings> | undefined;
   }) {
     editorContext?.setPersistSettings((prev) => ({
       ...prev,

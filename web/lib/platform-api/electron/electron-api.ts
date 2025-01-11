@@ -1,4 +1,9 @@
-import { FileSystemObject, OpenFileDialogConfig, ProjectInfo } from "@/lib/types";
+import {
+  FileSystemObject,
+  OpenFileDialogConfig,
+  PersistentSettings,
+  ProjectInfo,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
 export class ElectronAPI extends AbstractPlatformAPI {
@@ -36,5 +41,20 @@ export class ElectronAPI extends AbstractPlatformAPI {
   async saveFile(file: File, uri: string): Promise<void> {
     const data = await file.text();
     await this.electronAPI.writeFile(data, uri);
+  }
+
+  async getPersistentSettings(): Promise<PersistentSettings> {
+    const persistentSettings: PersistentSettings =
+      await this.electronAPI.loadSettings();
+
+    return persistentSettings;
+  }
+
+  async setPersistentSettings(settings: PersistentSettings): Promise<void> {
+    await this.electronAPI.saveSettings(settings);
+  }
+
+  async resetPersistentSettings(): Promise<void> {
+    await this.electronAPI.saveSettings({});
   }
 }
