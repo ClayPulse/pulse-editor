@@ -82,7 +82,7 @@ async function handleSelectPath(event) {
 }
 
 // List all folders in a path
-async function handleListPathFolders(event, uri) {
+async function handleListPathProjects(event, uri) {
   const files = await fs.promises.readdir(uri, { withFileTypes: true });
   const folders = files
     .filter((file) => file.isDirectory())
@@ -126,11 +126,11 @@ async function handleDiscoverProjectContent(event, uri) {
 const userDataPath = app.getPath("userData");
 const settingsPath = path.join(userDataPath, "settings.json");
 
-function saveSettings(settings) {
+function handleSaveSettings(event, settings) {
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 }
 
-function loadSettings() {
+function handleLoadSettings(event) {
   if (fs.existsSync(settingsPath)) {
     const data = fs.readFileSync(settingsPath, "utf-8");
     return JSON.parse(data);
@@ -138,15 +138,21 @@ function loadSettings() {
   return {};
 }
 
+async function handleCreateProject(event, uri) {
+  // Create a folder at the uri
+  await fs.promises.mkdir(uri);
+}
+
 
 app.whenReady().then(() => {
   ipcMain.handle("read-file", handleReadFile);
   ipcMain.handle("write-file", handleWriteFile);
   ipcMain.handle("select-path", handleSelectPath);
-  ipcMain.handle("list-path-folders", handleListPathFolders);
+  ipcMain.handle("list-path-projects", handleListPathProjects);
   ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
-  ipcMain.handle("load-settings", () => loadSettings());
-  ipcMain.handle("save-settings", (_, settings) => saveSettings(settings));
+  ipcMain.handle("load-settings", handleLoadSettings);
+  ipcMain.handle("save-settings", handleSaveSettings);
+  ipcMain.handle("create-project", handleCreateProject);
   createWindow();
 });
 

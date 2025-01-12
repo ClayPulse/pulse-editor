@@ -27,6 +27,7 @@ export type EditorStates = {
 
   project?: string;
   projectContent?: FileSystemObject[];
+  projectsInfo?: ProjectInfo[];
 };
 
 export type PersistentSettings = {

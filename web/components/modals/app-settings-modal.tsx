@@ -17,8 +17,10 @@ import { EditorContext } from "../providers/editor-context-provider";
 import { PersistentSettings } from "@/lib/types";
 import Icon from "../icon";
 import useExplorer from "@/lib/hooks/use-explorer";
+import { getPlatform } from "@/lib/platform-api/platform-checker";
+import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 
-export default function SettingModal({
+export default function AppSettingsModal({
   isOpen,
   setIsOpen,
 }: {
@@ -44,7 +46,7 @@ export default function SettingModal({
     <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
       <>
         <p className="text-center text-lg font-bold text-foreground">
-          Settings
+          App Settings
         </p>
         <div className="mt-2 flex w-full flex-col gap-2">
           <div>
@@ -74,6 +76,7 @@ export default function SettingModal({
                       <Icon name="folder" />
                     </Button>
                   }
+                  isDisabled={getPlatform() === PlatformEnum.Capacitor}
                 />
               ) : (
                 <div className="space-y-1">

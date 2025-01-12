@@ -3,7 +3,7 @@
 import { Button, Divider, Tooltip } from "@nextui-org/react";
 import { useContext, useState } from "react";
 import Icon from "@/components/icon";
-import SettingModal from "@/components/modals/settings-modal";
+import AppSettingsModal from "@/components/modals/app-settings-modal";
 import { AnimatePresence, motion } from "framer-motion";
 import { EditorContext } from "./providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
@@ -167,7 +167,7 @@ export default function EditorToolbar() {
                   <Icon name="settings" variant="outlined" />
                 </Button>
               </Tooltip>
-              <SettingModal
+              <AppSettingsModal
                 isOpen={isSettingsOpen}
                 setIsOpen={setIsSettingsOpen}
               />

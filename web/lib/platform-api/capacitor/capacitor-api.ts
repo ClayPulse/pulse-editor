@@ -1,26 +1,32 @@
 import { FileSystemObject, PersistentSettings, ProjectInfo } from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
-import { FilePicker } from "@capawesome/capacitor-file-picker";
 
 export class CapacitorAPI extends AbstractPlatformAPI {
   constructor() {
     super();
+
+    // If "projects" directory does not exist, create it
+
+    Filesystem.readdir({
+      path: "/projects",
+      directory: Directory.Data,
+    }).catch((e) => {
+      Filesystem.mkdir({
+        path: "/projects",
+        directory: Directory.Data,
+      });
+    });
   }
 
   async selectPath(): Promise<string | undefined> {
-    const result = await FilePicker.pickDirectory();
-    const uri = decodeURIComponent(result.path).replace(
-      "content://com.android.externalstorage.documents/tree/primary:",
-      "/",
-    );
-    return uri;
+    throw new Error("Cannot access external storage on mobile.");
   }
 
-  async listPathFolders(uri: string): Promise<ProjectInfo[]> {
+  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
     const files = await Filesystem.readdir({
       path: uri,
-      directory: Directory.ExternalStorage,
+      directory: Directory.Data,
     });
 
     const folders = files.files
@@ -39,15 +45,12 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     if (permission.publicStorage !== "granted") {
       throw new Error("Permission denied");
     }
-    console.log("Permission", permission);
 
     const files = await Filesystem.readdir({
       path: uri,
-      directory: Directory.ExternalStorage,
+      directory: Directory.Data,
     });
 
-    console.log("Uri", uri);
-    console.log("Files", files);
     const promise = files.files.map(async (file) => {
       if (file.type === "directory") {
         const dirObj: FileSystemObject = {
@@ -69,6 +72,13 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     const fileSystemObjects = await Promise.all(promise);
 
     return fileSystemObjects;
+  }
+
+  async createProject(uri: string): Promise<void> {
+    await Filesystem.mkdir({
+      path: `${uri}`,
+      directory: Directory.Data,
+    });
   }
 
   async openProject(uri: string): Promise<FileSystemObject | undefined> {
@@ -106,9 +116,13 @@ export class CapacitorAPI extends AbstractPlatformAPI {
 
       const settings = JSON.parse(res.data as string);
 
+      settings.projectHomePath = "projects";
+
       return settings;
     } catch (e) {
-      return {};
+      return {
+        projectHomePath: "projects",
+      };
     }
   }
 

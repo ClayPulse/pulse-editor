@@ -39,7 +39,7 @@ export default function ModalWrapper({
       isDismissable={false}
     >
       <ModalContent>
-        <div className="h-fit w-full px-4 pt-6">
+        <div className="h-fit w-full px-4 pt-8">
           <div className="max-h-[70vh] overflow-y-auto pb-4">{children}</div>
         </div>
       </ModalContent>

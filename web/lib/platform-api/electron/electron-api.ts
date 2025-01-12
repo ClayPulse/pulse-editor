@@ -18,12 +18,16 @@ export class ElectronAPI extends AbstractPlatformAPI {
     return await this.electronAPI.selectPath();
   }
 
-  async listPathFolders(uri: string): Promise<ProjectInfo[]> {
-    return await this.electronAPI.listPathFolders(uri);
+  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
+    return await this.electronAPI.listPathProjects(uri);
   }
 
   async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
     return await this.electronAPI.discoverProjectContent(uri);
+  }
+
+  async createProject(uri: string): Promise<void> {
+    await this.electronAPI.createProject(uri);
   }
 
   async openProject(uri: string): Promise<FileSystemObject | undefined> {

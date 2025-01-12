@@ -22,12 +22,17 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
-  async listPathFolders(uri: string): Promise<ProjectInfo[]> {
+  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
   }
 
   async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
+
+  async createProject(uri: string): Promise<void> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
   }

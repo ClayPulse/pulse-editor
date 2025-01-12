@@ -12,6 +12,7 @@ import { ViewManager } from "@/lib/views/view-manager";
 import { Button } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
+import ProjectSettingsModal from "./modals/project-settings-modal";
 
 export default function Explorer({
   setIsMenuOpen,
@@ -22,14 +23,21 @@ export default function Explorer({
   const editorContext = useContext(EditorContext);
   const { selectAndSetProjectHome } = useExplorer();
   const { platformApi } = usePlatformApi();
-  const [projects, setProjects] = useState<ProjectInfo[]>([]);
+
+  const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
+    useState(false);
 
   useEffect(() => {
     if (platformApi) {
       const homePath = editorContext?.persistSettings?.projectHomePath;
       if (homePath) {
-        platformApi.listPathFolders(homePath).then((projects) => {
-          setProjects(projects);
+        platformApi.listPathProjects(homePath).then((projects) => {
+          editorContext?.setEditorStates((prev) => {
+            return {
+              ...prev,
+              projectsInfo: projects,
+            };
+          });
         });
       }
     }
@@ -119,9 +127,21 @@ export default function Explorer({
     <>
       {editorContext?.persistSettings?.projectHomePath ? (
         <div className="h-full w-full space-y-2 overflow-y-auto bg-content2 p-4">
-          <Button className="w-full">New Project</Button>
+          <Button
+            className="w-full"
+            onPress={() => {
+              setIsProjectSettingsModalOpen(true);
+            }}
+          >
+            New Project
+          </Button>
+          <ProjectSettingsModal
+            isOpen={isProjectSettingsModalOpen}
+            setIsOpen={setIsProjectSettingsModalOpen}
+            isNewProject={true}
+          />
           <div className="flex w-full flex-col gap-2">
-            {projects.map((project, index) => (
+            {editorContext.editorStates.projectsInfo?.map((project, index) => (
               <Button
                 className="w-full"
                 key={index}
