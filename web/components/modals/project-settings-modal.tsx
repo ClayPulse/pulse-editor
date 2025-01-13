@@ -2,7 +2,7 @@
 
 import { Button, Input, Switch } from "@nextui-org/react";
 import ModalWrapper from "./modal-wrapper";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { EditorContext } from "../providers/editor-context-provider";
@@ -11,17 +11,23 @@ import { ProjectInfo } from "@/lib/types";
 export default function ProjectSettingsModal({
   isOpen,
   setIsOpen,
-  isNewProject,
+  projectInfo,
 }: {
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
-  isNewProject: boolean;
+  projectInfo?: ProjectInfo;
 }) {
   const [projectName, setProjectName] = useState("");
   const [isUsingManagedBackup, setIsUsingManagedBackup] = useState(false);
 
   const { platformApi } = usePlatformApi();
   const editorContext = useContext(EditorContext);
+
+  useEffect(() => {
+    if (projectInfo) {
+      setProjectName(projectInfo.name);
+    }
+  }, [projectInfo]);
 
   function handleCreateProject() {
     if (!platformApi) {
@@ -105,10 +111,10 @@ export default function ProjectSettingsModal({
             placeholder="e.g. https://github.com/Shellishack/pulse-editor.git"
           />
         )}
-        {isNewProject ? (
-          <Button onPress={handleCreateProject}>Create</Button>
-        ) : (
+        {projectInfo ? (
           <Button>Save</Button>
+        ) : (
+          <Button onPress={handleCreateProject}>Create</Button>
         )}
       </div>
     </ModalWrapper>

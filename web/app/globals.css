@@ -25,6 +25,10 @@ body {
   img {
     @apply inline-block;
   }
+
+  p {
+    @apply text-default-foreground;
+  }
 }
 
 @layer utilities {
