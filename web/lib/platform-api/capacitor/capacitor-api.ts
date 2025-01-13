@@ -52,11 +52,13 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     });
 
     const promise = files.files.map(async (file) => {
+      const absoluteUri = uri + "/" + file.name;
       if (file.type === "directory") {
         const dirObj: FileSystemObject = {
           name: file.name,
           isFolder: true,
-          subDirItems: await this.discoverProjectContent(uri + "/" + file.name),
+          subDirItems: await this.discoverProjectContent(absoluteUri),
+          uri: absoluteUri,
         };
         return dirObj;
       } else {
@@ -64,6 +66,7 @@ export class CapacitorAPI extends AbstractPlatformAPI {
         const fileObj: FileSystemObject = {
           name: file.name,
           isFolder: false,
+          uri: absoluteUri,
         };
         return fileObj;
       }
@@ -76,16 +79,18 @@ export class CapacitorAPI extends AbstractPlatformAPI {
 
   async createProject(uri: string): Promise<void> {
     await Filesystem.mkdir({
-      path: `${uri}`,
+      path: uri,
       directory: Directory.Data,
     });
   }
 
-  async openProject(uri: string): Promise<FileSystemObject | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  async openFile(uri: string): Promise<File | undefined> {
-    throw new Error("Method not implemented.");
+  async readFile(uri: string): Promise<File> {
+    const res = await Filesystem.readFile({
+      path: uri,
+      directory: Directory.Data,
+    });
+
+    return new File([res.data as BlobPart], uri);
   }
 
   /**
@@ -94,7 +99,7 @@ export class CapacitorAPI extends AbstractPlatformAPI {
    * @param file
    * @param uri
    */
-  async saveFile(file: File, uri: string): Promise<void> {
+  async writeFile(file: File, uri: string): Promise<void> {
     try {
       await Filesystem.writeFile({
         path: uri,

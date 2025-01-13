@@ -11,8 +11,8 @@ export abstract class AbstractPlatformAPI {
   abstract createProject(uri: string): Promise<void>;
 
   // abstract saveFolder(folder: Folder, uriPrefix: string): Promise<void>;
-  abstract openFile(uri: string): Promise<File | undefined>;
-  abstract saveFile(file: File, uri: string): Promise<void>;
+  abstract readFile(uri: string): Promise<File>;
+  abstract writeFile(file: File, uri: string): Promise<void>;
 
   // Persistent settings
   abstract getPersistentSettings(): Promise<PersistentSettings>;

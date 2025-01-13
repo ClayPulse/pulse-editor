@@ -5,9 +5,12 @@ import { fileURLToPath } from "url";
 
 import fs from "fs";
 
-// Change path to "Pulse Studio" 
+// Change path to "Pulse Studio"
 app.setName("Pulse Studio");
-app.setPath("userData", app.getPath("userData").replace("pulse-editor-desktop", "Pulse Studio"));
+app.setPath(
+  "userData",
+  app.getPath("userData").replace("pulse-editor-desktop", "Pulse Studio")
+);
 
 // Get the file path of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -100,18 +103,21 @@ async function discoverProjectContent(uri) {
 
   const promise = files.map(async (file) => {
     const name = file.name;
+    const absoluteUri = path.join(uri, name);
     if (file.isDirectory()) {
       return {
         name: name,
         isFolder: true,
-        subDirItems: await discoverProjectContent(path.join(uri, name)),
-      };
-    } else {
-      return {
-        name,
-        isFolder: false,
+        subDirItems: await discoverProjectContent(absoluteUri),
+        uri: absoluteUri,
       };
     }
+    
+    return {
+      name,
+      isFolder: false,
+      uri: absoluteUri,
+    };
   });
 
   return Promise.all(promise);
@@ -142,7 +148,6 @@ async function handleCreateProject(event, uri) {
   // Create a folder at the uri
   await fs.promises.mkdir(uri);
 }
-
 
 app.whenReady().then(() => {
   ipcMain.handle("read-file", handleReadFile);

@@ -21,6 +21,79 @@ import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import ProjectSettingsModal from "./modals/project-settings-modal";
 import Icon from "./icon";
 
+function TreeNode({
+  object,
+  viewFile,
+}: {
+  object: FileSystemObject;
+  viewFile: (uri: string) => void;
+}) {
+  const [isFolderCollapsed, setIsFolderCollapsed] = useState(true);
+
+  return object.isFolder ? (
+    <div className="space-y-0.5">
+      <Button
+        className="h-6 w-full px-2 text-[16px]"
+        size="sm"
+        onPress={() => {
+          setIsFolderCollapsed(!isFolderCollapsed);
+        }}
+      >
+        <div className="flex w-full">
+          <p>{object.name}</p>
+          <div className="flex w-full justify-end">
+            <Icon name={isFolderCollapsed ? "expand_more" : "expand_less"} />
+          </div>
+        </div>
+      </Button>
+      {object.subDirItems && !isFolderCollapsed && (
+        <div className="ml-4">
+          <TreeView objects={object.subDirItems} viewFile={viewFile} />
+        </div>
+      )}
+    </div>
+  ) : (
+    <Button
+      className="h-6 w-full px-2 text-[16px]"
+      size="sm"
+      onPress={() => {
+        viewFile(object.uri);
+      }}
+      variant="light"
+    >
+      <div className="w-full">
+        <p className="w-fit">{object.name}</p>
+      </div>
+    </Button>
+  );
+}
+
+function TreeView({
+  objects,
+  viewFile,
+}: {
+  objects: FileSystemObject[];
+  viewFile: (uri: string) => void;
+}) {
+  if (objects.length === 0) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center">
+        <p>Empty content. Create a new file to get started.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5">
+      {objects.map((object) => {
+        return (
+          <TreeNode key={object.uri} object={object} viewFile={viewFile} />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Explorer({
   setIsMenuOpen,
 }: {
@@ -30,9 +103,8 @@ export default function Explorer({
   const editorContext = useContext(EditorContext);
   const { selectAndSetProjectHome } = useExplorer();
   const { platformApi } = usePlatformApi();
-
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
-    useState(false);
+  useState(false);
 
   useEffect(() => {
     if (platformApi) {
@@ -55,7 +127,6 @@ export default function Explorer({
       editorContext?.persistSettings?.projectHomePath + "/" + projectName;
 
     platformApi?.discoverProjectContent(uri).then((objects) => {
-      console.log(objects);
       editorContext?.setEditorStates((prev) => {
         return {
           ...prev,
@@ -89,24 +160,21 @@ export default function Explorer({
     }
   }
 
-  function openFile() {
-    // platformApi?.showOpenFileDialog().then((files) => {
-    //   console.log(files);
-    //   const firstFile = files[0];
-    //   firstFile?.text().then((text) => {
-    //     console.log("File content:\n" + text);
-    //     const viewDocument: ViewDocument = {
-    //       fileContent: text,
-    //       filePath: firstFile.name,
-    //     };
-    //     openDocumentInView(viewDocument);
-    //   });
-    // });
+  function viewFile(uri: string) {
+    platformApi?.readFile(uri).then((file) => {
+      file?.text().then((text) => {
+        const viewDocument: ViewDocument = {
+          fileContent: text,
+          filePath: uri,
+        };
+        openDocumentInView(viewDocument);
+      });
+    });
   }
 
   function openDocumentInView(doc: ViewDocument) {
     const view = new View(ViewTypeEnum.Code, doc);
-    // Notify state update
+    // Notify state update by setting a modified copy of the view manager
     editorContext?.setViewManager((prev) => {
       const newVM = ViewManager.copy(prev);
       newVM?.clearView();
@@ -117,7 +185,9 @@ export default function Explorer({
       return newVM;
     });
 
-    setIsMenuOpen(false);
+    if (platform === PlatformEnum.Capacitor) {
+      setIsMenuOpen(false);
+    }
   }
 
   function formatDateTime(date: Date) {
@@ -130,90 +200,10 @@ export default function Explorer({
     return year + "-" + month + "-" + day + " " + hour + ":" + minute;
   }
 
-  function closeProject() {
-    editorContext?.setEditorStates((prev) => {
-      return {
-        ...prev,
-        project: "",
-        projectContent: [],
-      };
-    });
-  }
-
-  function handleProjectMenu(key: Key) {
-    if (key === "close") {
-      closeProject();
-    } else if (key === "settings") {
-      setIsProjectSettingsModalOpen(true);
-    }
-  }
-
-  function TreeNode({ object }: { object: FileSystemObject }) {
-    const [isFolderCollapsed, setIsFolderCollapsed] = useState(true);
-
-    return object.isFolder ? (
-      <div className="space-y-0.5">
-        <Button
-          className="h-6 w-full px-2 text-[16px]"
-          size="sm"
-          onPress={() => {
-            setIsFolderCollapsed(!isFolderCollapsed);
-          }}
-        >
-          <div className="flex w-full">
-            <div>{object.name}</div>
-            <div className="flex w-full justify-end">
-              <Icon name={isFolderCollapsed ? "expand_more" : "expand_less"} />
-            </div>
-          </div>
-        </Button>
-        {object.subDirItems && !isFolderCollapsed && (
-          <div className="ml-4">
-            <TreeView objects={object.subDirItems} />
-          </div>
-        )}
-      </div>
-    ) : (
-      <div className="px-2">{object.name}</div>
-    );
-  }
-
-  function TreeView({ objects }: { objects: FileSystemObject[] }) {
-    return (
-      <div className="space-y-0.5">
-        {objects.map((object, index) => {
-          return <TreeNode key={index} object={object} />;
-        })}
-      </div>
-    );
-  }
-
   // Browse inside a project
   if (editorContext?.editorStates.project) {
     return (
-      <div className="flex h-full w-full flex-col space-y-2 overflow-y-auto bg-content2 p-4">
-        <div className="flex w-full items-center justify-center pl-8">
-          <p>{editorContext.editorStates.project}</p>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button onPress={() => {}} isIconOnly variant="light" size="sm">
-                <Icon name="expand_more" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu onAction={handleProjectMenu}>
-              <DropdownItem key="close">Close Project</DropdownItem>
-              <DropdownItem key="settings">Project Settings</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>{" "}
-          <ProjectSettingsModal
-            isOpen={isProjectSettingsModalOpen}
-            setIsOpen={setIsProjectSettingsModalOpen}
-            projectInfo={editorContext.editorStates.projectsInfo?.find(
-              (project) => project.name === editorContext.editorStates.project,
-            )}
-          />
-        </div>
-
+      <div className="flex h-full w-full flex-col space-y-2 overflow-y-auto bg-content2 px-4 py-2">
         <div className="flex h-10 w-full items-center rounded-xl bg-default px-3 text-default-foreground">
           <div className="flex w-full">
             <Button isIconOnly variant="light" size="sm">
@@ -236,7 +226,10 @@ export default function Explorer({
           </div>
         </div>
 
-        <TreeView objects={editorContext.editorStates.projectContent ?? []} />
+        <TreeView
+          objects={editorContext.editorStates.projectContent ?? []}
+          viewFile={viewFile}
+        />
       </div>
     );
   }

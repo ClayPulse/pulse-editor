@@ -30,11 +30,9 @@ export class ElectronAPI extends AbstractPlatformAPI {
     await this.electronAPI.createProject(uri);
   }
 
-  async openProject(uri: string): Promise<FileSystemObject | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  async openFile(uri: string): Promise<File | undefined> {
-    throw new Error("Method not implemented.");
+  async readFile(uri: string): Promise<File> {
+    const data = await this.electronAPI.readFile(uri);
+    return new File([data], uri);
   }
 
   /**
@@ -42,7 +40,7 @@ export class ElectronAPI extends AbstractPlatformAPI {
    * @param file
    * @param uri
    */
-  async saveFile(file: File, uri: string): Promise<void> {
+  async writeFile(file: File, uri: string): Promise<void> {
     const data = await file.text();
     await this.electronAPI.writeFile(data, uri);
   }

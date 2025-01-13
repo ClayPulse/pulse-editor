@@ -138,6 +138,7 @@ export type SaveFileDialogConfig = {
 
 export type FileSystemObject = {
   name: string;
+  uri: string;
   extension?: string;
   file?: File;
   isFolder: boolean;

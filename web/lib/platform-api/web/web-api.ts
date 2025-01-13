@@ -38,13 +38,10 @@ export class WebAPI extends AbstractPlatformAPI {
   }
 
   // Reserved for cloud environment implementation
-  async openProject(uri: string): Promise<FileSystemObject | undefined> {
+  async readFile(uri: string): Promise<File> {
     throw new Error("Method not implemented.");
   }
-  async openFile(uri: string): Promise<File | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  async saveFile(file: File, uri: string): Promise<void> {
+  async writeFile(file: File, uri: string): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
