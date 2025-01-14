@@ -7,8 +7,13 @@ export abstract class AbstractPlatformAPI {
   abstract listPathProjects(uri: string): Promise<ProjectInfo[]>;
   // Discover project content
   abstract discoverProjectContent(uri: string): Promise<FileSystemObject[]>;
+
   // Create project
   abstract createProject(uri: string): Promise<void>;
+  // Create folder
+  abstract createFolder(uri: string): Promise<void>;
+  // Create file
+  abstract createFile(uri: string): Promise<void>;
 
   // abstract saveFolder(folder: Folder, uriPrefix: string): Promise<void>;
   abstract readFile(uri: string): Promise<File>;

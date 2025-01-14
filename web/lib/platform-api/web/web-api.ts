@@ -37,6 +37,17 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
+  async createFolder(uri: string): Promise<void> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
+
+  async createFile(uri: string): Promise<void> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
+
+
   // Reserved for cloud environment implementation
   async readFile(uri: string): Promise<File> {
     throw new Error("Method not implemented.");

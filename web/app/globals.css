@@ -29,6 +29,10 @@ body {
   p {
     @apply text-default-foreground;
   }
+
+  input {
+    @apply text-default-foreground;
+  }
 }
 
 @layer utilities {

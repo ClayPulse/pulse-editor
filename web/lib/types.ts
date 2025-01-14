@@ -29,7 +29,7 @@ export type EditorStates = {
   projectContent?: FileSystemObject[];
   projectsInfo?: ProjectInfo[];
 
-  explorerTreeViewNodeRefs: RefObject<TreeViewNodeRef | null>[];
+  explorerSelectedNodeRefs: RefObject<TreeViewNodeRef | null>[];
 
   pressedKeys: string[];
 };
@@ -157,9 +157,11 @@ export type ProjectInfo = {
 export type TreeViewGroupRef = {
   startCreatingNewFolder: () => void;
   startCreatingNewFile: () => void;
+  cancelCreating: () => void;
 };
 
 export type TreeViewNodeRef = {
-  getSubGroupRef: () => TreeViewGroupRef | null;
-  getName: () => string;
+  getParentGroupRef: () => TreeViewGroupRef | null;
+  getChildGroupRef: () => TreeViewGroupRef | null;
+  isFolder: () => boolean;
 };

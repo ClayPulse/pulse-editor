@@ -18,6 +18,10 @@ const __filename = fileURLToPath(import.meta.url);
 // Get the directory name of the current module
 const __dirname = path.dirname(__filename);
 
+// Settings
+const userDataPath = app.getPath("userData");
+const settingsPath = path.join(userDataPath, "settings.json");
+
 const appServe = serve({
   directory: path.join(process.resourcesPath, "next"),
 });
@@ -63,18 +67,6 @@ function handleSetTitle(event, title) {
   win.setTitle(title);
 }
 
-async function handleReadFile(event, path) {
-  // Read the file at path
-  const data = await fs.promises.readFile(path, "utf-8");
-
-  return data;
-}
-
-async function handleWriteFile(event, data, path) {
-  // Write the data at path
-  await fs.promises.writeFile(path, data);
-}
-
 async function handleSelectPath(event) {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ["openDirectory"],
@@ -112,7 +104,7 @@ async function discoverProjectContent(uri) {
         uri: absoluteUri,
       };
     }
-    
+
     return {
       name,
       isFolder: false,
@@ -123,14 +115,37 @@ async function discoverProjectContent(uri) {
   return Promise.all(promise);
 }
 
+async function handleCreateProject(event, uri) {
+  // Create a folder at the uri
+  await fs.promises.mkdir(uri);
+}
+
+async function handleCreateFolder(event, uri) {
+  // Create a folder at the uri
+  await fs.promises.mkdir(uri);
+}
+
+async function handleCreateFile(event, uri) {
+  // Create a file at the uri
+  await fs.promises.writeFile(uri, "");
+}
+
 // Discover the content of a project
 async function handleDiscoverProjectContent(event, uri) {
   return await discoverProjectContent(uri);
 }
 
-// Settings
-const userDataPath = app.getPath("userData");
-const settingsPath = path.join(userDataPath, "settings.json");
+async function handleReadFile(event, path) {
+  // Read the file at path
+  const data = await fs.promises.readFile(path, "utf-8");
+
+  return data;
+}
+
+async function handleWriteFile(event, data, path) {
+  // Write the data at path
+  await fs.promises.writeFile(path, data);
+}
 
 function handleSaveSettings(event, settings) {
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
@@ -144,20 +159,21 @@ function handleLoadSettings(event) {
   return {};
 }
 
-async function handleCreateProject(event, uri) {
-  // Create a folder at the uri
-  await fs.promises.mkdir(uri);
-}
-
 app.whenReady().then(() => {
-  ipcMain.handle("read-file", handleReadFile);
-  ipcMain.handle("write-file", handleWriteFile);
   ipcMain.handle("select-path", handleSelectPath);
   ipcMain.handle("list-path-projects", handleListPathProjects);
   ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
+
+  ipcMain.handle("create-project", handleCreateProject);
+  ipcMain.handle("create-folder", handleCreateFolder);
+  ipcMain.handle("create-file", handleCreateFile);
+
+  ipcMain.handle("read-file", handleReadFile);
+  ipcMain.handle("write-file", handleWriteFile);
+
   ipcMain.handle("load-settings", handleLoadSettings);
   ipcMain.handle("save-settings", handleSaveSettings);
-  ipcMain.handle("create-project", handleCreateProject);
+
   createWindow();
 });
 

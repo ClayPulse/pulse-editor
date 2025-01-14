@@ -29,7 +29,7 @@ const defaultEditorStates: EditorStates = {
   isSpeaking: false,
   isMuted: false,
   isToolbarOpen: true,
-  explorerTreeViewNodeRefs: [],
+  explorerSelectedNodeRefs: [],
   pressedKeys: [],
 };
 

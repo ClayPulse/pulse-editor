@@ -84,9 +84,28 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     });
   }
 
+  async createFolder(uri: string): Promise<void> {
+    console.log("Creating folder at", uri);
+    await Filesystem.mkdir({
+      path: uri,
+      directory: Directory.Data,
+    });
+  }
+
+  async createFile(uri: string): Promise<void> {
+    console.log("Creating file at", uri);
+    await Filesystem.writeFile({
+      path: uri,
+      data: "",
+      encoding: Encoding.UTF8,
+      directory: Directory.Data,
+    });
+  }
+
   async readFile(uri: string): Promise<File> {
     const res = await Filesystem.readFile({
       path: uri,
+      encoding: Encoding.UTF8,
       directory: Directory.Data,
     });
 
@@ -103,8 +122,9 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     try {
       await Filesystem.writeFile({
         path: uri,
-        data: file,
+        data: await file.text(),
         encoding: Encoding.UTF8,
+        directory: Directory.Data,
       });
     } catch (e) {
       console.error("Error writing file", e);
@@ -121,12 +141,12 @@ export class CapacitorAPI extends AbstractPlatformAPI {
 
       const settings = JSON.parse(res.data as string);
 
-      settings.projectHomePath = "projects";
+      settings.projectHomePath = "/projects";
 
       return settings;
     } catch (e) {
       return {
-        projectHomePath: "projects",
+        projectHomePath: "/projects",
       };
     }
   }

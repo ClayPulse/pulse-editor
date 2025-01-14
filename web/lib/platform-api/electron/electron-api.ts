@@ -30,6 +30,14 @@ export class ElectronAPI extends AbstractPlatformAPI {
     await this.electronAPI.createProject(uri);
   }
 
+  async createFolder(uri: string): Promise<void> {
+    await this.electronAPI.createFolder(uri);
+  }
+
+  async createFile(uri: string): Promise<void> {
+    await this.electronAPI.createFile(uri);
+  }
+
   async readFile(uri: string): Promise<File> {
     const data = await this.electronAPI.readFile(uri);
     return new File([data], uri);
