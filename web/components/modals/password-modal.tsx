@@ -8,7 +8,6 @@ import {
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { decrypt, encrypt } from "@/lib/security/simple-password";
-import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import Icon from "../icon";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
@@ -22,7 +21,6 @@ export default function PasswordScreen({
 }) {
   const editorContext = useContext(EditorContext);
   const [password, setPassword] = useState<string | undefined>(undefined);
-  const { getValue, setValue } = useLocalStorage();
 
   return (
     <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -88,14 +86,19 @@ export default function PasswordScreen({
                   ? encrypt(settings.ttsAPIKey, password)
                   : undefined;
                 // Save to local storage
-                setValue("sttAPIKey", sttAPIKey, settings.ttl);
-                setValue("llmAPIKey", llmAPIKey, settings.ttl);
-                setValue("ttsAPIKey", ttsAPIKey, settings.ttl);
+                editorContext?.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
+                    sttAPIKey: sttAPIKey,
+                    llmAPIKey: llmAPIKey,
+                    ttsAPIKey: ttsAPIKey,
+                  };
+                });
               } else {
                 // Decrypt API tokens
-                const encryptedSttAPIKey = getValue<string>("sttAPIKey");
-                const encryptedLlmAPIKey = getValue<string>("llmAPIKey");
-                const encryptedTtsAPIKey = getValue<string>("ttsAPIKey");
+                const encryptedSttAPIKey = editorContext?.persistSettings?.sttAPIKey;
+                const encryptedLlmAPIKey = editorContext?.persistSettings?.llmAPIKey;
+                const encryptedTtsAPIKey = editorContext?.persistSettings?.ttsAPIKey;
                 const sttAPIKey = encryptedSttAPIKey
                   ? decrypt(encryptedSttAPIKey, password)
                   : undefined;

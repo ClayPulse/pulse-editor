@@ -1,13 +1,6 @@
 "use client";
 
-import { Button, colors } from "@nextui-org/react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  BounceLoader,
-  ClockLoader,
-  PuffLoader,
-  PulseLoader,
-} from "react-spinners";
+import { Button } from "@nextui-org/react";
 import Icon from "./icon";
 import { useContext, useEffect, useState } from "react";
 import PasswordScreen from "./modals/password-modal";
@@ -17,6 +10,8 @@ import { EditorContext } from "./providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import Loading from "./loading";
+import VoiceIndicator from "./voice-indicator";
+import ProjectTitle from "./project-title";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -91,44 +86,9 @@ export default function Nav({ children }: { children: React.ReactNode }) {
                 )}
               </Button>
             </div>
-            <div className="col-start-2">
-              <AnimatePresence>
-                {editorContext?.editorStates?.isRecording && (
-                  <motion.div
-                    initial={{ y: -56 }}
-                    animate={{ y: 0 }}
-                    exit={{ y: -56 }}
-                    transition={{ duration: 0.1 }}
-                    className="flex h-full w-full items-center justify-center"
-                  >
-                    <div className="flex h-10 w-40 items-center rounded-full bg-content2 px-4">
-                      <div className="flex w-12 items-center justify-center">
-                        {editorContext?.editorStates?.isListening ? (
-                          <BounceLoader color={colors.red["300"]} size={24} />
-                        ) : editorContext?.editorStates?.isThinking ? (
-                          <PulseLoader color={colors.blue["300"]} size={8} />
-                        ) : editorContext?.editorStates?.isSpeaking ? (
-                          <PuffLoader color={colors.green["300"]} size={24} />
-                        ) : (
-                          <ClockLoader
-                            className="!shadow-[0px_0px_0px_2px_inset] !shadow-content2-foreground [&>span]:!bg-content2-foreground"
-                            size={24}
-                          />
-                        )}
-                      </div>
-                      <p className="w-full text-center text-xl text-content2-foreground">
-                        {editorContext?.editorStates?.isListening
-                          ? "Listening"
-                          : editorContext?.editorStates?.isThinking
-                            ? "Thinking"
-                            : editorContext?.editorStates.isSpeaking
-                              ? "Speaking"
-                              : "Waiting"}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <div className="col-start-2 flex flex-col items-center justify-center">
+              {editorContext?.editorStates.project && <ProjectTitle />}
+              <VoiceIndicator />
             </div>
             <div className="col-start-3 flex justify-end">
               <Button
@@ -153,7 +113,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
       )}
 
       <div
-        className={`flex h-full w-full overflow-hidden ${isShowNavbar ? "pt-[48px]" : ""}`}
+        className={`relative flex h-full w-full overflow-hidden ${isShowNavbar ? "pt-[48px]" : ""}`}
       >
         {isShowNavbar && (
           <NavMenu isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />

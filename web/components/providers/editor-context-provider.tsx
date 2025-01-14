@@ -1,11 +1,15 @@
 "use client";
 
 import { AIModelConfig } from "@/lib/ai-model-config";
-import usePersistSettings from "@/lib/hooks/use-persist-settings";
-import {  getModelLLM } from "@/lib/llm/llm";
-import {  getModelSTT } from "@/lib/stt/stt";
-import {  getModelTTS } from "@/lib/tts/tts";
-import { EditorStates, EditorContextType, PersistSettings } from "@/lib/types";
+import { usePlatformApi } from "@/lib/hooks/use-platform-api";
+import { getModelLLM } from "@/lib/llm/llm";
+import { getModelSTT } from "@/lib/stt/stt";
+import { getModelTTS } from "@/lib/tts/tts";
+import {
+  EditorStates,
+  EditorContextType,
+  PersistentSettings,
+} from "@/lib/types";
 import { ViewManager } from "@/lib/views/view-manager";
 import { createContext, useEffect, useRef, useState } from "react";
 
@@ -25,6 +29,8 @@ const defaultEditorStates: EditorStates = {
   isSpeaking: false,
   isMuted: false,
   isToolbarOpen: true,
+  explorerSelectedNodeRefs: [],
+  pressedKeys: [],
 };
 
 export default function EditorContextProvider({
@@ -38,9 +44,7 @@ export default function EditorContextProvider({
 
   // --- Persist Settings ---
   // Persist settings are loaded from local storage upon component mount
-  const { getPersistSettings, setPersistSettings, clearPersistSettings } =
-    usePersistSettings();
-  const [settings, setSettings] = useState<PersistSettings | undefined>(
+  const [settings, setSettings] = useState<PersistentSettings | undefined>(
     undefined,
   );
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
@@ -53,21 +57,57 @@ export default function EditorContextProvider({
   // --- AI Model Management ---
   const aiModelConfig = useRef<AIModelConfig>(new AIModelConfig());
 
+  // --- Platform API ---
+  const { platformApi } = usePlatformApi();
+
+  // Track all pressed keys
+  useEffect(() => {
+    window.addEventListener("keydown", (e) => {
+      setEditorStates((prev) => {
+        // Prevent duplicate keys
+        if (!prev.pressedKeys.includes(e.key)) {
+          return {
+            ...prev,
+            pressedKeys: [...prev.pressedKeys, e.key],
+          };
+        }
+
+        return prev;
+      });
+    });
+
+    window.addEventListener("keyup", (e) => {
+      setEditorStates((prev) => ({
+        ...prev,
+        pressedKeys: prev.pressedKeys.filter((key) => key !== e.key),
+      }));
+    });
+
+    return () => {
+      window.removeEventListener("keydown", () => {});
+      window.removeEventListener("keyup", () => {});
+    };
+  }, []);
+
   // Load settings from local storage
   useEffect(() => {
-    getPersistSettings().then((loadedSettings: PersistSettings) => {
-      setSettings(loadedSettings);
-      setIsSettingsLoaded(true);
-    });
-  }, []);
+    if (platformApi) {
+      platformApi
+        ?.getPersistentSettings()
+        .then((loadedSettings: PersistentSettings) => {
+          setSettings(loadedSettings);
+          setIsSettingsLoaded(true);
+        });
+    }
+  }, [platformApi]);
 
   // Save settings to local storage
   useEffect(() => {
     if (isSettingsLoaded) {
       if (settings) {
-        setPersistSettings(settings);
+        platformApi?.setPersistentSettings(settings);
       } else {
-        clearPersistSettings();
+        platformApi?.resetPersistentSettings();
       }
     }
   }, [settings]);

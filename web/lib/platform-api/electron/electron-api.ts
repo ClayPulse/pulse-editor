@@ -1,4 +1,9 @@
-import { OpenFileDialogConfig, Folder, SaveFileDialogConfig } from "@/lib/types";
+import {
+  FileSystemObject,
+  OpenFileDialogConfig,
+  PersistentSettings,
+  ProjectInfo,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 
 export class ElectronAPI extends AbstractPlatformAPI {
@@ -9,39 +14,57 @@ export class ElectronAPI extends AbstractPlatformAPI {
     this.electronAPI = window.electronAPI;
   }
 
-  async showOpenFileDialog(config?: OpenFileDialogConfig): Promise<File[]> {
-    // Open a file dialogue and return the selected folder
-    const paths: string[] = await this.electronAPI.showOpenFileDialog(config);
-
-    const files = [];
-    for (const path of paths) {
-      const data: string = await this.electronAPI.readFile(path);
-      const file = new File([data], path);
-      files.push(file);
-    }
-
-    return files;
+  async selectPath(): Promise<string | undefined> {
+    return await this.electronAPI.selectPath();
   }
 
-  async showSaveFileDialog(
-    config?: SaveFileDialogConfig,
-  ): Promise<string | undefined> {
-    return await this.electronAPI.showSaveFileDialog(config);
+  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
+    return await this.electronAPI.listPathProjects(uri);
   }
 
-  async openFolder(uri: string): Promise<Folder | undefined> {
-    throw new Error("Method not implemented.");
+  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
+    return await this.electronAPI.discoverProjectContent(uri);
   }
-  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async createProject(uri: string): Promise<void> {
+    await this.electronAPI.createProject(uri);
   }
-  async openFile(uri: string): Promise<File | undefined> {
-    const data: string = await this.electronAPI.readFile(uri);
-    const file = new File([data], uri);
-    return file;
+
+  async createFolder(uri: string): Promise<void> {
+    await this.electronAPI.createFolder(uri);
   }
+
+  async createFile(uri: string): Promise<void> {
+    await this.electronAPI.createFile(uri);
+  }
+
+  async readFile(uri: string): Promise<File> {
+    const data = await this.electronAPI.readFile(uri);
+    return new File([data], uri);
+  }
+
+  /**
+   * Write a file to the file system.
+   * @param file
+   * @param uri
+   */
   async writeFile(file: File, uri: string): Promise<void> {
     const data = await file.text();
     await this.electronAPI.writeFile(data, uri);
+  }
+
+  async getPersistentSettings(): Promise<PersistentSettings> {
+    const persistentSettings: PersistentSettings =
+      await this.electronAPI.loadSettings();
+
+    return persistentSettings;
+  }
+
+  async setPersistentSettings(settings: PersistentSettings): Promise<void> {
+    await this.electronAPI.saveSettings(settings);
+  }
+
+  async resetPersistentSettings(): Promise<void> {
+    await this.electronAPI.saveSettings({});
   }
 }

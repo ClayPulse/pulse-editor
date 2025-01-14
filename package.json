@@ -13,6 +13,7 @@
         "web-build": "npm run build --workspace=web",
         "desktop-dev": "npm run dev --workspace=desktop",
         "desktop-build": "npm run web-build && npm run build --workspace=desktop",
-        "android-build": "npm run web-build && npm run build --workspace=mobile"
+        "android-dev": "npm run web-build && npm run android-dev --workspace=mobile",
+        "android-build": "npm run web-build && npm run android-build --workspace=mobile"
     }
 }

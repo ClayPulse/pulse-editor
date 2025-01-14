@@ -1,59 +1,169 @@
-import {
-  OpenFileDialogConfig as OpenFileDialogConfig,
-  Folder,
-  SaveFileDialogConfig,
-} from "@/lib/types";
+import { FileSystemObject, PersistentSettings, ProjectInfo } from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
-import { Filesystem } from "@capacitor/filesystem";
+import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
 
 export class CapacitorAPI extends AbstractPlatformAPI {
   constructor() {
     super();
-  }
 
-  async showOpenFileDialog(config?: OpenFileDialogConfig): Promise<File[]> {
-    const hasPermission = await Filesystem.requestPermissions();
-    if (hasPermission.publicStorage !== "granted") {
-      return [];
-    }
-    return new Promise((resolve, reject) => {
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.style.display = "none";
-      fileInput.multiple = true;
+    // If "projects" directory does not exist, create it
 
-      // Update paths when files are selected
-      fileInput.addEventListener("change", () => {
-        const fileList = fileInput.files;
-        if (fileList) {
-          const files = Array.from(fileList);
-          resolve(files);
-        } else {
-          reject(new Error("No files selected"));
-        }
+    Filesystem.readdir({
+      path: "/projects",
+      directory: Directory.Data,
+    }).catch((e) => {
+      Filesystem.mkdir({
+        path: "/projects",
+        directory: Directory.Data,
       });
-
-      // Open file picker
-      fileInput.click();
     });
   }
 
-  async showSaveFileDialog(
-    config?: SaveFileDialogConfig,
-  ): Promise<string | undefined> {
-    throw new Error("Method not implemented.");
+  async selectPath(): Promise<string | undefined> {
+    throw new Error("Cannot access external storage on mobile.");
   }
 
-  async openFolder(uri: string): Promise<Folder | undefined> {
-    throw new Error("Method not implemented.");
+  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
+    const files = await Filesystem.readdir({
+      path: uri,
+      directory: Directory.Data,
+    });
+
+    const folders = files.files
+      .filter((file) => file.type === "directory")
+      .map((file) => ({
+        name: file.name,
+        ctime: file.ctime ? new Date(file.ctime) : new Date(),
+      }));
+
+    return folders;
   }
-  async saveFolder(folder: Folder, uriPrefix: string): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
+    // Try to get permissions to read the directory
+    const permission = await Filesystem.requestPermissions();
+    if (permission.publicStorage !== "granted") {
+      throw new Error("Permission denied");
+    }
+
+    const files = await Filesystem.readdir({
+      path: uri,
+      directory: Directory.Data,
+    });
+
+    const promise = files.files.map(async (file) => {
+      const absoluteUri = uri + "/" + file.name;
+      if (file.type === "directory") {
+        const dirObj: FileSystemObject = {
+          name: file.name,
+          isFolder: true,
+          subDirItems: await this.discoverProjectContent(absoluteUri),
+          uri: absoluteUri,
+        };
+        return dirObj;
+      } else {
+        console.log("File", file);
+        const fileObj: FileSystemObject = {
+          name: file.name,
+          isFolder: false,
+          uri: absoluteUri,
+        };
+        return fileObj;
+      }
+    });
+
+    const fileSystemObjects = await Promise.all(promise);
+
+    return fileSystemObjects;
   }
-  async openFile(uri: string): Promise<File | undefined> {
-    throw new Error("Method not implemented.");
+
+  async createProject(uri: string): Promise<void> {
+    await Filesystem.mkdir({
+      path: uri,
+      directory: Directory.Data,
+    });
   }
+
+  async createFolder(uri: string): Promise<void> {
+    console.log("Creating folder at", uri);
+    await Filesystem.mkdir({
+      path: uri,
+      directory: Directory.Data,
+    });
+  }
+
+  async createFile(uri: string): Promise<void> {
+    console.log("Creating file at", uri);
+    await Filesystem.writeFile({
+      path: uri,
+      data: "",
+      encoding: Encoding.UTF8,
+      directory: Directory.Data,
+    });
+  }
+
+  async readFile(uri: string): Promise<File> {
+    const res = await Filesystem.readFile({
+      path: uri,
+      encoding: Encoding.UTF8,
+      directory: Directory.Data,
+    });
+
+    return new File([res.data as BlobPart], uri);
+  }
+
+  /**
+   * Write a file to the file system. On mobile, this will write to Pulse Editor's
+   * default directory.
+   * @param file
+   * @param uri
+   */
   async writeFile(file: File, uri: string): Promise<void> {
-    throw new Error("Method not implemented.");
+    try {
+      await Filesystem.writeFile({
+        path: uri,
+        data: await file.text(),
+        encoding: Encoding.UTF8,
+        directory: Directory.Data,
+      });
+    } catch (e) {
+      console.error("Error writing file", e);
+    }
+  }
+
+  async getPersistentSettings(): Promise<PersistentSettings> {
+    try {
+      const res = await Filesystem.readFile({
+        path: "settings.json",
+        directory: Directory.Data,
+        encoding: Encoding.UTF8,
+      });
+
+      const settings = JSON.parse(res.data as string);
+
+      settings.projectHomePath = "/projects";
+
+      return settings;
+    } catch (e) {
+      return {
+        projectHomePath: "/projects",
+      };
+    }
+  }
+
+  async setPersistentSettings(settings: PersistentSettings): Promise<void> {
+    await Filesystem.writeFile({
+      data: JSON.stringify(settings),
+      path: "settings.json",
+      directory: Directory.Data,
+      encoding: Encoding.UTF8,
+    });
+  }
+
+  async resetPersistentSettings(): Promise<void> {
+    await Filesystem.deleteFile({
+      path: "settings.json",
+      directory: Directory.Data,
+    });
   }
 }

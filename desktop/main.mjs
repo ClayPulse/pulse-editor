@@ -2,9 +2,15 @@ import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import serve from "electron-serve";
 import path from "path";
 import { fileURLToPath } from "url";
-import { nativeTheme } from "electron/main";
 
 import fs from "fs";
+
+// Change path to "Pulse Studio"
+app.setName("Pulse Studio");
+app.setPath(
+  "userData",
+  app.getPath("userData").replace("pulse-editor-desktop", "Pulse Studio")
+);
 
 // Get the file path of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -12,11 +18,15 @@ const __filename = fileURLToPath(import.meta.url);
 // Get the directory name of the current module
 const __dirname = path.dirname(__filename);
 
+// Settings
+const userDataPath = app.getPath("userData");
+const settingsPath = path.join(userDataPath, "settings.json");
+
 const appServe = serve({
   directory: path.join(process.resourcesPath, "next"),
 });
 
-const createWindow = () => {
+function createWindow() {
   const win = new BrowserWindow({
     width: 960,
     height: 600,
@@ -46,32 +56,83 @@ const createWindow = () => {
       win.webContents.reloadIgnoringCache();
     });
   }
-};
+
+  ipcMain.on("set-title", handleSetTitle);
+}
 
 function handleSetTitle(event, title) {
   console.log("Setting title:", title);
   const webContents = event.sender;
   const win = BrowserWindow.fromWebContents(webContents);
   win.setTitle(title);
-
-  return title[0];
 }
 
-async function handleShowOpenFileDialog(event, config) {
+async function handleSelectPath(event) {
   const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: config?.isFolder ? ["openDirectory"] : ["openFile"],
+    properties: ["openDirectory"],
   });
   if (!canceled) {
-    return filePaths;
+    return filePaths[0];
   }
 }
 
-async function handleShowSaveFileDialog(event, config) {
-  const { canceled, filePath } = await dialog.showSaveDialog({});
-  if (!canceled) {
-    return filePath;
-  }
-  return undefined;
+// List all folders in a path
+async function handleListPathProjects(event, uri) {
+  const files = await fs.promises.readdir(uri, { withFileTypes: true });
+  const folders = files
+    .filter((file) => file.isDirectory())
+    .map((file) => file.name)
+    .map((projectName) => ({
+      name: projectName,
+      ctime: fs.statSync(path.join(uri, projectName)).ctime,
+    }));
+
+  return folders;
+}
+
+async function discoverProjectContent(uri) {
+  const files = await fs.promises.readdir(uri, { withFileTypes: true });
+
+  const promise = files.map(async (file) => {
+    const name = file.name;
+    const absoluteUri = path.join(uri, name);
+    if (file.isDirectory()) {
+      return {
+        name: name,
+        isFolder: true,
+        subDirItems: await discoverProjectContent(absoluteUri),
+        uri: absoluteUri,
+      };
+    }
+
+    return {
+      name,
+      isFolder: false,
+      uri: absoluteUri,
+    };
+  });
+
+  return Promise.all(promise);
+}
+
+async function handleCreateProject(event, uri) {
+  // Create a folder at the uri
+  await fs.promises.mkdir(uri);
+}
+
+async function handleCreateFolder(event, uri) {
+  // Create a folder at the uri
+  await fs.promises.mkdir(uri);
+}
+
+async function handleCreateFile(event, uri) {
+  // Create a file at the uri
+  await fs.promises.writeFile(uri, "");
+}
+
+// Discover the content of a project
+async function handleDiscoverProjectContent(event, uri) {
+  return await discoverProjectContent(uri);
 }
 
 async function handleReadFile(event, path) {
@@ -86,13 +147,33 @@ async function handleWriteFile(event, data, path) {
   await fs.promises.writeFile(path, data);
 }
 
-app.whenReady().then(() => {
-  nativeTheme.themeSource = "light";
+function handleSaveSettings(event, settings) {
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+}
 
-  ipcMain.handle("show-open-file-dialog", handleShowOpenFileDialog);
-  ipcMain.handle("show-save-file-dialog", handleShowSaveFileDialog);
+function handleLoadSettings(event) {
+  if (fs.existsSync(settingsPath)) {
+    const data = fs.readFileSync(settingsPath, "utf-8");
+    return JSON.parse(data);
+  }
+  return {};
+}
+
+app.whenReady().then(() => {
+  ipcMain.handle("select-path", handleSelectPath);
+  ipcMain.handle("list-path-projects", handleListPathProjects);
+  ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
+
+  ipcMain.handle("create-project", handleCreateProject);
+  ipcMain.handle("create-folder", handleCreateFolder);
+  ipcMain.handle("create-file", handleCreateFile);
+
   ipcMain.handle("read-file", handleReadFile);
   ipcMain.handle("write-file", handleWriteFile);
+
+  ipcMain.handle("load-settings", handleLoadSettings);
+  ipcMain.handle("save-settings", handleSaveSettings);
+
   createWindow();
 });
 
