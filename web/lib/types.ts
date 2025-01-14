@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, ForwardedRef, Ref, RefObject, SetStateAction } from "react";
 import { ViewManager } from "./views/view-manager";
 import { AIModelConfig } from "./ai-model-config";
 import { ViewTypeEnum } from "./views/available-views";
@@ -28,6 +28,10 @@ export type EditorStates = {
   project?: string;
   projectContent?: FileSystemObject[];
   projectsInfo?: ProjectInfo[];
+
+  explorerTreeViewNodeRefs: RefObject<TreeViewNodeRef | null>[];
+
+  pressedKeys: string[];
 };
 
 export type PersistentSettings = {
@@ -148,4 +152,14 @@ export type FileSystemObject = {
 export type ProjectInfo = {
   name: string;
   ctime: Date;
+};
+
+export type TreeViewGroupRef = {
+  startCreatingNewFolder: () => void;
+  startCreatingNewFile: () => void;
+};
+
+export type TreeViewNodeRef = {
+  getSubGroupRef: () => TreeViewGroupRef | null;
+  getName: () => string;
 };

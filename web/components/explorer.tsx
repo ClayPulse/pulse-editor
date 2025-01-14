@@ -1,34 +1,123 @@
 "use client";
 
-import { FileSystemObject, ProjectInfo, ViewDocument } from "@/lib/types";
-import { Key, useContext, useEffect, useState } from "react";
+import {
+  FileSystemObject,
+  TreeViewGroupRef,
+  TreeViewNodeRef,
+  ViewDocument,
+} from "@/lib/types";
+import {
+  ForwardedRef,
+  forwardRef,
+  Ref,
+  RefObject,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { EditorContext } from "./providers/editor-context-provider";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
-import toast from "react-hot-toast";
 import { View } from "@/lib/views/view";
 import { ViewTypeEnum } from "@/lib/views/available-views";
 import { ViewManager } from "@/lib/views/view-manager";
-import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from "@nextui-org/react";
+import { Button, colors, Input } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import ProjectSettingsModal from "./modals/project-settings-modal";
 import Icon from "./icon";
 
-function TreeNode({
-  object,
-  viewFile,
-}: {
-  object: FileSystemObject;
-  viewFile: (uri: string) => void;
-}) {
+// A tree view node that represents a single file or folder
+const TreeViewNode = forwardRef(function TreeViewNode(
+  {
+    object,
+    viewFile,
+  }: {
+    object: FileSystemObject;
+    viewFile: (uri: string) => void;
+  },
+  ref: Ref<TreeViewNodeRef | null>,
+) {
+  useImperativeHandle(ref, () => ({
+    getSubGroupRef() {
+      return groupRef.current;
+    },
+    getName() {
+      return object.name;
+    },
+  }));
+
   const [isFolderCollapsed, setIsFolderCollapsed] = useState(true);
+  const [isSelected, setIsSelected] = useState(false);
+  const editorContext = useContext(EditorContext);
+
+  const groupRef = useRef<TreeViewGroupRef | null>(null);
+
+  function selectNode() {
+    // Clear all other selected nodes and select this node
+    // if Ctrl is not pressed
+    if (editorContext?.editorStates.pressedKeys.indexOf("Control") === -1) {
+      // Skip if the node is already selected
+      if (
+        editorContext?.editorStates.explorerTreeViewNodeRefs?.includes(
+          ref as RefObject<TreeViewNodeRef>,
+        )
+      ) {
+        return;
+      }
+
+      editorContext?.setEditorStates((prev) => {
+        return {
+          ...prev,
+          explorerTreeViewNodeRefs: [ref as RefObject<TreeViewNodeRef>],
+        };
+      });
+      setIsSelected(true);
+    } else {
+      // Unselect this node if it is already selected
+      if (
+        editorContext?.editorStates.explorerTreeViewNodeRefs?.includes(
+          ref as RefObject<TreeViewNodeRef>,
+        )
+      ) {
+        console.log("Unselecting");
+        editorContext?.setEditorStates((prev) => {
+          return {
+            ...prev,
+            explorerTreeViewNodeRefs: prev.explorerTreeViewNodeRefs?.filter(
+              (nodeRef) => nodeRef !== (ref as RefObject<TreeViewNodeRef>),
+            ),
+          };
+        });
+        setIsSelected(false);
+        return;
+      }
+
+      editorContext?.setEditorStates((prev) => {
+        return {
+          ...prev,
+          explorerTreeViewNodeRefs: [
+            ...(prev.explorerTreeViewNodeRefs ?? []),
+            ref as RefObject<TreeViewNodeRef>,
+          ],
+        };
+      });
+      setIsSelected(true);
+    }
+  }
+
+  // Unselect self if self is not in the selected nodes
+  useEffect(() => {
+    if (
+      editorContext?.editorStates.explorerTreeViewNodeRefs?.indexOf(
+        ref as RefObject<TreeViewNodeRef>,
+      ) === -1
+    ) {
+      setIsSelected(false);
+    }
+  }, [editorContext?.editorStates.explorerTreeViewNodeRefs]);
 
   return object.isFolder ? (
     <div className="space-y-0.5">
@@ -37,7 +126,9 @@ function TreeNode({
         size="sm"
         onPress={() => {
           setIsFolderCollapsed(!isFolderCollapsed);
+          selectNode();
         }}
+        variant={isSelected ? "bordered" : "solid"}
       >
         <div className="flex w-full">
           <p>{object.name}</p>
@@ -48,7 +139,11 @@ function TreeNode({
       </Button>
       {object.subDirItems && !isFolderCollapsed && (
         <div className="ml-4">
-          <TreeView objects={object.subDirItems} viewFile={viewFile} />
+          <TreeViewGroup
+            ref={groupRef}
+            objects={object.subDirItems}
+            viewFile={viewFile}
+          />
         </div>
       )}
     </div>
@@ -58,23 +153,51 @@ function TreeNode({
       size="sm"
       onPress={() => {
         viewFile(object.uri);
+        selectNode();
       }}
-      variant="light"
+      variant={isSelected ? "bordered" : "light"}
     >
       <div className="w-full">
         <p className="w-fit">{object.name}</p>
       </div>
     </Button>
   );
-}
+});
 
-function TreeView({
-  objects,
+function TreeViewNodeWrapper({
+  object,
   viewFile,
 }: {
-  objects: FileSystemObject[];
+  object: FileSystemObject;
   viewFile: (uri: string) => void;
 }) {
+  const nodeRef = useRef<TreeViewNodeRef | null>(null);
+
+  return <TreeViewNode ref={nodeRef} object={object} viewFile={viewFile} />;
+}
+
+const TreeViewGroup = forwardRef(function TreeViewGroup(
+  {
+    objects,
+    viewFile,
+  }: {
+    objects: FileSystemObject[];
+    viewFile: (uri: string) => void;
+  },
+  ref: Ref<TreeViewGroupRef>,
+) {
+  useImperativeHandle(ref, () => ({
+    startCreatingNewFolder() {
+      setIsCreatingNewFolder(true);
+    },
+    startCreatingNewFile() {
+      setIsCreatingNewFile(true);
+    },
+  }));
+
+  const [isCreatingNewFile, setIsCreatingNewFile] = useState(false);
+  const [isCreatingNewFolder, setIsCreatingNewFolder] = useState(false);
+
   if (objects.length === 0) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center">
@@ -87,12 +210,19 @@ function TreeView({
     <div className="space-y-0.5">
       {objects.map((object) => {
         return (
-          <TreeNode key={object.uri} object={object} viewFile={viewFile} />
+          <TreeViewNodeWrapper
+            key={object.uri}
+            object={object}
+            viewFile={viewFile}
+          />
         );
       })}
+
+      {isCreatingNewFolder && <Input placeholder="folder name" />}
+      {isCreatingNewFile && <Input placeholder="file name" />}
     </div>
   );
-}
+});
 
 export default function Explorer({
   setIsMenuOpen,
@@ -105,6 +235,10 @@ export default function Explorer({
   const { platformApi } = usePlatformApi();
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
     useState(false);
+
+  // Create new file/folder
+  const [isCreatingNewFile, setIsCreatingNewFile] = useState(false);
+  const [isCreatingNewFolder, setIsCreatingNewFolder] = useState(false);
 
   useEffect(() => {
     if (platformApi) {
@@ -135,23 +269,6 @@ export default function Explorer({
         };
       });
     });
-  }
-
-  function saveFile() {
-    const viewDocument =
-      editorContext?.viewManager?.getActiveView()?.viewDocument;
-    if (viewDocument) {
-      // showSaveFileDialog().then((filePath) => {
-      //   if (filePath) {
-      //     writeFile(
-      //       new File([viewDocument.fileContent], filePath),
-      //       filePath,
-      //     ).then(() => {
-      //       toast.success("File saved successfully");
-      //     });
-      //   }
-      // });
-    }
   }
 
   function viewFile(uri: string) {
@@ -194,16 +311,34 @@ export default function Explorer({
     return year + "-" + month + "-" + day + " " + hour + ":" + minute;
   }
 
+  function startCreatingNewFile() {
+    setIsCreatingNewFile(true);
+  }
+
+  function startCreatingNewFolder() {
+    setIsCreatingNewFolder(true);
+  }
+
   // Browse inside a project
   if (editorContext?.editorStates.project) {
     return (
       <div className="flex h-full w-full flex-col space-y-2 overflow-y-auto bg-content2 px-4 py-2">
         <div className="flex h-10 w-full items-center rounded-xl bg-default px-3 text-default-foreground">
           <div className="flex w-full">
-            <Button isIconOnly variant="light" size="sm">
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onPress={startCreatingNewFolder}
+            >
               <Icon name="create_new_folder" variant="outlined" />
             </Button>
-            <Button isIconOnly variant="light" size="sm">
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onPress={startCreatingNewFile}
+            >
               <Icon uri="/icons/add-file" className="-translate-x-0.5" />
             </Button>
           </div>
@@ -220,7 +355,7 @@ export default function Explorer({
           </div>
         </div>
 
-        <TreeView
+        <TreeViewGroup
           objects={editorContext.editorStates.projectContent ?? []}
           viewFile={viewFile}
         />

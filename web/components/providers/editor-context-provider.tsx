@@ -29,6 +29,8 @@ const defaultEditorStates: EditorStates = {
   isSpeaking: false,
   isMuted: false,
   isToolbarOpen: true,
+  explorerTreeViewNodeRefs: [],
+  pressedKeys: [],
 };
 
 export default function EditorContextProvider({
@@ -57,6 +59,35 @@ export default function EditorContextProvider({
 
   // --- Platform API ---
   const { platformApi } = usePlatformApi();
+
+  // Track all pressed keys
+  useEffect(() => {
+    window.addEventListener("keydown", (e) => {
+      setEditorStates((prev) => {
+        // Prevent duplicate keys
+        if (!prev.pressedKeys.includes(e.key)) {
+          return {
+            ...prev,
+            pressedKeys: [...prev.pressedKeys, e.key],
+          };
+        }
+
+        return prev;
+      });
+    });
+
+    window.addEventListener("keyup", (e) => {
+      setEditorStates((prev) => ({
+        ...prev,
+        pressedKeys: prev.pressedKeys.filter((key) => key !== e.key),
+      }));
+    });
+
+    return () => {
+      window.removeEventListener("keydown", () => {});
+      window.removeEventListener("keyup", () => {});
+    };
+  }, []);
 
   // Load settings from local storage
   useEffect(() => {
