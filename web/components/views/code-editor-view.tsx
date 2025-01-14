@@ -37,6 +37,8 @@ import Loading from "../loading";
 import { ViewTypeEnum } from "@/lib/views/available-views";
 import { View } from "@/lib/views/view";
 import { getLanguageExtension } from "@/lib/codemirror-extensions/get-language-extension";
+import { DelayedTrigger } from "@/lib/delayed-trigger";
+import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 
 interface CodeEditorViewProps {
   width?: string;
@@ -198,6 +200,12 @@ const CodeEditorView = forwardRef(
 
     const [isCanvasReady, setIsCanvasReady] = useState(false);
 
+    const { platformApi } = usePlatformApi();
+    // setup a timer for delayed saving
+    const saveTriggerRef = useRef<DelayedTrigger | undefined>(
+      new DelayedTrigger(200),
+    );
+
     useEffect(() => {
       if (resolvedTheme === "dark") {
         setTheme(vscodeDark);
@@ -355,6 +363,15 @@ const CodeEditorView = forwardRef(
           console.log("Calling view document change callback");
           view.onChange(newDoc);
         }
+
+        // Set save trigger
+        console.log("Setting save trigger");
+        saveTriggerRef.current?.reset(() => {
+          const file = new File([value], newDoc.filePath);
+          platformApi?.writeFile(file, newDoc.filePath).then(() => {
+            toast.success("File saved successfully");
+          });
+        });
 
         return newDoc;
       });

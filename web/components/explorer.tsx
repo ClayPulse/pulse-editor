@@ -104,7 +104,7 @@ export default function Explorer({
   const { selectAndSetProjectHome } = useExplorer();
   const { platformApi } = usePlatformApi();
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
-  useState(false);
+    useState(false);
 
   useEffect(() => {
     if (platformApi) {
@@ -141,22 +141,16 @@ export default function Explorer({
     const viewDocument =
       editorContext?.viewManager?.getActiveView()?.viewDocument;
     if (viewDocument) {
-      if (platform === PlatformEnum.Web) {
-        toast.error(
-          "Save file is not yet implemented for web platform, try downloading the file instead",
-        );
-      } else {
-        // showSaveFileDialog().then((filePath) => {
-        //   if (filePath) {
-        //     writeFile(
-        //       new File([viewDocument.fileContent], filePath),
-        //       filePath,
-        //     ).then(() => {
-        //       toast.success("File saved successfully");
-        //     });
-        //   }
-        // });
-      }
+      // showSaveFileDialog().then((filePath) => {
+      //   if (filePath) {
+      //     writeFile(
+      //       new File([viewDocument.fileContent], filePath),
+      //       filePath,
+      //     ).then(() => {
+      //       toast.success("File saved successfully");
+      //     });
+      //   }
+      // });
     }
   }
 
