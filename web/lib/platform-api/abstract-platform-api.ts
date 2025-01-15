@@ -15,6 +15,11 @@ export abstract class AbstractPlatformAPI {
   // Create file
   abstract createFile(uri: string): Promise<void>;
 
+  // Update file object
+  abstract rename(oldUri: string, newUri: string): Promise<void>;
+  // Delete file object
+  abstract delete(uri: string): Promise<void>;
+
   // abstract saveFolder(folder: Folder, uriPrefix: string): Promise<void>;
   abstract readFile(uri: string): Promise<File>;
   abstract writeFile(file: File, uri: string): Promise<void>;

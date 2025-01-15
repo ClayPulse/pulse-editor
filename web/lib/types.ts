@@ -158,10 +158,17 @@ export type TreeViewGroupRef = {
   startCreatingNewFolder: () => void;
   startCreatingNewFile: () => void;
   cancelCreating: () => void;
+  getFolderUri: () => string;
 };
 
 export type TreeViewNodeRef = {
   getParentGroupRef: () => TreeViewGroupRef | null;
   getChildGroupRef: () => TreeViewGroupRef | null;
   isFolder: () => boolean;
+};
+
+export type ContextMenuState = {
+  x: number;
+  y: number;
+  isOpen: boolean;
 };

@@ -102,6 +102,35 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     });
   }
 
+  async rename(oldUri: string, newUri: string): Promise<void> {
+    await Filesystem.rename({
+      from: oldUri,
+      to: newUri,
+      directory: Directory.Data,
+    });
+  }
+
+  async delete(uri: string): Promise<void> {
+    // Check if it's a file or a directory
+    const file = await Filesystem.stat({
+      path: uri,
+      directory: Directory.Data,
+    });
+
+    if (file.type === "directory") {
+      await Filesystem.rmdir({
+        path: uri,
+        directory: Directory.Data,
+        recursive: true,
+      });
+    } else if (file.type === "file") {
+      await Filesystem.deleteFile({
+        path: uri,
+        directory: Directory.Data,
+      });
+    }
+  }
+
   async readFile(uri: string): Promise<File> {
     const res = await Filesystem.readFile({
       path: uri,

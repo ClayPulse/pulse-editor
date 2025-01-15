@@ -33,9 +33,17 @@ export class ElectronAPI extends AbstractPlatformAPI {
   async createFolder(uri: string): Promise<void> {
     await this.electronAPI.createFolder(uri);
   }
-
+  
   async createFile(uri: string): Promise<void> {
     await this.electronAPI.createFile(uri);
+  }
+  
+  async rename(oldUri: string, newUri: string): Promise<void> {
+    await this.electronAPI.rename(oldUri, newUri);
+  }
+
+  async delete(uri: string): Promise<void> {
+    await this.electronAPI.delete(uri);
   }
 
   async readFile(uri: string): Promise<File> {
