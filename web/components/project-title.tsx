@@ -11,11 +11,13 @@ import {
 } from "@nextui-org/react";
 import Icon from "./icon";
 import ProjectSettingsModal from "./modals/project-settings-modal";
+import { useViewManager } from "@/lib/hooks/use-view-manager";
 
 export default function ProjectTitle() {
   const editorContext = useContext(EditorContext);
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
     useState(false);
+  const { clearViews} = useViewManager();
 
   function closeProject() {
     editorContext?.setEditorStates((prev) => {
@@ -25,6 +27,9 @@ export default function ProjectTitle() {
         projectContent: [],
       };
     });
+
+    // Clear view manager
+    clearViews();
   }
 
   function handleProjectMenu(key: Key) {

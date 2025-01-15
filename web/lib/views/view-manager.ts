@@ -48,7 +48,10 @@ export class ViewManager {
     }
   }
 
-  public clearView() {
+  /**
+   * Clear all views
+   */
+  public clearViews() {
     this.views = [];
   }
 
