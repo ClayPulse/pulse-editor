@@ -8,7 +8,14 @@ import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { View } from "@/lib/views/view";
 import { ViewTypeEnum } from "@/lib/views/available-views";
 import { ViewManager } from "@/lib/views/view-manager";
-import { Button, Input } from "@nextui-org/react";
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
+} from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import ProjectSettingsModal from "../modals/project-settings-modal";
@@ -16,6 +23,7 @@ import Icon from "../icon";
 import toast from "react-hot-toast";
 import TreeViewGroup from "./tree-view";
 import { useViewManager } from "@/lib/hooks/use-view-manager";
+import ProjectList from "../project-list";
 
 export default function Explorer({
   setIsMenuOpen,
@@ -58,21 +66,6 @@ export default function Explorer({
     }
   }, [editorContext?.editorStates.explorerSelectedNodeRefs]);
 
-  function openProject(projectName: string) {
-    const uri =
-      editorContext?.persistSettings?.projectHomePath + "/" + projectName;
-
-    platformApi?.discoverProjectContent(uri).then((objects) => {
-      editorContext?.setEditorStates((prev) => {
-        return {
-          ...prev,
-          project: projectName,
-          projectContent: objects,
-        };
-      });
-    });
-  }
-
   function viewFile(uri: string) {
     platformApi?.readFile(uri).then((file) => {
       file?.text().then((text) => {
@@ -87,16 +80,6 @@ export default function Explorer({
         }
       });
     });
-  }
-
-  function formatDateTime(date: Date) {
-    const year = date.getFullYear();
-    const month = (1 + date.getMonth()).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    const hour = date.getHours().toString().padStart(2, "0");
-    const minute = date.getMinutes().toString().padStart(2, "0");
-
-    return year + "-" + month + "-" + day + " " + hour + ":" + minute;
   }
 
   function startCreatingNewFolder() {
@@ -247,25 +230,7 @@ export default function Explorer({
           isOpen={isProjectSettingsModalOpen}
           setIsOpen={setIsProjectSettingsModalOpen}
         />
-        <div className="flex w-full flex-col gap-2">
-          {editorContext.editorStates.projectsInfo?.map((project, index) => (
-            <Button
-              className="w-full"
-              key={index}
-              variant="light"
-              onPress={() => {
-                openProject(project.name);
-              }}
-            >
-              <div className="flex w-full flex-col items-start justify-center">
-                <p>{project.name}</p>
-                <p className="text-xs">
-                  {"Created: " + formatDateTime(project.ctime)}
-                </p>
-              </div>
-            </Button>
-          ))}
-        </div>
+        <ProjectList/>
       </div>
     );
   }

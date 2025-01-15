@@ -30,6 +30,10 @@ export class ElectronAPI extends AbstractPlatformAPI {
     await this.electronAPI.createProject(uri);
   }
 
+  async updateProject(oldUri: string, newUri: string): Promise<void> {
+    await this.electronAPI.updateProject(oldUri, newUri);
+  }
+
   async createFolder(uri: string): Promise<void> {
     await this.electronAPI.createFolder(uri);
   }

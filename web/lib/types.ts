@@ -165,3 +165,9 @@ export type TreeViewNodeRef = {
   getChildGroupRef: () => TreeViewGroupRef | null;
   isFolder: () => boolean;
 };
+
+export type ContextMenuState = {
+  x: number;
+  y: number;
+  isOpen: boolean;
+};

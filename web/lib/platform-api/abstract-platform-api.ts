@@ -10,6 +10,9 @@ export abstract class AbstractPlatformAPI {
 
   // Create project
   abstract createProject(uri: string): Promise<void>;
+  // Update project
+  abstract updateProject(oldUri: string, newUri: string): Promise<void>;
+  
   // Create folder
   abstract createFolder(uri: string): Promise<void>;
   // Create file

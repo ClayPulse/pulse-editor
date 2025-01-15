@@ -84,6 +84,14 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     });
   }
 
+  async updateProject(oldUri: string, newUri: string): Promise<void> {
+    await Filesystem.rename({
+      from: oldUri,
+      to: newUri,
+      directory: Directory.Data,
+    });
+  }
+
   async createFolder(uri: string): Promise<void> {
     console.log("Creating folder at", uri);
     await Filesystem.mkdir({

@@ -120,6 +120,11 @@ async function handleCreateProject(event, uri) {
   await fs.promises.mkdir(uri);
 }
 
+async function handleUpdateProject(event, oldUri, newUri) {
+  // Rename the folder at oldUri to newUri
+  await fs.promises.rename(oldUri, newUri);
+}
+
 async function handleCreateFolder(event, uri) {
   // Create a folder at the uri
   await fs.promises.mkdir(uri);
@@ -165,6 +170,8 @@ app.whenReady().then(() => {
   ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
 
   ipcMain.handle("create-project", handleCreateProject);
+  ipcMain.handle("update-project", handleUpdateProject);
+
   ipcMain.handle("create-folder", handleCreateFolder);
   ipcMain.handle("create-file", handleCreateFile);
 

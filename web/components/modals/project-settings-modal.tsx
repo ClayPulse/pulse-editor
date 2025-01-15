@@ -29,6 +29,50 @@ export default function ProjectSettingsModal({
     }
   }, [projectInfo]);
 
+  function handleUpdateProject() {
+    if (!platformApi) {
+      toast.error("Unknown platform.");
+      return;
+    }
+
+    if (isUsingManagedBackup) {
+      toast.error("Managed Cloud Backup is not yet implemented.");
+      return;
+    }
+
+    if (projectName === "") {
+      toast.error("Project Name is required.");
+      return;
+    }
+
+    // Update project
+    const homePath = editorContext?.persistSettings?.projectHomePath;
+    if (!homePath) {
+      toast.error("Project Home Path is not set.");
+      return;
+    }
+
+    const oldUri = homePath + "/" + projectInfo?.name;
+    const newUri = homePath + "/" + projectName;
+    platformApi
+      .updateProject(oldUri, newUri)
+      .then(() => {
+        toast.success("Project updated.");
+        platformApi.listPathProjects(homePath).then((projects) => {
+          editorContext?.setEditorStates((prev) => {
+            return {
+              ...prev,
+              projectsInfo: projects,
+            };
+          });
+        });
+        setIsOpen(false);
+      })
+      .catch((err) => {
+        toast.error("Failed to update project.");
+      });
+  }
+
   function handleCreateProject() {
     if (!platformApi) {
       toast.error("Unknown platform.");
@@ -112,7 +156,7 @@ export default function ProjectSettingsModal({
           />
         )}
         {projectInfo ? (
-          <Button>Save</Button>
+          <Button onPress={handleUpdateProject}>Update</Button>
         ) : (
           <Button onPress={handleCreateProject}>Create</Button>
         )}
