@@ -55,7 +55,7 @@ export default function ProjectSettingsModal({
     const oldUri = homePath + "/" + projectInfo?.name;
     const newUri = homePath + "/" + projectName;
     platformApi
-      .updateProject(oldUri, newUri)
+      .rename(oldUri, newUri)
       .then(() => {
         toast.success("Project updated.");
         platformApi.listPathProjects(homePath).then((projects) => {

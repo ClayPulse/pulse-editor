@@ -158,6 +158,7 @@ export type TreeViewGroupRef = {
   startCreatingNewFolder: () => void;
   startCreatingNewFile: () => void;
   cancelCreating: () => void;
+  getFolderUri: () => string;
 };
 
 export type TreeViewNodeRef = {

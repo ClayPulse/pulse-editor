@@ -23,7 +23,7 @@ import Icon from "../icon";
 import toast from "react-hot-toast";
 import TreeViewGroup from "./tree-view";
 import { useViewManager } from "@/lib/hooks/use-view-manager";
-import ProjectList from "../project-list";
+import ProjectList from "./project-list";
 
 export default function Explorer({
   setIsMenuOpen,

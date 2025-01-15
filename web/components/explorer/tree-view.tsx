@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ContextMenuState,
+  EditorContextType,
   FileSystemObject,
   TreeViewGroupRef,
   TreeViewNodeRef,
@@ -22,6 +24,28 @@ import { Button, Input } from "@nextui-org/react";
 import Icon from "../icon";
 import toast from "react-hot-toast";
 import { AbstractPlatformAPI } from "@/lib/platform-api/abstract-platform-api";
+import ContextMenu from "../context-menu";
+
+function refreshProjectContent(
+  platformApi: AbstractPlatformAPI,
+  editorContext: EditorContextType | undefined,
+) {
+  const projectUri =
+    editorContext?.persistSettings?.projectHomePath +
+    "/" +
+    editorContext?.editorStates.project;
+  platformApi?.discoverProjectContent(projectUri).then((objects) => {
+    editorContext?.setEditorStates((prev) => {
+      return {
+        ...prev,
+        projectContent: objects,
+        explorerSelectedNodeRefs: [],
+      };
+    });
+
+    toast.success("Project content updated.");
+  });
+}
 
 // A tree view node that represents a single file or folder
 const TreeViewNode = forwardRef(function TreeViewNode(
@@ -53,8 +77,22 @@ const TreeViewNode = forwardRef(function TreeViewNode(
   const [isFolderCollapsed, setIsFolderCollapsed] = useState(true);
   const [isSelected, setIsSelected] = useState(false);
   const editorContext = useContext(EditorContext);
+  const [contextMenuState, setContextMenuState] = useState<ContextMenuState>({
+    x: 0,
+    y: 0,
+    isOpen: false,
+  });
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(object.name);
+  const [isShowingNameInput, setIsShowingNameInput] = useState(false);
 
   const childGroupRef = useRef<TreeViewGroupRef | null>(null);
+
+  useEffect(() => {
+    if (isRenaming && !contextMenuState.isOpen) {
+      setIsShowingNameInput(true);
+    }
+  }, [isRenaming, contextMenuState]);
 
   // Unselect self if self is not in the selected nodes
   useEffect(() => {
@@ -129,62 +167,155 @@ const TreeViewNode = forwardRef(function TreeViewNode(
     return editorContext?.editorStates.pressedKeys.indexOf("Control") !== -1;
   }
 
+  function handleOnContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+    // Get parent element position
+    const current = e.currentTarget as HTMLElement;
+    const parent = current.parentElement as HTMLElement;
+    const parentRect = parent.getBoundingClientRect();
+
+    setContextMenuState({
+      x: e.clientX - parentRect.left,
+      y: e.clientY - parentRect.top,
+      isOpen: true,
+    });
+  }
+
   return (
-    <div className="flex flex-col gap-y-0.5">
-      {object.isFolder ? (
-        <Button
-          className="w-full px-2 text-[16px]"
-          style={{
-            height: getPlatform() === PlatformEnum.Capacitor ? "32px" : "24px",
-          }}
+    <div className="relative flex flex-col gap-y-0.5">
+      {isRenaming ? (
+        <Input
+          autoFocus
+          variant="bordered"
           size="sm"
-          onPress={() => {
-            if (isCtrlDown()) {
-              multiSelectNode();
-            } else {
-              if (isFolderCollapsed) {
-                selectNode();
-              } else {
-                unSelectNode();
-              }
-              // Only toggle folder collapsed state if Ctrl is not pressed
-              setIsFolderCollapsed(!isFolderCollapsed);
+          value={newName}
+          onValueChange={(value) => {
+            setNewName(value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              const newUri =
+                parentGroupRef.current?.getFolderUri() + "/" + newName;
+
+              platformApi?.rename(object.uri, newUri).then(() => {
+                refreshProjectContent(platformApi, editorContext);
+              });
+
+              setIsRenaming(false);
             }
           }}
-          variant={isSelected ? "bordered" : "solid"}
-        >
-          <div className="flex w-full">
-            <p>{object.name}</p>
-            <div className="flex w-full justify-end">
-              <Icon name={isFolderCollapsed ? "expand_more" : "expand_less"} />
-            </div>
-          </div>
-        </Button>
+          onFocusChange={(isFocused) => {
+            if (!isFocused) {
+              const newUri =
+                parentGroupRef.current?.getFolderUri() + "/" + newName;
+
+              platformApi?.rename(object.uri, newUri).then(() => {
+                refreshProjectContent(platformApi, editorContext);
+              });
+
+              setIsRenaming(false);
+            }
+          }}
+        />
       ) : (
-        <Button
-          className="w-full px-2 text-[16px]"
-          style={{
-            height: getPlatform() === PlatformEnum.Capacitor ? "32px" : "24px",
-          }}
-          size="sm"
-          onPress={() => {
-            if (isCtrlDown()) {
-              multiSelectNode();
-            } else {
-              if (isFolderCollapsed) {
-                selectNode();
-              } else {
-                unSelectNode();
-              }
-            }
-            viewFile(object.uri);
-          }}
-          variant={isSelected ? "bordered" : "light"}
-        >
-          <div className="w-full">
-            <p className="w-fit">{object.name}</p>
-          </div>
-        </Button>
+        <>
+          {object.isFolder ? (
+            <Button
+              className="w-full px-2 text-[16px]"
+              variant={isSelected ? "bordered" : "solid"}
+              style={{
+                height:
+                  getPlatform() === PlatformEnum.Capacitor ? "32px" : "24px",
+              }}
+              size="sm"
+              onPress={() => {
+                if (contextMenuState.isOpen) {
+                  return;
+                }
+
+                if (isCtrlDown()) {
+                  multiSelectNode();
+                } else {
+                  if (isFolderCollapsed) {
+                    selectNode();
+                  } else {
+                    unSelectNode();
+                  }
+                  // Only toggle folder collapsed state if Ctrl is not pressed
+                  setIsFolderCollapsed(!isFolderCollapsed);
+                }
+              }}
+              onContextMenu={handleOnContextMenu}
+            >
+              <div className="flex w-full">
+                <p>{object.name}</p>
+                <div className="flex w-full justify-end">
+                  <Icon
+                    name={isFolderCollapsed ? "expand_more" : "expand_less"}
+                  />
+                </div>
+              </div>
+            </Button>
+          ) : (
+            <Button
+              className="w-full px-2 text-[16px]"
+              variant={isSelected ? "bordered" : "light"}
+              style={{
+                height:
+                  getPlatform() === PlatformEnum.Capacitor ? "32px" : "24px",
+              }}
+              size="sm"
+              onPress={() => {
+                if (contextMenuState.isOpen) {
+                  return;
+                }
+
+                if (isCtrlDown()) {
+                  multiSelectNode();
+                } else {
+                  if (isFolderCollapsed) {
+                    selectNode();
+                  } else {
+                    unSelectNode();
+                  }
+                }
+                viewFile(object.uri);
+              }}
+              onContextMenu={handleOnContextMenu}
+            >
+              <div className="w-full">
+                <p className="w-fit">{object.name}</p>
+              </div>
+            </Button>
+          )}
+          <ContextMenu state={contextMenuState} setState={setContextMenuState}>
+            <div className="flex flex-col">
+              <Button
+                className="h-12 text-medium sm:h-8 sm:text-sm"
+                variant="light"
+                onPress={(e) => {
+                  setIsRenaming(true);
+                  setContextMenuState({ x: 0, y: 0, isOpen: false });
+                }}
+              >
+                <p className="w-full text-start">Rename</p>
+              </Button>
+              <Button
+                className="h-12 text-medium sm:h-8 sm:text-sm"
+                variant="solid"
+                color="danger"
+                onPress={(e) => {
+                  platformApi?.delete(object.uri).then(() => {
+                    refreshProjectContent(platformApi, editorContext);
+                  });
+                  setContextMenuState({ x: 0, y: 0, isOpen: false });
+                }}
+              >
+                <p className="w-full text-start">Delete</p>
+              </Button>
+            </div>
+          </ContextMenu>
+        </>
       )}
 
       {object.isFolder && object.subDirItems && !isFolderCollapsed && (
@@ -259,6 +390,9 @@ const TreeViewGroup = forwardRef(function TreeViewGroup(
       setIsCreatingNewFolder(false);
       setIsCreatingNewFile(false);
     },
+    getFolderUri() {
+      return folderUri;
+    },
   }));
 
   const [isCreatingNewFile, setIsCreatingNewFile] = useState(false);
@@ -277,20 +411,7 @@ const TreeViewGroup = forwardRef(function TreeViewGroup(
     }
 
     platformApi.createFolder(uri).then(() => {
-      const projectUri =
-        editorContext?.persistSettings?.projectHomePath +
-        "/" +
-        editorContext?.editorStates.project;
-      platformApi.discoverProjectContent(projectUri).then((objects) => {
-        editorContext?.setEditorStates((prev) => {
-          return {
-            ...prev,
-            projectContent: objects,
-          };
-        });
-
-        toast.success("Folder created successfully.");
-      });
+      refreshProjectContent(platformApi, editorContext);
     });
 
     setFolderNameInputValue("");
@@ -306,20 +427,7 @@ const TreeViewGroup = forwardRef(function TreeViewGroup(
     }
 
     platformApi.createFile(uri).then(() => {
-      const projectUri =
-        editorContext?.persistSettings?.projectHomePath +
-        "/" +
-        editorContext?.editorStates.project;
-      platformApi.discoverProjectContent(projectUri).then((objects) => {
-        editorContext?.setEditorStates((prev) => {
-          return {
-            ...prev,
-            projectContent: objects,
-          };
-        });
-
-        toast.success("File created successfully.");
-      });
+      refreshProjectContent(platformApi, editorContext);
     });
 
     setFileNameInputValue("");

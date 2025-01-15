@@ -37,11 +37,6 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
-  async updateProject(oldUri: string, newUri: string): Promise<void> {
-    toast.error("Not implemented");
-    throw new Error("Method not implemented.");
-  }
-
   async createFolder(uri: string): Promise<void> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
@@ -52,6 +47,15 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
+  async rename(oldUri: string, newUri: string): Promise<void> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
+
+  async delete(uri: string): Promise<void> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
 
   // Reserved for cloud environment implementation
   async readFile(uri: string): Promise<File> {
