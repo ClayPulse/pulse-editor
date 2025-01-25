@@ -6,8 +6,13 @@ import {
 } from "../types";
 
 export abstract class AbstractPlatformAPI {
-  // Show a selection dialogue
-  abstract selectPath(): Promise<string | undefined>;
+  // Show a selection dialogue to pick a directory.
+  // Returns the path of the selected directory.
+  abstract selectDir(): Promise<string | undefined>;
+
+  // Pick a file
+  abstract selectFile(fileExtension?: string): Promise<File>;
+
   // List all projects in a path
   abstract listProjects(projectHomePath: string): Promise<ProjectInfo[]>;
   // Discover project content
@@ -28,9 +33,11 @@ export abstract class AbstractPlatformAPI {
   // Delete file object
   abstract delete(uri: string): Promise<void>;
 
-  abstract hasFile(uri: string): Promise<boolean>;
+  abstract hasPath(uri: string): Promise<boolean>;
   abstract readFile(uri: string): Promise<File>;
   abstract writeFile(file: File, uri: string): Promise<void>;
+
+  abstract copyFiles(from: string, to: string): Promise<void>;
 
   // Persistent settings
   abstract getPersistentSettings(): Promise<PersistentSettings>;

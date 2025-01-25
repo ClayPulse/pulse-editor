@@ -1,7 +1,10 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  selectPath: () => ipcRenderer.invoke("select-path"),
+  selectDir: () => ipcRenderer.invoke("select-dir"),
+  selectFile: (fileExtension) =>
+    ipcRenderer.invoke("select-file", fileExtension),
+
   listProjects: (uri) => ipcRenderer.invoke("list-projects", uri),
   listPathContent: (uri, options) =>
     ipcRenderer.invoke("list-path-content", uri, options),
@@ -16,6 +19,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   hasFile: (path) => ipcRenderer.invoke("has-file", path),
   readFile: (path) => ipcRenderer.invoke("read-file", path),
   writeFile: (data, path) => ipcRenderer.invoke("write-file", data, path),
+
+  copyFiles: (from, to) => ipcRenderer.invoke("copy-files", from, to),
 
   loadSettings: () => ipcRenderer.invoke("load-settings"),
   saveSettings: (settings) => ipcRenderer.invoke("save-settings", settings),

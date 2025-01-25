@@ -7,12 +7,13 @@ import {
 } from "@nextui-org/react";
 import ModalWrapper from "./modal-wrapper";
 import Icon from "../icon";
-import { ExtensionConfig } from "@/lib/types";
+import { ContextMenuState, ExtensionConfig } from "@/lib/types";
 import useExtensionManager from "@/lib/hooks/use-extensions";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ExtensionManager } from "@/lib/extensions/extension-manager";
+import ContextMenu from "../context-menu";
 
 function EnableCheckBox({
   isEnabled,
@@ -77,11 +78,19 @@ function EnableCheckBox({
 function ExtensionPreview({
   extension,
   manager,
+  uninstallExtension,
 }: {
   extension: ExtensionConfig;
   manager?: ExtensionManager;
+  uninstallExtension: (name: string) => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(false);
+
+  const [contextMenuState, setContextMenuState] = useState<ContextMenuState>({
+    x: 0,
+    y: 0,
+    isOpen: false,
+  });
 
   useEffect(() => {
     manager?.isExtensionEnabled(extension.name).then((enabled) => {
@@ -112,7 +121,36 @@ function ExtensionPreview({
             toggleExtension={toggleExtension}
           />
         </div>
-        <Button className="m-0 h-full w-full rounded-md p-0"></Button>
+        <Button
+          className="m-0 h-full w-full rounded-md p-0"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            // Get parent element position
+            const current = e.currentTarget as HTMLElement;
+            const parent = current.parentElement as HTMLElement;
+            const parentRect = parent.getBoundingClientRect();
+
+            setContextMenuState({
+              x: e.clientX - parentRect.left,
+              y: e.clientY - parentRect.top,
+              isOpen: true,
+            });
+          }}
+        ></Button>
+        <ContextMenu state={contextMenuState} setState={setContextMenuState}>
+          <div className="flex flex-col">
+            <Button
+              className="h-12 text-medium sm:h-8 sm:text-sm"
+              variant="light"
+              onPress={(e) => {
+                uninstallExtension(extension.name);
+                setContextMenuState({ x: 0, y: 0, isOpen: false });
+              }}
+            >
+              <p className="w-full text-start">Uninstall</p>
+            </Button>
+          </div>
+        </ContextMenu>
       </div>
       <p className="text-center">{extension.name}</p>
     </div>
@@ -130,6 +168,15 @@ export default function ExtensionModal({
   const { platformApi } = usePlatformApi();
 
   const [extensions, setExtensions] = useState<ExtensionConfig[]>([]);
+
+  function uninstallExtension(name: string) {
+    extensionManager?.uninstallExtension(name).then(() => {
+      toast.success("Extension uninstalled successfully");
+      extensionManager?.listExtensions().then((exts) => {
+        setExtensions(exts);
+      });
+    });
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -149,10 +196,10 @@ export default function ExtensionModal({
         <Button
           className="w-full"
           onPress={() => {
-            platformApi?.selectPath().then((uri) => {
-              if (uri) {
+            platformApi?.selectFile("zip").then((file) => {
+              if (file) {
                 extensionManager
-                  ?.importLocalExtension(uri)
+                  ?.importLocalExtensionFromZip(file)
                   .then(() => {
                     toast.success("Extension imported successfully");
                     extensionManager?.listExtensions().then((exts) => {
@@ -161,6 +208,7 @@ export default function ExtensionModal({
                   })
                   .catch((e: Error) => {
                     toast.error(e.message);
+                    console.error(e);
                   });
               }
             });
@@ -168,13 +216,13 @@ export default function ExtensionModal({
         >
           Import Local Extension
         </Button>
-
         <div className="grid grid-cols-2 gap-1">
           {extensions.map((ext) => (
             <ExtensionPreview
               extension={ext}
               key={ext.name}
               manager={extensionManager}
+              uninstallExtension={uninstallExtension}
             />
           ))}
         </div>

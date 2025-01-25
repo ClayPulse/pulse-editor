@@ -17,7 +17,12 @@ export class WebAPI extends AbstractPlatformAPI {
     super();
   }
 
-  async selectPath(): Promise<string | undefined> {
+  async selectDir(): Promise<string | undefined> {
+    toast.error("Not implemented");
+    throw new Error("Method not implemented.");
+  }
+
+  async selectFile(fileExtension?: string): Promise<File> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
   }
@@ -61,13 +66,17 @@ export class WebAPI extends AbstractPlatformAPI {
   }
 
   // Reserved for cloud environment implementation
-  async hasFile(uri: string): Promise<boolean> {
+  async hasPath(uri: string): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
   async readFile(uri: string): Promise<File> {
     throw new Error("Method not implemented.");
   }
   async writeFile(file: File, uri: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  async copyFiles(from: string, to: string): Promise<void> {
     throw new Error("Method not implemented.");
   }
 

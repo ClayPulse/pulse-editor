@@ -107,7 +107,7 @@ export default function EditorContextProvider({
       // Create the extensions folder if it doesn't exist
       platformApi.getInstallationPath().then((path) => {
         const extensionsPath = path + "/extensions";
-        platformApi.hasFile(extensionsPath).then((exists) => {
+        platformApi.hasPath(extensionsPath).then((exists) => {
           if (!exists) {
             platformApi.createFolder(extensionsPath);
           }

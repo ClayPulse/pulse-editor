@@ -15,8 +15,14 @@ export class ElectronAPI extends AbstractPlatformAPI {
     this.electronAPI = window.electronAPI;
   }
 
-  async selectPath(): Promise<string | undefined> {
+  async selectDir(): Promise<string | undefined> {
     return await this.electronAPI.selectPath();
+  }
+
+  async selectFile(fileExtension?: string): Promise<File> {
+    const data = await this.electronAPI.selectFile(fileExtension ?? "");
+
+    return new File([data], "file");
   }
 
   async listProjects(projectHomePath: string): Promise<ProjectInfo[]> {
@@ -50,7 +56,7 @@ export class ElectronAPI extends AbstractPlatformAPI {
     await this.electronAPI.delete(uri);
   }
 
-  async hasFile(uri: string): Promise<boolean> {
+  async hasPath(uri: string): Promise<boolean> {
     return await this.electronAPI.hasFile(uri);
   }
 
@@ -69,6 +75,10 @@ export class ElectronAPI extends AbstractPlatformAPI {
     await this.electronAPI.writeFile(data, uri);
   }
 
+  async copyFiles(from: string, to: string): Promise<void> {
+    await this.electronAPI.copyFiles(from, to);
+  }
+
   async getPersistentSettings(): Promise<PersistentSettings> {
     const persistentSettings: PersistentSettings =
       await this.electronAPI.loadSettings();
@@ -83,7 +93,7 @@ export class ElectronAPI extends AbstractPlatformAPI {
   async resetPersistentSettings(): Promise<void> {
     await this.electronAPI.saveSettings({});
   }
-  
+
   async getInstallationPath(): Promise<string> {
     return await this.electronAPI.getInstallationPath();
   }

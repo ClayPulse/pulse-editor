@@ -70,12 +70,33 @@ function handleSetTitle(event, title) {
   win.setTitle(title);
 }
 
-async function handleSelectPath(event) {
+async function handleSelectDir(event) {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
   if (!canceled) {
     return filePaths[0];
+  }
+}
+
+async function handleSelectFile(event, fileExtension) {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters:
+      fileExtension === ""
+        ? []
+        : [
+            {
+              name: fileExtension + " files",
+              extensions: [fileExtension],
+            },
+          ],
+  });
+
+  if (!canceled) {
+    const uri = filePaths[0];
+
+    return await fs.promises.readFile(uri);
   }
 }
 
@@ -171,6 +192,11 @@ async function handleWriteFile(event, data, path) {
   await fs.promises.writeFile(path, data);
 }
 
+async function handleCopyFiles(event, from, to) {
+  // Copy the files from the from path to the to path
+  await fs.promises.cp(from, to, { recursive: true });
+}
+
 function handleSaveSettings(event, settings) {
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 }
@@ -194,7 +220,9 @@ function handleGetInstallationPath(event) {
 }
 
 app.whenReady().then(() => {
-  ipcMain.handle("select-path", handleSelectPath);
+  ipcMain.handle("select-dir", handleSelectDir);
+  ipcMain.handle("select-file", handleSelectFile);
+
   ipcMain.handle("list-projects", handleListProjects);
   ipcMain.handle("list-path-content", handleListPathContent);
 
@@ -208,6 +236,8 @@ app.whenReady().then(() => {
   ipcMain.handle("has-file", handleHasFile);
   ipcMain.handle("read-file", handleReadFile);
   ipcMain.handle("write-file", handleWriteFile);
+
+  ipcMain.handle("copy-files", handleCopyFiles);
 
   ipcMain.handle("load-settings", handleLoadSettings);
   ipcMain.handle("save-settings", handleSaveSettings);

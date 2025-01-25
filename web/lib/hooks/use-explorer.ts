@@ -7,7 +7,7 @@ export default function useExplorer() {
   const editorContext = useContext(EditorContext);
 
   function selectAndSetProjectHome() {
-    platformApi?.selectPath().then((path) => {
+    platformApi?.selectDir().then((path) => {
       if (path) {
         console.log("Selected path: ", path);
         editorContext?.setPersistSettings((prev) => {

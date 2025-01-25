@@ -2,14 +2,11 @@
 
 import { ContextMenuState } from "@/lib/types";
 import {
-  Dropdown,
-  DropdownMenu,
-  DropdownTrigger,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
-import { JSX, useEffect, useRef } from "react";
+import { JSX } from "react";
 
 export default function ContextMenu({
   children,
