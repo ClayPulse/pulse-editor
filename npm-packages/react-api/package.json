@@ -1,12 +1,12 @@
 {
-  "name": "pulse-editor-api",
+  "name": "@pulse-editor/react-api",
   "version": "0.0.1",
   "private": true,
-  "main": "main.ts",
+  "main": "src/main.ts",
   "type": "module",
   "scripts": {
     "build": "rollup -c",
-    "lint": "eslint . --ext .ts,.tsx --ignore-path .gitignore --fix",
+    "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
