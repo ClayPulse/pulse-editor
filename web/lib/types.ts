@@ -1,4 +1,4 @@
-import { Dispatch, ForwardedRef, Ref, RefObject, SetStateAction } from "react";
+import { Dispatch, RefObject, SetStateAction } from "react";
 import { ViewManager } from "./views/view-manager";
 import { AIModelConfig } from "./ai-model-config";
 import { ViewTypeEnum } from "./views/available-views";
@@ -55,6 +55,8 @@ export type PersistentSettings = {
   ttsVoice?: string;
 
   projectHomePath?: string;
+
+  enabledExtensions?: string[];
 };
 
 export type DrawnLine = {
@@ -143,8 +145,6 @@ export type SaveFileDialogConfig = {
 export type FileSystemObject = {
   name: string;
   uri: string;
-  extension?: string;
-  file?: File;
   isFolder: boolean;
   subDirItems?: FileSystemObject[];
 };
@@ -171,4 +171,21 @@ export type ContextMenuState = {
   x: number;
   y: number;
   isOpen: boolean;
+};
+
+export enum ExtensionTypeEnum {
+  FileView = "file-view",
+  TerminalView = "terminal-view",
+}
+
+export type ExtensionConfig = {
+  name: string;
+  description: string;
+  type: ExtensionTypeEnum;
+  fileExtension?: string;
+};
+
+export type ListPathOptions = {
+  include: "folders" | "files" | "all";
+  isRecursive: boolean;
 };

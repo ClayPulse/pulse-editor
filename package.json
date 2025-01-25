@@ -6,7 +6,9 @@
         "web",
         "desktop",
         "mobile",
-        "vscode-extension"
+        "vscode-extension",
+        "npm-packages/react-api",
+        "npm-packages/types"
     ],
     "scripts": {
         "web-dev": "npm run dev --workspace=web",

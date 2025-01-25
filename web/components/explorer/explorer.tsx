@@ -44,7 +44,7 @@ export default function Explorer({
     if (platformApi) {
       const homePath = editorContext?.persistSettings?.projectHomePath;
       if (homePath) {
-        platformApi.listPathProjects(homePath).then((projects) => {
+        platformApi.listProjects(homePath).then((projects) => {
           editorContext?.setEditorStates((prev) => {
             return {
               ...prev,

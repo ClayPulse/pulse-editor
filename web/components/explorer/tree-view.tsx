@@ -34,7 +34,7 @@ function refreshProjectContent(
     editorContext?.persistSettings?.projectHomePath +
     "/" +
     editorContext?.editorStates.project;
-  platformApi?.discoverProjectContent(projectUri).then((objects) => {
+  platformApi?.listPathContent(projectUri).then((objects) => {
     editorContext?.setEditorStates((prev) => {
       return {
         ...prev,

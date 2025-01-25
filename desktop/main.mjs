@@ -37,7 +37,10 @@ function createWindow() {
       color: "#00000000",
       symbolColor: "#74b1be",
     },
-    icon: path.join(__dirname, "../shared/icons/electron/pulse_logo_round"),
+    icon: path.join(
+      __dirname,
+      "../shared-assets/icons/electron/pulse_logo_round"
+    ),
   });
 
   win.menuBarVisible = false;
@@ -77,7 +80,7 @@ async function handleSelectPath(event) {
 }
 
 // List all folders in a path
-async function handleListPathProjects(event, uri) {
+async function handleListProjects(event, uri) {
   const files = await fs.promises.readdir(uri, { withFileTypes: true });
   const folders = files
     .filter((file) => file.isDirectory())
@@ -90,27 +93,36 @@ async function handleListPathProjects(event, uri) {
   return folders;
 }
 
-async function discoverProjectContent(uri) {
+async function listPathContent(uri, options = {}) {
   const files = await fs.promises.readdir(uri, { withFileTypes: true });
 
-  const promise = files.map(async (file) => {
-    const name = file.name;
-    const absoluteUri = path.join(uri, name);
-    if (file.isDirectory()) {
+  const promise = files
+    .filter(
+      (file) =>
+        (options?.include === "folders" && file.isDirectory()) ||
+        (options?.include === "files" && file.isFile()) ||
+        options?.include === "all"
+    )
+    .map(async (file) => {
+      const name = file.name;
+      const absoluteUri = path.join(uri, name);
+      if (file.isDirectory()) {
+        return {
+          name: name,
+          isFolder: true,
+          subDirItems: options.isRecursive
+            ? await listPathContent(absoluteUri, options)
+            : [],
+          uri: absoluteUri,
+        };
+      }
+
       return {
-        name: name,
-        isFolder: true,
-        subDirItems: await discoverProjectContent(absoluteUri),
+        name,
+        isFolder: false,
         uri: absoluteUri,
       };
-    }
-
-    return {
-      name,
-      isFolder: false,
-      uri: absoluteUri,
-    };
-  });
+    });
 
   return Promise.all(promise);
 }
@@ -139,8 +151,12 @@ async function handleCreateFile(event, uri) {
 }
 
 // Discover the content of a project
-async function handleDiscoverProjectContent(event, uri) {
-  return await discoverProjectContent(uri);
+async function handleListPathContent(event, uri, options = {}) {
+  return await listPathContent(uri, options);
+}
+
+async function handleHasFile(event, path) {
+  return fs.existsSync(path);
 }
 
 async function handleReadFile(event, path) {
@@ -167,10 +183,20 @@ function handleLoadSettings(event) {
   return {};
 }
 
+function handleGetInstallationPath(event) {
+  // Return the installation path if the app is packaged
+  if (app.isPackaged) {
+    return app.getAppPath();
+  }
+  // Return the parent directory of the app if the app is in development mode
+  const uri = path.join(app.getAppPath(), "..");
+  return uri;
+}
+
 app.whenReady().then(() => {
   ipcMain.handle("select-path", handleSelectPath);
-  ipcMain.handle("list-path-projects", handleListPathProjects);
-  ipcMain.handle("discover-project-content", handleDiscoverProjectContent);
+  ipcMain.handle("list-projects", handleListProjects);
+  ipcMain.handle("list-path-content", handleListPathContent);
 
   ipcMain.handle("create-project", handleCreateProject);
   ipcMain.handle("create-folder", handleCreateFolder);
@@ -179,11 +205,14 @@ app.whenReady().then(() => {
   ipcMain.handle("rename", handleRename);
   ipcMain.handle("delete", handleDelete);
 
+  ipcMain.handle("has-file", handleHasFile);
   ipcMain.handle("read-file", handleReadFile);
   ipcMain.handle("write-file", handleWriteFile);
 
   ipcMain.handle("load-settings", handleLoadSettings);
   ipcMain.handle("save-settings", handleSaveSettings);
+
+  ipcMain.handle("get-installation-path", handleGetInstallationPath);
 
   createWindow();
 });

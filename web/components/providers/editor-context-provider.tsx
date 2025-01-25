@@ -101,6 +101,21 @@ export default function EditorContextProvider({
     }
   }, [platformApi]);
 
+  // Init extension folder
+  useEffect(() => {
+    if (platformApi) {
+      // Create the extensions folder if it doesn't exist
+      platformApi.getInstallationPath().then((path) => {
+        const extensionsPath = path + "/extensions";
+        platformApi.hasFile(extensionsPath).then((exists) => {
+          if (!exists) {
+            platformApi.createFolder(extensionsPath);
+          }
+        });
+      });
+    }
+  }, [platformApi]);
+
   // Save settings to local storage
   useEffect(() => {
     if (isSettingsLoaded) {

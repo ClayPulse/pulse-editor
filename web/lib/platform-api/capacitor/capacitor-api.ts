@@ -1,4 +1,9 @@
-import { FileSystemObject, PersistentSettings, ProjectInfo } from "@/lib/types";
+import {
+  FileSystemObject,
+  ListPathOptions,
+  PersistentSettings,
+  ProjectInfo,
+} from "@/lib/types";
 import { AbstractPlatformAPI } from "../abstract-platform-api";
 import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
 
@@ -23,9 +28,9 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     throw new Error("Cannot access external storage on mobile.");
   }
 
-  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
+  async listProjects(projectHomePath: string): Promise<ProjectInfo[]> {
     const files = await Filesystem.readdir({
-      path: uri,
+      path: projectHomePath,
       directory: Directory.Data,
     });
 
@@ -39,7 +44,10 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     return folders;
   }
 
-  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
+  async listPathContent(
+    uri: string,
+    options?: ListPathOptions,
+  ): Promise<FileSystemObject[]> {
     // Try to get permissions to read the directory
     const permission = await Filesystem.requestPermissions();
     if (permission.publicStorage !== "granted") {
@@ -51,26 +59,35 @@ export class CapacitorAPI extends AbstractPlatformAPI {
       directory: Directory.Data,
     });
 
-    const promise = files.files.map(async (file) => {
-      const absoluteUri = uri + "/" + file.name;
-      if (file.type === "directory") {
-        const dirObj: FileSystemObject = {
-          name: file.name,
-          isFolder: true,
-          subDirItems: await this.discoverProjectContent(absoluteUri),
-          uri: absoluteUri,
-        };
-        return dirObj;
-      } else {
-        console.log("File", file);
-        const fileObj: FileSystemObject = {
-          name: file.name,
-          isFolder: false,
-          uri: absoluteUri,
-        };
-        return fileObj;
-      }
-    });
+    const promise = files.files
+      .filter(
+        (file) =>
+          (options?.include === "folders" && file.type === "directory") ||
+          (options?.include === "files" && file.type === "file") ||
+          options?.include === "all",
+      )
+      .map(async (file) => {
+        const absoluteUri = uri + "/" + file.name;
+        if (file.type === "directory") {
+          const dirObj: FileSystemObject = {
+            name: file.name,
+            isFolder: true,
+            subDirItems: options?.isRecursive
+              ? await this.listPathContent(absoluteUri)
+              : [],
+            uri: absoluteUri,
+          };
+          return dirObj;
+        } else {
+          console.log("File", file);
+          const fileObj: FileSystemObject = {
+            name: file.name,
+            isFolder: false,
+            uri: absoluteUri,
+          };
+          return fileObj;
+        }
+      });
 
     const fileSystemObjects = await Promise.all(promise);
 
@@ -128,6 +145,18 @@ export class CapacitorAPI extends AbstractPlatformAPI {
         path: uri,
         directory: Directory.Data,
       });
+    }
+  }
+
+  async hasFile(uri: string): Promise<boolean> {
+    try {
+      await Filesystem.stat({
+        path: uri,
+        directory: Directory.Data,
+      });
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -194,5 +223,9 @@ export class CapacitorAPI extends AbstractPlatformAPI {
       path: "settings.json",
       directory: Directory.Data,
     });
+  }
+
+  async getInstallationPath(): Promise<string> {
+    return "/";
   }
 }

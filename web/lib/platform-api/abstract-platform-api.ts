@@ -1,12 +1,20 @@
-import { FileSystemObject, PersistentSettings, ProjectInfo } from "../types";
+import {
+  FileSystemObject,
+  ListPathOptions,
+  PersistentSettings,
+  ProjectInfo,
+} from "../types";
 
 export abstract class AbstractPlatformAPI {
   // Show a selection dialogue
   abstract selectPath(): Promise<string | undefined>;
   // List all projects in a path
-  abstract listPathProjects(uri: string): Promise<ProjectInfo[]>;
+  abstract listProjects(projectHomePath: string): Promise<ProjectInfo[]>;
   // Discover project content
-  abstract discoverProjectContent(uri: string): Promise<FileSystemObject[]>;
+  abstract listPathContent(
+    uri: string,
+    options?: ListPathOptions,
+  ): Promise<FileSystemObject[]>;
 
   // Create project
   abstract createProject(uri: string): Promise<void>;
@@ -20,7 +28,7 @@ export abstract class AbstractPlatformAPI {
   // Delete file object
   abstract delete(uri: string): Promise<void>;
 
-  // abstract saveFolder(folder: Folder, uriPrefix: string): Promise<void>;
+  abstract hasFile(uri: string): Promise<boolean>;
   abstract readFile(uri: string): Promise<File>;
   abstract writeFile(file: File, uri: string): Promise<void>;
 
@@ -28,4 +36,7 @@ export abstract class AbstractPlatformAPI {
   abstract getPersistentSettings(): Promise<PersistentSettings>;
   abstract setPersistentSettings(settings: PersistentSettings): Promise<void>;
   abstract resetPersistentSettings(): Promise<void>;
+
+  // Get installation path
+  abstract getInstallationPath(): Promise<string>;
 }

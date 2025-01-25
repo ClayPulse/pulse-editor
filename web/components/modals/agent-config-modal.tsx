@@ -18,11 +18,12 @@ export default function AgentConfigModal({
   const [prompt, setPrompt] = useState<string>("");
 
   return (
-    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
+    <ModalWrapper
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      title={"Configure New Agent"}
+    >
       <div className="flex flex-col space-y-2">
-        <p className="text-center text-lg font-bold text-foreground">
-          Configure New Agent
-        </p>
         <p>
           Add a new agent definition by adding agent name, icon, description,
           and prompt.

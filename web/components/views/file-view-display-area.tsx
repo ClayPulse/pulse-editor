@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState } from "react";
-import { EditorContext } from "./providers/editor-context-provider";
+import { EditorContext } from "../providers/editor-context-provider";
 import { ViewManager } from "@/lib/views/view-manager";
-import CodeEditorView from "./views/code-editor-view";
+import CodeEditorView from "./code-editor-view";
 import { AnimatePresence, motion } from "framer-motion";
-import AgentChatTerminalView from "./views/agent-chat-terminal-view";
 import { ViewTypeEnum } from "@/lib/views/available-views";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import { ViewDocument } from "@/lib/types";
 import { View } from "@/lib/views/view";
+import AgentChatTerminalView from "./agent-chat-terminal-view";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);

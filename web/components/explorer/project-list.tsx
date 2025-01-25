@@ -29,7 +29,7 @@ function ProjectTab({
     const uri =
       editorContext?.persistSettings?.projectHomePath + "/" + projectName;
 
-    platformApi?.discoverProjectContent(uri).then((objects) => {
+    platformApi?.listPathContent(uri).then((objects) => {
       editorContext?.setEditorStates((prev) => {
         return {
           ...prev,

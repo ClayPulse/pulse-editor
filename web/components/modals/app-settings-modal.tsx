@@ -43,14 +43,11 @@ export default function AppSettingsModal({
   }
 
   return (
-    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
+    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen} title={"App Settings"}>
       <>
-        <p className="text-center text-lg font-bold text-foreground">
-          App Settings
-        </p>
-        <div className="mt-2 flex w-full flex-col gap-2">
+        <div className="flex w-full flex-col gap-2">
           <div>
-            <p className="text-small text-foreground">Editor Settings</p>
+            <p className="text-small">Editor Settings</p>
             <div className="w-full space-y-2">
               {editorContext?.persistSettings?.projectHomePath ? (
                 <Input

@@ -4,10 +4,12 @@ export default function ModalWrapper({
   children,
   isOpen,
   setIsOpen,
+  title,
 }: {
   children?: React.ReactNode;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  title: string;
 }) {
   return (
     <Modal
@@ -40,7 +42,12 @@ export default function ModalWrapper({
     >
       <ModalContent>
         <div className="h-fit w-full px-4 pt-8">
-          <div className="max-h-[70vh] overflow-y-auto pb-4">{children}</div>
+          <div className="max-h-[70vh] overflow-y-auto pb-4">
+            <p className="text-center text-lg font-bold pb-4">
+              {title}
+            </p>
+            {children}
+          </div>
         </div>
       </ModalContent>
     </Modal>

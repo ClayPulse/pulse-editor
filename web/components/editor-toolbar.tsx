@@ -9,11 +9,13 @@ import { EditorContext } from "./providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import toast from "react-hot-toast";
+import ExtensionModal from "./modals/extension-modal";
 
 export default function EditorToolbar() {
   const editorContext = useContext(EditorContext);
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
+  const [isAppSettingsModalOpen, setAppIsSettingsModalOpen] = useState(false);
 
   function setIsOpen(val: boolean) {
     if (editorContext) {
@@ -151,10 +153,17 @@ export default function EditorToolbar() {
                   variant="light"
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+                  onPress={() => {
+                    setIsExtensionModalOpen(true);
+                  }}
                 >
                   <Icon name="dashboard_customize" variant="outlined" />
                 </Button>
               </Tooltip>
+              <ExtensionModal
+                isOpen={isExtensionModalOpen}
+                setIsOpen={setIsExtensionModalOpen}
+              />
 
               {/* <SettingPopover /> */}
               <Tooltip content="Settings">
@@ -162,14 +171,14 @@ export default function EditorToolbar() {
                   variant="light"
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
-                  onPress={() => setIsSettingsOpen(true)}
+                  onPress={() => setAppIsSettingsModalOpen(true)}
                 >
                   <Icon name="settings" variant="outlined" />
                 </Button>
               </Tooltip>
               <AppSettingsModal
-                isOpen={isSettingsOpen}
-                setIsOpen={setIsSettingsOpen}
+                isOpen={isAppSettingsModalOpen}
+                setIsOpen={setAppIsSettingsModalOpen}
               />
             </div>
           </motion.div>

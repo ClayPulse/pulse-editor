@@ -23,13 +23,16 @@ export default function PasswordScreen({
   const [password, setPassword] = useState<string | undefined>(undefined);
 
   return (
-    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
+    <ModalWrapper
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      title={
+        editorContext?.persistSettings?.isPasswordSet
+          ? "Enter your password"
+          : "Set a password"
+      }
+    >
       <>
-        <ModalHeader className="flex flex-col gap-1">
-          {editorContext?.persistSettings?.isPasswordSet
-            ? "Enter your password"
-            : "Set a password"}
-        </ModalHeader>
         <ModalBody>
           <Input
             endContent={<Icon name="lock" />}
@@ -96,9 +99,12 @@ export default function PasswordScreen({
                 });
               } else {
                 // Decrypt API tokens
-                const encryptedSttAPIKey = editorContext?.persistSettings?.sttAPIKey;
-                const encryptedLlmAPIKey = editorContext?.persistSettings?.llmAPIKey;
-                const encryptedTtsAPIKey = editorContext?.persistSettings?.ttsAPIKey;
+                const encryptedSttAPIKey =
+                  editorContext?.persistSettings?.sttAPIKey;
+                const encryptedLlmAPIKey =
+                  editorContext?.persistSettings?.llmAPIKey;
+                const encryptedTtsAPIKey =
+                  editorContext?.persistSettings?.ttsAPIKey;
                 const sttAPIKey = encryptedSttAPIKey
                   ? decrypt(encryptedSttAPIKey, password)
                   : undefined;

@@ -10,7 +10,7 @@ import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS } from "@/lib/tts/tts";
 import EditorToolbar from "@/components/editor-toolbar";
 import { EditorContext } from "@/components/providers/editor-context-provider";
-import ViewDisplayArea from "@/components/view-display-area";
+import ViewDisplayArea from "@/components/views/file-view-display-area";
 
 export default function Home() {
   const editorContext = useContext(EditorContext);

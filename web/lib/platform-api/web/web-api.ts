@@ -1,6 +1,6 @@
 import {
   FileSystemObject,
-  OpenFileDialogConfig,
+  ListPathOptions,
   PersistentSettings,
   ProjectInfo,
 } from "@/lib/types";
@@ -22,12 +22,15 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
-  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
+  async listProjects(projectHomePath: string): Promise<ProjectInfo[]> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
   }
 
-  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
+  async listPathContent(
+    uri: string,
+    options?: ListPathOptions,
+  ): Promise<FileSystemObject[]> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");
   }
@@ -58,6 +61,9 @@ export class WebAPI extends AbstractPlatformAPI {
   }
 
   // Reserved for cloud environment implementation
+  async hasFile(uri: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
   async readFile(uri: string): Promise<File> {
     throw new Error("Method not implemented.");
   }
@@ -162,6 +168,10 @@ export class WebAPI extends AbstractPlatformAPI {
     this.setValue("ttl", undefined);
     this.setValue("ttsVoice", undefined);
     this.setValue("projectHomePath", undefined);
+  }
+
+  async getInstallationPath(): Promise<string> {
+    throw new Error("Method not implemented.");
   }
 
   private getValue<T>(key: string): T | undefined {
