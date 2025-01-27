@@ -106,7 +106,7 @@ export class ExtensionManager {
     await this.enableExtension(extensionConfig.name);
   }
 
-  async importLocalExtensionFromZip(zipFile: File): Promise<void> {
+  async importLocalExtensionFromZip(zipFile: File): Promise<ExtensionConfig> {
     console.log(zipFile);
     const content = await zipFile.arrayBuffer();
 
@@ -156,6 +156,8 @@ export class ExtensionManager {
 
     // Enable the extension
     await this.enableExtension(extensionConfig.name);
+
+    return extensionConfig;
   }
 
   async loadExtensionToBlobUri(uri: string): Promise<string> {

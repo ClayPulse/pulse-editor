@@ -12,11 +12,12 @@ import { ContextMenuState, ExtensionConfig, TabItem } from "@/lib/types";
 import useExtensionManager from "@/lib/hooks/use-extensions";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ExtensionManager } from "@/lib/extensions/extension-manager";
 import ContextMenu from "../context-menu";
 import Tabs from "../tabs";
 import Loading from "../loading";
+import { EditorContext } from "../providers/editor-context-provider";
 
 function EnableCheckBox({
   isEnabled,
@@ -236,6 +237,8 @@ export default function ExtensionModal({
     extensionCategories[2],
   );
 
+  const editorContext = useContext(EditorContext);
+
   useEffect(() => {
     if (isOpen) {
       extensionManager?.listExtensions().then((exts) => {
@@ -244,12 +247,47 @@ export default function ExtensionModal({
     }
   }, [isOpen]);
 
+  function autoSetDefault(ext: ExtensionConfig) {
+    // Try to set default extension for file types
+    const map = editorContext?.persistSettings?.defaultFileTypeExtensionMap;
+    if (map) {
+      ext.fileTypes?.forEach((fileType) => {
+        if (map[fileType]) return;
+
+        map[fileType] = ext;
+      });
+    }
+
+    editorContext?.setPersistSettings({
+      ...editorContext.persistSettings,
+      defaultFileTypeExtensionMap: map,
+    });
+  }
+
+  function removeDefaultExtension(ext: ExtensionConfig) {
+    const map = editorContext?.persistSettings?.defaultFileTypeExtensionMap;
+    if (map) {
+      ext.fileTypes?.forEach((fileType) => {
+        delete map[fileType];
+      });
+    }
+
+    editorContext?.setPersistSettings({
+      ...editorContext.persistSettings,
+      defaultFileTypeExtensionMap: map,
+    });
+  }
+
   function uninstallExtension(name: string) {
     extensionManager?.uninstallExtension(name).then(() => {
-      toast.success("Extension uninstalled successfully");
+      const ext = installedExtensions.find((ext) => ext.name === name);
+      if (!ext) return;
+
       extensionManager?.listExtensions().then((exts) => {
         setInstalledExtensions(exts);
+        removeDefaultExtension(ext);
       });
+      toast.success("Extension uninstalled successfully");
     });
   }
 
@@ -289,11 +327,12 @@ export default function ExtensionModal({
               if (file) {
                 extensionManager
                   ?.importLocalExtensionFromZip(file)
-                  .then(() => {
-                    toast.success("Extension imported successfully");
+                  .then((ext) => {
                     extensionManager?.listExtensions().then((exts) => {
                       setInstalledExtensions(exts);
+                      autoSetDefault(ext);
                     });
+                    toast.success("Extension imported successfully");
                   })
                   .catch((e: Error) => {
                     console.error(e);
@@ -305,12 +344,7 @@ export default function ExtensionModal({
           Import Local Extension
         </Button>
 
-        <Button
-          className="w-full"
-          onPress={() => {
-            
-          }}
-        >
+        <Button className="w-full" onPress={() => {}}>
           Configure Extension Settings
         </Button>
       </div>

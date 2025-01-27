@@ -1,7 +1,6 @@
 "use client";
 
 import { AIModelConfig } from "@/lib/ai-model-config";
-import useExtensionManager from "@/lib/hooks/use-extensions";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { getModelLLM } from "@/lib/llm/llm";
 import { decrypt } from "@/lib/security/simple-password";
@@ -11,8 +10,6 @@ import {
   EditorStates,
   EditorContextType,
   PersistentSettings,
-  FileTypeExtensionList,
-  ExtensionTypeEnum,
 } from "@/lib/types";
 import { ViewManager } from "@/lib/views/view-manager";
 import { createContext, useEffect, useRef, useState } from "react";
@@ -35,7 +32,6 @@ const defaultEditorStates: EditorStates = {
   isToolbarOpen: true,
   explorerSelectedNodeRefs: [],
   pressedKeys: [],
-  fileTypeExtensionMap: new Map<string, FileTypeExtensionList>(),
 };
 
 export default function EditorContextProvider({
@@ -64,9 +60,6 @@ export default function EditorContextProvider({
 
   // --- Platform API ---
   const { platformApi } = usePlatformApi();
-
-  // --- Extension Manager ---
-  const { extensionManager } = useExtensionManager();
 
   // Track all pressed keys
   useEffect(() => {
@@ -123,45 +116,6 @@ export default function EditorContextProvider({
       });
     }
   }, [platformApi]);
-
-  // Load installed extensions
-  useEffect(() => {
-    if (extensionManager) {
-      extensionManager.listExtensions().then((extensions) => {
-        extensions.forEach((extension) => {
-          if (extension.type === ExtensionTypeEnum.FileView) {
-            const fileTypes = extension.fileTypes;
-
-            if (fileTypes) {
-              fileTypes.forEach((fileType) => {
-                if (!editorStates.fileTypeExtensionMap.has(fileType)) {
-                  editorStates.fileTypeExtensionMap.set(fileType, {
-                    defaultExtension: undefined,
-                    extensions: [],
-                  });
-                }
-                editorStates.fileTypeExtensionMap
-                  .get(fileType)
-                  ?.extensions.push(extension);
-              });
-            } else {
-              const fileType = "*";
-              if (!editorStates.fileTypeExtensionMap.has(fileType)) {
-                editorStates.fileTypeExtensionMap.set(fileType, {
-                  defaultExtension: extension,
-                  extensions: [],
-                });
-              }
-
-              editorStates.fileTypeExtensionMap
-                .get(fileType)
-                ?.extensions.push(extension);
-            }
-          }
-        });
-      });
-    }
-  }, [extensionManager]);
 
   // Save settings to local storage
   useEffect(() => {

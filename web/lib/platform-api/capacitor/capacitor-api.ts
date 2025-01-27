@@ -106,7 +106,6 @@ export class CapacitorAPI extends AbstractPlatformAPI {
           };
           return dirObj;
         } else {
-          console.log("File", file);
           const fileObj: FileSystemObject = {
             name: file.name,
             isFolder: false,

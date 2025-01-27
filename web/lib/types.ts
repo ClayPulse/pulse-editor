@@ -35,9 +35,6 @@ export type EditorStates = {
 
   // Password to access the credentials
   password?: string;
-
-  // For each file extension type, the corresponding extension config list
-  fileTypeExtensionMap: Map<string, FileTypeExtensionList>;
 };
 
 export type PersistentSettings = {
@@ -62,6 +59,7 @@ export type PersistentSettings = {
   projectHomePath?: string;
 
   enabledExtensions?: string[];
+  defaultFileTypeExtensionMap?: { [key: string]: ExtensionConfig };
 };
 
 export type DrawnLine = {
@@ -184,20 +182,15 @@ export enum ExtensionTypeEnum {
 }
 
 export type ExtensionConfig = {
+  extensionType: ExtensionTypeEnum;
   name: string;
   description: string;
-  type: ExtensionTypeEnum;
   fileTypes?: string[];
 };
 
 export type ListPathOptions = {
   include: "folders" | "files" | "all";
   isRecursive: boolean;
-};
-
-export type FileTypeExtensionList = {
-  defaultExtension?: ExtensionConfig;
-  extensions: ExtensionConfig[];
 };
 
 export type TabItem = {
