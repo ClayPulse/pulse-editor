@@ -1,19 +1,22 @@
 import {
   Button,
   Chip,
+  Skeleton,
   tv,
   useCheckbox,
   VisuallyHidden,
 } from "@nextui-org/react";
 import ModalWrapper from "./modal-wrapper";
 import Icon from "../icon";
-import { ContextMenuState, ExtensionConfig } from "@/lib/types";
+import { ContextMenuState, ExtensionConfig, TabItem } from "@/lib/types";
 import useExtensionManager from "@/lib/hooks/use-extensions";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import toast from "react-hot-toast";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ExtensionManager } from "@/lib/extensions/extension-manager";
 import ContextMenu from "../context-menu";
+import Tabs from "../tabs";
+import Loading from "../loading";
 
 function EnableCheckBox({
   isEnabled,
@@ -85,6 +88,7 @@ function ExtensionPreview({
   uninstallExtension: (name: string) => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [contextMenuState, setContextMenuState] = useState<ContextMenuState>({
     x: 0,
@@ -95,6 +99,7 @@ function ExtensionPreview({
   useEffect(() => {
     manager?.isExtensionEnabled(extension.name).then((enabled) => {
       setIsEnabled(enabled);
+      setIsLoaded(true);
     });
   }, [extension]);
 
@@ -103,13 +108,15 @@ function ExtensionPreview({
       manager?.disableExtension(extension.name).then(() => {
         setIsEnabled(false);
       });
-      toast.success("Extension disabled");
     } else {
       manager?.enableExtension(extension.name).then(() => {
         setIsEnabled(true);
       });
-      toast.success("Extension enabled");
     }
+  }
+
+  if (!isLoaded) {
+    return <Skeleton className="h-28 w-full" />;
   }
 
   return (
@@ -157,65 +164,26 @@ function ExtensionPreview({
   );
 }
 
-export default function ExtensionModal({
-  isOpen,
-  setIsOpen,
+function ExtensionListView({
+  extensions,
+  extensionManager,
+  uninstallExtension,
 }: {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
+  extensions: ExtensionConfig[];
+  extensionManager?: ExtensionManager;
+  uninstallExtension: (name: string) => void;
 }) {
-  const { extensionManager } = useExtensionManager();
-  const { platformApi } = usePlatformApi();
-
-  const [extensions, setExtensions] = useState<ExtensionConfig[]>([]);
-
-  function uninstallExtension(name: string) {
-    extensionManager?.uninstallExtension(name).then(() => {
-      toast.success("Extension uninstalled successfully");
-      extensionManager?.listExtensions().then((exts) => {
-        setExtensions(exts);
-      });
-    });
-  }
-
-  useEffect(() => {
-    if (isOpen) {
-      extensionManager?.listExtensions().then((exts) => {
-        setExtensions(exts);
-      });
-    }
-  }, [isOpen]);
-
   return (
-    <ModalWrapper
-      isOpen={isOpen}
-      setIsOpen={setIsOpen}
-      title={"Extension Marketplace"}
-    >
-      <div className="h-full w-full space-y-2 overflow-y-auto px-2">
-        <Button
-          className="w-full"
-          onPress={() => {
-            platformApi?.selectFile("zip").then((file) => {
-              if (file) {
-                extensionManager
-                  ?.importLocalExtensionFromZip(file)
-                  .then(() => {
-                    toast.success("Extension imported successfully");
-                    extensionManager?.listExtensions().then((exts) => {
-                      setExtensions(exts);
-                    });
-                  })
-                  .catch((e: Error) => {
-                    toast.error(e.message);
-                    console.error(e);
-                  });
-              }
-            });
-          }}
-        >
-          Import Local Extension
-        </Button>
+    <>
+      {extensions.length === 0 ? (
+        <div className="w-full space-y-2">
+          <p className="text-center text-lg">No extensions found</p>
+          <p>
+            You can search for extensions in the marketplace, or import a local
+            extension.
+          </p>
+        </div>
+      ) : (
         <div className="grid grid-cols-2 gap-1">
           {extensions.map((ext) => (
             <ExtensionPreview
@@ -226,6 +194,125 @@ export default function ExtensionModal({
             />
           ))}
         </div>
+      )}
+    </>
+  );
+}
+
+export default function ExtensionModal({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}) {
+  const { extensionManager } = useExtensionManager();
+  const { platformApi } = usePlatformApi();
+
+  const [recommendedExtensions, setRecommendedExtensions] = useState<
+    ExtensionConfig[]
+  >([]);
+  const [allExtensions, setAllExtensions] = useState<ExtensionConfig[]>([]);
+  const [installedExtensions, setInstalledExtensions] = useState<
+    ExtensionConfig[]
+  >([]);
+
+  const extensionCategories: TabItem[] = [
+    {
+      name: "Recommended",
+      description: "Recommended extensions",
+    },
+    {
+      name: "All",
+      description: "All extensions",
+    },
+    {
+      name: "Installed",
+      description: "Installed extensions",
+    },
+  ];
+
+  const [selectedCategory, setSelectedCategory] = useState<TabItem | undefined>(
+    extensionCategories[2],
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      extensionManager?.listExtensions().then((exts) => {
+        setInstalledExtensions(exts);
+      });
+    }
+  }, [isOpen]);
+
+  function uninstallExtension(name: string) {
+    extensionManager?.uninstallExtension(name).then(() => {
+      toast.success("Extension uninstalled successfully");
+      extensionManager?.listExtensions().then((exts) => {
+        setInstalledExtensions(exts);
+      });
+    });
+  }
+
+  return (
+    <ModalWrapper
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      title={"Extension Marketplace"}
+    >
+      <div className="h-full w-full space-y-2 overflow-y-auto px-2">
+        <div className="flex justify-center">
+          {isOpen && (
+            <Tabs
+              tabItems={extensionCategories}
+              selectedItem={selectedCategory}
+              setSelectedItem={setSelectedCategory}
+            />
+          )}
+        </div>
+
+        <ExtensionListView
+          extensionManager={extensionManager}
+          uninstallExtension={uninstallExtension}
+          extensions={
+            selectedCategory?.name === "Recommended"
+              ? recommendedExtensions
+              : selectedCategory?.name === "All"
+                ? allExtensions
+                : installedExtensions
+          }
+        />
+
+        <Button
+          className="w-full"
+          onPress={() => {
+            platformApi?.selectFile("zip").then((file) => {
+              if (file) {
+                extensionManager
+                  ?.importLocalExtensionFromZip(file)
+                  .then(() => {
+                    toast.success("Extension imported successfully");
+                    extensionManager?.listExtensions().then((exts) => {
+                      setInstalledExtensions(exts);
+                    });
+                  })
+                  .catch((e: Error) => {
+                    console.error(e);
+                  });
+              }
+            });
+          }}
+        >
+          Import Local Extension
+        </Button>
+
+        <Button
+          className="w-full"
+          onPress={() => {
+            
+          }}
+        >
+          Configure Extension Settings
+        </Button>
       </div>
     </ModalWrapper>
   );

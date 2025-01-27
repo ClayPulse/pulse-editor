@@ -41,11 +41,10 @@ export default function Nav({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Open PasswordScreen if password is set
+  // Open PasswordScreen if password is used
   useEffect(() => {
     if (
-      editorContext?.persistSettings?.isUsePassword &&
-      !editorContext?.persistSettings?.password
+      editorContext?.persistSettings?.isUsePassword
     ) {
       setIsPasswordScreenOpen(true);
     }

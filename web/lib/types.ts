@@ -32,6 +32,12 @@ export type EditorStates = {
   explorerSelectedNodeRefs: RefObject<TreeViewNodeRef | null>[];
 
   pressedKeys: string[];
+
+  // Password to access the credentials
+  password?: string;
+
+  // For each file extension type, the corresponding extension config list
+  fileTypeExtensionMap: Map<string, FileTypeExtensionList>;
 };
 
 export type PersistentSettings = {
@@ -49,7 +55,6 @@ export type PersistentSettings = {
 
   isUsePassword?: boolean;
   isPasswordSet?: boolean;
-  password?: string;
   ttl?: number;
 
   ttsVoice?: string;
@@ -182,10 +187,21 @@ export type ExtensionConfig = {
   name: string;
   description: string;
   type: ExtensionTypeEnum;
-  fileExtension?: string;
+  fileTypes?: string[];
 };
 
 export type ListPathOptions = {
   include: "folders" | "files" | "all";
   isRecursive: boolean;
+};
+
+export type FileTypeExtensionList = {
+  defaultExtension?: ExtensionConfig;
+  extensions: ExtensionConfig[];
+};
+
+export type TabItem = {
+  name: string;
+  icon?: string;
+  description: string;
 };

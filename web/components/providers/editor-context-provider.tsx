@@ -1,14 +1,18 @@
 "use client";
 
 import { AIModelConfig } from "@/lib/ai-model-config";
+import useExtensionManager from "@/lib/hooks/use-extensions";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { getModelLLM } from "@/lib/llm/llm";
+import { decrypt } from "@/lib/security/simple-password";
 import { getModelSTT } from "@/lib/stt/stt";
 import { getModelTTS } from "@/lib/tts/tts";
 import {
   EditorStates,
   EditorContextType,
   PersistentSettings,
+  FileTypeExtensionList,
+  ExtensionTypeEnum,
 } from "@/lib/types";
 import { ViewManager } from "@/lib/views/view-manager";
 import { createContext, useEffect, useRef, useState } from "react";
@@ -31,6 +35,7 @@ const defaultEditorStates: EditorStates = {
   isToolbarOpen: true,
   explorerSelectedNodeRefs: [],
   pressedKeys: [],
+  fileTypeExtensionMap: new Map<string, FileTypeExtensionList>(),
 };
 
 export default function EditorContextProvider({
@@ -59,6 +64,9 @@ export default function EditorContextProvider({
 
   // --- Platform API ---
   const { platformApi } = usePlatformApi();
+
+  // --- Extension Manager ---
+  const { extensionManager } = useExtensionManager();
 
   // Track all pressed keys
   useEffect(() => {
@@ -116,6 +124,45 @@ export default function EditorContextProvider({
     }
   }, [platformApi]);
 
+  // Load installed extensions
+  useEffect(() => {
+    if (extensionManager) {
+      extensionManager.listExtensions().then((extensions) => {
+        extensions.forEach((extension) => {
+          if (extension.type === ExtensionTypeEnum.FileView) {
+            const fileTypes = extension.fileTypes;
+
+            if (fileTypes) {
+              fileTypes.forEach((fileType) => {
+                if (!editorStates.fileTypeExtensionMap.has(fileType)) {
+                  editorStates.fileTypeExtensionMap.set(fileType, {
+                    defaultExtension: undefined,
+                    extensions: [],
+                  });
+                }
+                editorStates.fileTypeExtensionMap
+                  .get(fileType)
+                  ?.extensions.push(extension);
+              });
+            } else {
+              const fileType = "*";
+              if (!editorStates.fileTypeExtensionMap.has(fileType)) {
+                editorStates.fileTypeExtensionMap.set(fileType, {
+                  defaultExtension: extension,
+                  extensions: [],
+                });
+              }
+
+              editorStates.fileTypeExtensionMap
+                .get(fileType)
+                ?.extensions.push(extension);
+            }
+          }
+        });
+      });
+    }
+  }, [extensionManager]);
+
   // Save settings to local storage
   useEffect(() => {
     if (isSettingsLoaded) {
@@ -129,39 +176,60 @@ export default function EditorContextProvider({
 
   // Load STT
   useEffect(() => {
-    if (settings?.sttAPIKey && settings?.sttProvider && settings?.sttModel) {
+    if (
+      !editorStates.password &&
+      settings?.sttAPIKey &&
+      settings?.sttProvider &&
+      settings?.sttModel
+    ) {
       const model = getModelSTT(
-        settings?.sttAPIKey,
+        settings.sttAPIKey,
         settings?.sttProvider,
         settings?.sttModel,
       );
       aiModelConfig.current.setSTTModel(model);
     }
-  }, [settings?.sttAPIKey, settings?.sttProvider, settings?.sttModel]);
+  }, [
+    editorStates.password,
+    settings?.sttAPIKey,
+    settings?.sttProvider,
+    settings?.sttModel,
+  ]);
 
   // Load LLM
   useEffect(() => {
-    if (settings?.llmAPIKey && settings?.llmProvider && settings?.llmModel) {
+    if (
+      !editorStates.password &&
+      settings?.llmAPIKey &&
+      settings?.llmProvider &&
+      settings?.llmModel
+    ) {
       const model = getModelLLM(
-        settings?.llmAPIKey,
+        settings.llmAPIKey,
         settings?.llmProvider,
         settings?.llmModel,
         0.85,
       );
       aiModelConfig.current.setLLMModel(model);
     }
-  }, [settings?.llmAPIKey, settings?.llmProvider, settings?.llmModel]);
+  }, [
+    editorStates.password,
+    settings?.llmAPIKey,
+    settings?.llmProvider,
+    settings?.llmModel,
+  ]);
 
   // Load TTS
   useEffect(() => {
     if (
+      !editorStates.password &&
       settings?.ttsAPIKey &&
       settings?.ttsProvider &&
       settings?.ttsModel &&
       settings?.ttsVoice
     ) {
       const model = getModelTTS(
-        settings?.ttsAPIKey,
+        settings.ttsAPIKey,
         settings?.ttsProvider,
         settings?.ttsModel,
         settings?.ttsVoice,
@@ -169,6 +237,82 @@ export default function EditorContextProvider({
       aiModelConfig.current.setTTSModel(model);
     }
   }, [
+    editorStates.password,
+    settings?.ttsAPIKey,
+    settings?.ttsProvider,
+    settings?.ttsModel,
+    settings?.ttsVoice,
+  ]);
+
+  // Load API keys when password is entered
+  useEffect(() => {
+    if (editorStates.password && settings?.isPasswordSet) {
+      if (settings?.sttAPIKey && settings?.sttProvider && settings?.sttModel) {
+        const decryptedSTTAPIKey = decrypt(
+          settings.sttAPIKey,
+          editorStates.password,
+        );
+
+        const model = getModelSTT(
+          decryptedSTTAPIKey,
+          settings?.sttProvider,
+          settings?.sttModel,
+        );
+        aiModelConfig.current.setSTTModel(model);
+
+        console.log("decryptedSTTAPIKey", decryptedSTTAPIKey);
+      }
+
+      if (settings?.llmAPIKey && settings?.llmProvider && settings?.llmModel) {
+        const decryptedLLMAPIKey = decrypt(
+          settings.llmAPIKey,
+          editorStates.password,
+        );
+
+        const model = getModelLLM(
+          decryptedLLMAPIKey,
+          settings?.llmProvider,
+          settings?.llmModel,
+          0.85,
+        );
+        aiModelConfig.current.setLLMModel(model);
+
+        console.log("decryptedLLMAPIKey", decryptedLLMAPIKey);
+      }
+
+      if (
+        settings?.ttsAPIKey &&
+        settings?.ttsProvider &&
+        settings?.ttsModel &&
+        settings?.ttsVoice
+      ) {
+        const decryptedTTSAPIKey = decrypt(
+          settings.ttsAPIKey,
+          editorStates.password,
+        );
+
+        const model = getModelTTS(
+          decryptedTTSAPIKey,
+          settings?.ttsProvider,
+          settings?.ttsModel,
+          settings?.ttsVoice,
+        );
+        aiModelConfig.current.setTTSModel(model);
+
+        console.log("decryptedTTSAPIKey", decryptedTTSAPIKey);
+      }
+    }
+  }, [
+    editorStates.password,
+
+    settings?.sttAPIKey,
+    settings?.sttProvider,
+    settings?.sttModel,
+
+    settings?.llmAPIKey,
+    settings?.llmProvider,
+    settings?.llmModel,
+
     settings?.ttsAPIKey,
     settings?.ttsProvider,
     settings?.ttsModel,

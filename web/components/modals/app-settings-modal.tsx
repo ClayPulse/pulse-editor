@@ -93,7 +93,7 @@ export default function AppSettingsModal({
             </div>
           </div>
           <div>
-            <p className="text-small text-foreground">STT</p>
+            <p className="text-small">STT</p>
             <div className="w-full space-y-2">
               <Select
                 items={sttProviderOptions}
@@ -178,7 +178,11 @@ export default function AppSettingsModal({
                   label="API Key"
                   size="md"
                   isRequired
-                  value={editorContext?.persistSettings?.sttAPIKey ?? ""}
+                  value={
+                    editorContext?.persistSettings?.isPasswordSet
+                      ? "API key is encrypted"
+                      : (editorContext?.persistSettings?.sttAPIKey ?? "")
+                  }
                   onValueChange={(value) => {
                     updateEditorSettings({
                       settings: {
@@ -194,7 +198,7 @@ export default function AppSettingsModal({
           </div>
           <Divider />
           <div>
-            <p className="text-small text-foreground">LLM</p>
+            <p className="text-small">LLM</p>
             <div className="w-full space-y-2">
               <Select
                 items={llmProviderOptions}
@@ -279,7 +283,11 @@ export default function AppSettingsModal({
                   label="API Key"
                   size="md"
                   isRequired
-                  value={editorContext?.persistSettings?.llmAPIKey ?? ""}
+                  value={
+                    editorContext?.persistSettings?.isPasswordSet
+                      ? "API key is encrypted"
+                      : (editorContext?.persistSettings?.llmAPIKey ?? "")
+                  }
                   onValueChange={(value) => {
                     updateEditorSettings({
                       settings: {
@@ -295,7 +303,7 @@ export default function AppSettingsModal({
           </div>
           <Divider />
           <div>
-            <p className="text-small text-foreground">TTS</p>
+            <p className="text-small">TTS</p>
             <div className="w-full space-y-2">
               <Select
                 items={ttsProviderOptions}
@@ -394,7 +402,11 @@ export default function AppSettingsModal({
                   label="API Key"
                   size="md"
                   isRequired
-                  value={editorContext?.persistSettings?.ttsAPIKey ?? ""}
+                  value={
+                    editorContext?.persistSettings?.isPasswordSet
+                      ? "API key is encrypted"
+                      : (editorContext?.persistSettings?.ttsAPIKey ?? "")
+                  }
                   onValueChange={(value) => {
                     updateEditorSettings({
                       settings: {
@@ -409,13 +421,10 @@ export default function AppSettingsModal({
             </div>
           </div>
           <Divider />
-          <p className="text-small text-foreground">Security</p>
-          <p className="text-small text-foreground">
-            This app currently runs in browser environment and has not yet
-            implemented a backend or system file APIs using Electronjs or
-            Capacitorjs. Therefore, the API tokens are stored in the
-            browser&apos;s local storage and can be prone to attacks. Use a
-            password to encrypt the API tokens as a temporary workaround.
+          <p className="text-small">Security</p>
+          <p className="text-small">
+            Use a password to encrypt the API tokens. You will need to re-enter
+            all API tokens if you forget the password.
           </p>
           <Switch
             isSelected={editorContext?.persistSettings?.isUsePassword ?? false}
@@ -431,12 +440,19 @@ export default function AppSettingsModal({
               } else {
                 // Reset all settings
                 editorContext?.setPersistSettings(undefined);
+                // Remove password from memory
+                editorContext?.setEditorStates((prev) => {
+                  return {
+                    ...prev,
+                    password: undefined,
+                  };
+                });
               }
             }}
           >
             Encrypt API tokens with password
           </Switch>
-          <p className="text-small text-foreground">
+          <p className="text-small">
             The API tokens are saved for the duration of the TTL (Time To Live)
             days. After the TTL, the API tokens will be deleted when the app
             opens next time. Set -1 to keep the tokens indefinitely.

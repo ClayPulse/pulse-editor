@@ -12,7 +12,13 @@ import {
   useState,
 } from "react";
 import ViewLayout from "./layout";
-import { AgentConfig, ChatMessage, ViewDocument, ViewRef } from "@/lib/types";
+import {
+  AgentConfig,
+  ChatMessage,
+  TabItem,
+  ViewDocument,
+  ViewRef,
+} from "@/lib/types";
 import { Avatar, Button, Divider, Input, Tooltip } from "@nextui-org/react";
 import Icon from "../icon";
 import { getModelLLM } from "@/lib/llm/llm";
@@ -23,6 +29,7 @@ import { BeatLoader } from "react-spinners";
 import AgentConfigModal from "../modals/agent-config-modal";
 import { EditorContext } from "../providers/editor-context-provider";
 import { ViewTypeEnum } from "@/lib/views/available-views";
+import Tabs from "../tabs";
 
 export type AgentChatTerminalViewRef = ViewRef;
 
@@ -68,111 +75,6 @@ const defaultAgents: AgentConfig[] = [
   },
 ];
 
-function TerminalTabs({
-  agents,
-  selectedAgent,
-  setSelectedAgent,
-}: {
-  agents: AgentConfig[];
-  selectedAgent: AgentConfig | undefined;
-  setSelectedAgent: Dispatch<SetStateAction<AgentConfig | undefined>>;
-}) {
-  const tabDivRef = useRef<HTMLDivElement | null>(null);
-  const [isLeftScrollable, setIsLeftScrollable] = useState<boolean>(false);
-  const [isRightScrollable, setIsRightScrollable] = useState<boolean>(false);
-
-  function updateScroll() {
-    if (tabDivRef.current) {
-      setIsLeftScrollable(tabDivRef.current.scrollLeft > 0);
-      setIsRightScrollable(
-        tabDivRef.current.scrollLeft + tabDivRef.current.clientWidth <
-          tabDivRef.current.scrollWidth - 1,
-      );
-    }
-  }
-
-  useEffect(() => {
-    updateScroll();
-  }, [agents]);
-
-  return (
-    <div className="mx-1 flex h-full items-center overflow-x-auto">
-      <Button
-        isIconOnly
-        variant="light"
-        size="sm"
-        onPress={() => {
-          // Scroll to the left
-          tabDivRef.current?.scrollBy({
-            left: -100,
-            behavior: "smooth",
-          });
-        }}
-        isDisabled={!isLeftScrollable}
-      >
-        <Icon name="arrow_left" />
-      </Button>
-      <div
-        ref={tabDivRef}
-        className="flex items-center overflow-x-auto scrollbar-hide"
-        onScroll={(e) => {
-          updateScroll();
-        }}
-      >
-        {agents.map((agent, index) => (
-          <div key={index} className="relative flex h-full items-center">
-            {selectedAgent === agent && (
-              <motion.div
-                className="absolute z-10 h-8 w-full rounded-lg bg-content4 shadow-sm"
-                layoutId="tab-indicator"
-              ></motion.div>
-            )}
-            <Tooltip content={agent.description}>
-              <Button
-                className={`z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
-                disableRipple
-                disableAnimation
-                onPress={(e) => {
-                  setSelectedAgent(agent);
-                  // Move scroll location to the tab
-                  const tab = e.target as HTMLElement;
-                  tab?.scrollIntoView({
-                    behavior: "smooth",
-                    inline: "nearest",
-                  });
-                }}
-              >
-                <div
-                  className={`flex items-center space-x-0.5 text-sm text-content1-foreground`}
-                >
-                  <Icon variant="outlined" name={agent.icon || "smart_toy"} />
-                  <p>{agent.name}</p>
-                </div>
-              </Button>
-            </Tooltip>
-          </div>
-        ))}
-      </div>
-
-      <Button
-        isIconOnly
-        variant="light"
-        size="sm"
-        onPress={() => {
-          // Scroll to the right
-          tabDivRef.current?.scrollBy({
-            left: 100,
-            behavior: "smooth",
-          });
-        }}
-        isDisabled={!isRightScrollable}
-      >
-        <Icon name="arrow_right" />
-      </Button>
-    </div>
-  );
-}
-
 function TerminalNavBar({
   agents,
   setAgents,
@@ -192,10 +94,27 @@ function TerminalNavBar({
 
   return (
     <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
-      <TerminalTabs
-        agents={agents}
-        selectedAgent={selectedAgent}
-        setSelectedAgent={setSelectedAgent}
+      <Tabs
+        // agents={agents}
+        tabItems={agents.map((agent) => {
+          const item: TabItem = {
+            name: agent.name,
+            icon: agent.icon,
+            description: agent.description ?? "",
+          };
+          return item;
+        })}
+        selectedItem={{
+          name: selectedAgent?.name ?? "",
+          icon: selectedAgent?.icon,
+          description: selectedAgent?.description ?? "",
+        }}
+        setSelectedItem={(item) => {
+          if (item) {
+            const agent = agents.find((agent) => agent.name === item.name);
+            setSelectedAgent(agent);
+          }
+        }}
       />
       <div className="flex h-full items-center py-2">
         <Divider orientation="vertical" />
