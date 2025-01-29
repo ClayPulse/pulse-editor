@@ -11,7 +11,7 @@ import {
   EditorContextType,
   PersistentSettings,
 } from "@/lib/types";
-import { ViewManager } from "@/lib/views/view-manager";
+import { FileViewManager } from "@/lib/views/file-view-manager";
 import { createContext, useEffect, useRef, useState } from "react";
 
 export const EditorContext = createContext<EditorContextType | undefined>(
@@ -32,6 +32,8 @@ const defaultEditorStates: EditorStates = {
   isToolbarOpen: true,
   explorerSelectedNodeRefs: [],
   pressedKeys: [],
+  openedViewModels: [],
+
 };
 
 export default function EditorContextProvider({
@@ -49,11 +51,6 @@ export default function EditorContextProvider({
     undefined,
   );
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
-
-  // --- View Management ---
-  const [viewManager, setViewManager] = useState<ViewManager | undefined>(
-    undefined,
-  );
 
   // --- AI Model Management ---
   const aiModelConfig = useRef<AIModelConfig>(new AIModelConfig());
@@ -280,8 +277,6 @@ export default function EditorContextProvider({
         setEditorStates,
         persistSettings: settings,
         setPersistSettings: setSettings,
-        viewManager,
-        setViewManager,
         aiModelConfig: aiModelConfig.current,
       }}
     >

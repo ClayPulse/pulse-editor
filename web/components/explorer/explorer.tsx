@@ -1,21 +1,11 @@
 "use client";
 
-import { TreeViewGroupRef, ViewDocument } from "@/lib/types";
+import { TreeViewGroupRef, FileViewModel } from "@/lib/types";
 import { useContext, useEffect, useRef, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
-import { View } from "@/lib/views/view";
-import { ViewTypeEnum } from "@/lib/views/available-views";
-import { ViewManager } from "@/lib/views/view-manager";
-import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Input,
-} from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import ProjectSettingsModal from "../modals/project-settings-modal";
@@ -36,7 +26,7 @@ export default function Explorer({
   const { platformApi } = usePlatformApi();
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
     useState(false);
-  const { openDocumentInView } = useViewManager();
+  const { viewManager } = useViewManager();
 
   const rootGroupRef = useRef<TreeViewGroupRef | null>(null);
 
@@ -68,13 +58,7 @@ export default function Explorer({
 
   function viewFile(uri: string) {
     platformApi?.readFile(uri).then((file) => {
-      file?.text().then((text) => {
-        const viewDocument: ViewDocument = {
-          fileContent: text,
-          filePath: uri,
-        };
-        openDocumentInView(viewDocument);
-
+      viewManager?.openFileView(file).then(() => {
         if (platform === PlatformEnum.Capacitor) {
           setIsMenuOpen(false);
         }
@@ -230,7 +214,7 @@ export default function Explorer({
           isOpen={isProjectSettingsModalOpen}
           setIsOpen={setIsProjectSettingsModalOpen}
         />
-        <ProjectList/>
+        <ProjectList />
       </div>
     );
   }

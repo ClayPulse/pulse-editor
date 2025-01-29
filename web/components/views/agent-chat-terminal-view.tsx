@@ -16,7 +16,7 @@ import {
   AgentConfig,
   ChatMessage,
   TabItem,
-  ViewDocument,
+  FileViewModel,
   ViewRef,
 } from "@/lib/types";
 import { Avatar, Button, Divider, Input, Tooltip } from "@nextui-org/react";
@@ -258,7 +258,7 @@ const AgentChatTerminalView = forwardRef(
       const codeEditorViews = editorContext?.viewManager?.getViewByType(
         ViewTypeEnum.Code,
       );
-      const viewDocuments: ViewDocument[] = [];
+      const viewDocuments: FileViewModel[] = [];
       codeEditorViews?.forEach((view) => {
         const viewDocument = view.viewDocument;
         if (viewDocument) {

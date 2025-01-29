@@ -1,41 +1,37 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
-import { ViewManager } from "@/lib/views/view-manager";
-import CodeEditorView from "./code-editor-view";
 import { AnimatePresence, motion } from "framer-motion";
-import { ViewTypeEnum } from "@/lib/views/available-views";
-import { getPlatform } from "@/lib/platform-api/platform-checker";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
-import { ViewDocument } from "@/lib/types";
-import { View } from "@/lib/views/view";
 import AgentChatTerminalView from "./agent-chat-terminal-view";
+import { useViewManager } from "@/lib/hooks/use-view-manager";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);
-  const [activeView, setActiveView] = useState<View | undefined>(undefined);
+  const { viewManager } = useViewManager();
 
-  // Initialize view manager
-  useEffect(() => {
-    if (!editorContext?.viewManager) {
-      // If running in VSCode extension, notify VSCode that Pulse is ready,
-      // and create view manager later when VSCode sends a message.
-      if (getPlatform() === PlatformEnum.VSCode) {
-        notifyVSCode();
-        addVSCodeHandlers();
-      } else {
-        const viewManager = new ViewManager();
-        editorContext?.setViewManager(viewManager);
-      }
-    }
-  }, []);
+  const activeView = viewManager?.getActiveFileView();
 
-  useEffect(() => {
-    if (editorContext?.viewManager) {
-      const activeView = editorContext.viewManager.getActiveView();
-      console.log("Active view:", activeView?.viewDocument.filePath);
-      setActiveView(activeView);
-    }
-  }, [editorContext?.viewManager]);
+  // // Initialize view manager
+  // useEffect(() => {
+  //   if (!editorContext?.viewManager) {
+  //     // If running in VSCode extension, notify VSCode that Pulse is ready,
+  //     // and create view manager later when VSCode sends a message.
+  //     if (getPlatform() === PlatformEnum.VSCode) {
+  //       notifyVSCode();
+  //       addVSCodeHandlers();
+  //     } else {
+  //       const viewManager = new ViewManager();
+  //       editorContext?.setViewManager(viewManager);
+  //     }
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (editorContext?.viewManager) {
+  //     const activeView = editorContext.viewManager.getActiveView();
+  //     console.log("Active view:", activeView?.viewDocument.filePath);
+  //     setActiveView(activeView);
+  //   }
+  // }, [editorContext?.viewManager]);
 
   function notifyVSCode() {
     window.parent.postMessage(
@@ -65,12 +61,9 @@ export default function ViewDisplayArea() {
       if (message.command === "updatePulseText") {
         const text: string = message.text;
         console.log("Received text from VSCode:", text);
-        const view = editorContext?.viewManager?.getActiveView();
-        if (view) {
-          view.updateViewDocument({
-            fileContent: text,
-          });
-        }
+        viewManager?.updateFileView({
+          fileContent: text,
+        });
       } else if (message.command === "openFile") {
         const text: string = message.text;
         const path: string = message.path;
@@ -78,34 +71,25 @@ export default function ViewDisplayArea() {
           "Received file from VSCode. Path: " + path + " Text: " + text,
         );
 
-        const doc: ViewDocument = {
-          fileContent: text,
-          filePath: path,
-        };
-        const newView = new View(ViewTypeEnum.Code, doc);
-        // Send a message to parent iframe to notify changes made in Pulse
-        const callback = (viewDocument: ViewDocument) => {
-          if (!viewDocument) {
-            return;
-          }
-          window.parent.postMessage(
-            {
-              command: "updateVSCodeText",
-              text: viewDocument.fileContent,
-              from: "pulse",
-            },
-            "*",
-          );
-        };
-        newView.setViewDocumentChangeCallback(callback);
+        const file = new File([text], path);
+        viewManager?.openFileView(file);
 
-        // Add to view manager
-        editorContext?.setViewManager((prev) => {
-          const newVM = new ViewManager();
-          newVM?.addView(newView);
-          newVM?.setActiveView(newView);
-          return newVM;
-        });
+        // Send a message to vscode parent iframe to notify changes made in Pulse
+        // const callback = (viewDocument: FileViewModel) => {
+        //   if (!viewDocument) {
+        //     return;
+        //   }
+        //   window.parent.postMessage(
+        //     {
+        //       command: "updateVSCodeText",
+        //       text: viewDocument.fileContent,
+        //       from: "pulse",
+        //     },
+        //     "*",
+        //   );
+        // };
+        // TODO: need to find a new way to set callback with modular view extension
+        // newView.setViewDocumentChangeCallback(callback);
       }
     });
   }
@@ -124,15 +108,17 @@ export default function ViewDisplayArea() {
               </p>
             </div>
           ) : (
-            <CodeEditorView
-              key={activeView.viewDocument.filePath}
-              ref={(ref) => {
-                if (ref) activeView.viewRef = ref;
-              }}
-              width="100%"
-              height="100%"
-              view={activeView}
-            />
+            <>
+              {/* <CodeEditorView
+                key={activeView.filePath}
+                ref={(ref) => {
+                  if (ref) activeView.viewRef = ref;
+                }}
+                width="100%"
+                height="100%"
+                view={activeView}
+              /> */}
+            </>
           )}
         </div>
 

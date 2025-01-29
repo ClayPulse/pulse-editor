@@ -1,6 +1,6 @@
 import { AbstractPlatformAPI } from "../platform-api/abstract-platform-api";
 import { getAbstractPlatformAPI } from "../platform-api/get-abstract-platform-api";
-import { ExtensionConfig } from "../types";
+import { ExtensionConfig, ExtensionBlobInfo } from "../types";
 import JSZip from "jszip";
 
 export class ExtensionManager {
@@ -160,12 +160,31 @@ export class ExtensionManager {
     return extensionConfig;
   }
 
-  async loadExtensionToBlobUri(uri: string): Promise<string> {
-    const bundle = await this.platformApi.readFile(uri);
 
-    const blob = new Blob([bundle], { type: "application/javascript" });
+  async loadExtension(name: string): Promise<ExtensionBlobInfo> {
+    const installPath = await this.platformApi.getInstallationPath();
+    const extensionPath = `${installPath}/extensions/${name}`;
 
-    return URL.createObjectURL(blob);
+    const bundleFile = await this.platformApi.readFile(
+      `${extensionPath}/bundle.js`,
+    );
+
+    const bundleBlob = new Blob([await bundleFile.arrayBuffer()], {
+      type: "application/javascript",
+    });
+
+    const cssFile = await this.platformApi.readFile(
+      `${extensionPath}/globals.css`,
+    );
+
+    const cssBlob = new Blob([await cssFile.arrayBuffer()], {
+      type: "text/css",
+    });
+
+    return {
+      bundleUri: URL.createObjectURL(bundleBlob),
+      cssUri: URL.createObjectURL(cssBlob),
+    };
   }
 
   async isExtensionEnabled(extensionName: string): Promise<boolean> {

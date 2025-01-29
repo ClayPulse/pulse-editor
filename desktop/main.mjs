@@ -53,7 +53,7 @@ function createWindow() {
   }
   // Development launch
   else {
-    win.loadURL("http://localhost:3000");
+    win.loadURL("http://localhost:3000/test?name=pulse-extension-template");
     win.webContents.openDevTools();
     win.webContents.on("did-fail-load", (e, code, desc) => {
       win.webContents.reloadIgnoringCache();

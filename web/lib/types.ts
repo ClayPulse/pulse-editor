@@ -1,8 +1,9 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
-import { ViewManager } from "./views/view-manager";
+import { FileViewManager } from "./views/file-view-manager";
 import { AIModelConfig } from "./ai-model-config";
 import { ViewTypeEnum } from "./views/available-views";
 
+// #region Context
 export type EditorStates = {
   // Selection by drawing
   isDrawing: boolean;
@@ -35,6 +36,8 @@ export type EditorStates = {
 
   // Password to access the credentials
   password?: string;
+
+  openedViewModels: FileViewModel[];
 };
 
 export type PersistentSettings = {
@@ -61,6 +64,17 @@ export type PersistentSettings = {
   enabledExtensions?: string[];
   defaultFileTypeExtensionMap?: { [key: string]: ExtensionConfig };
 };
+// #endregion
+
+// #region View Models
+export type FileViewModel = {
+  fileContent: string;
+  filePath: string;
+  selections?: SelectionInformation[];
+  suggestedLines?: LineChange[];
+  isActive: boolean;
+};
+// #endregion
 
 export type DrawnLine = {
   points: {
@@ -92,13 +106,6 @@ export type InlineSuggestionResult = {
   snippets: string[];
 };
 
-export type ViewDocument = {
-  fileContent: string;
-  filePath: string;
-  selections?: SelectionInformation[];
-  suggestedLines?: LineChange[];
-};
-
 export type LineChange = {
   // Index starts from 1
   index: number;
@@ -119,19 +126,11 @@ export type AgentConfig = {
   prompt: string;
 };
 
-export type ViewRef = {
-  getType: () => ViewTypeEnum;
-  updateViewDocument: (viewDocument: Partial<ViewDocument>) => void;
-};
-
 export type EditorContextType = {
   editorStates: EditorStates;
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
   persistSettings: PersistentSettings | undefined;
   setPersistSettings: Dispatch<SetStateAction<PersistentSettings | undefined>>;
-  viewManager: ViewManager | undefined;
-  setViewManager: Dispatch<SetStateAction<ViewManager | undefined>>;
-  // notifyViewManagerUpdate: () => void;
   aiModelConfig: AIModelConfig;
 };
 
@@ -186,6 +185,7 @@ export type ExtensionConfig = {
   name: string;
   description: string;
   fileTypes?: string[];
+  preview?: string;
 };
 
 export type ListPathOptions = {
@@ -197,4 +197,9 @@ export type TabItem = {
   name: string;
   icon?: string;
   description: string;
+};
+
+export type ExtensionBlobInfo = {
+  cssUri: string;
+  bundleUri: string;
 };
