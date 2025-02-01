@@ -2,11 +2,11 @@ import {
   CodeCompletionInstruction,
   CodeCompletionResult,
   LineChange,
-  SelectionInformation,
 } from "../types";
 import { BaseLLM } from "../llm/llm";
 import { BaseSTT } from "../stt/stt";
 import { BaseTTS } from "../tts/tts";
+import { SelectionInformation } from "@pulse-editor/types";
 
 export class CodeEditorAgent {
   stt: BaseSTT | undefined;

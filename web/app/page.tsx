@@ -1,19 +1,20 @@
 "use client";
 
-import { CodeEditorViewRef } from "@/components/views/code-editor-view";
 import { useMicVAD, utils } from "@/lib/hooks/use-mic-vad";
 import { BaseLLM } from "@/lib/llm/llm";
 import { BaseSTT } from "@/lib/stt/stt";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
 import { BaseTTS } from "@/lib/tts/tts";
 import EditorToolbar from "@/components/editor-toolbar";
 import { EditorContext } from "@/components/providers/editor-context-provider";
 import ViewDisplayArea from "@/components/views/file-view-display-area";
+import { useViewManager } from "@/lib/hooks/use-view-manager";
 
 export default function Home() {
   const editorContext = useContext(EditorContext);
+  const { updateFileView, getActiveFileView } = useViewManager();
 
   // TODO: Use a timer to stop recorder if no speech is detected for more than 30 seconds
   const isProcessingRef = useRef(false);
@@ -63,8 +64,7 @@ export default function Home() {
         const ttsModel = editorContext?.aiModelConfig.getTTSModel() as BaseTTS;
 
         const agent = new CodeEditorAgent(sttModel, llmModel, ttsModel);
-        const activeView = editorContext?.viewManager?.getActiveView();
-        const viewDocument = activeView?.viewDocument;
+        const activeViewModel = getActiveFileView();
         editorContext?.setEditorStates((prev) => ({
           ...prev,
           isListening: false,
@@ -72,8 +72,8 @@ export default function Home() {
         }));
         agent
           .generateAgentCompletion(
-            viewDocument?.fileContent || "",
-            viewDocument?.selections || [],
+            activeViewModel?.fileContent || "",
+            activeViewModel?.selections || [],
             {
               audio: blob,
             },
@@ -86,8 +86,10 @@ export default function Home() {
             }));
 
             // Apply changes
-            const codeEditor = activeView?.viewRef as CodeEditorViewRef;
-            codeEditor?.applyChanges(changes);
+            updateFileView({
+              filePath: activeViewModel?.filePath || "",
+              // suggestedLines: changes,
+            });
 
             // Play the audio in the blob
             if (result.audio) {

@@ -1,6 +1,4 @@
-import { Suspense } from "react";
-
-export default function ViewLayout({
+export default function FileViewLayout({
   height = "100%",
   width = "100%",
   children,

@@ -1,7 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
-import { FileViewManager } from "./views/file-view-manager";
 import { AIModelConfig } from "./ai-model-config";
-import { ViewTypeEnum } from "./views/available-views";
+import { SelectionInformation } from "@pulse-editor/types";
 
 // #region Context
 export type EditorStates = {
@@ -73,21 +72,8 @@ export type FileViewModel = {
   selections?: SelectionInformation[];
   suggestedLines?: LineChange[];
   isActive: boolean;
-};
+};                                
 // #endregion
-
-export type DrawnLine = {
-  points: {
-    x: number;
-    y: number;
-  }[];
-};
-
-export type SelectionInformation = {
-  lineStart: number;
-  lineEnd: number;
-  text: string;
-};
 
 export type CodeCompletionInstruction = {
   text?: string;

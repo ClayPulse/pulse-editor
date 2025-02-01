@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
 import EditorContextProvider from "@/components/providers/editor-context-provider";
@@ -20,17 +19,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`h-screen w-screen antialiased`}
-      >
-        <CapacitorProvider>
-          <WrappedNextUIProvider>
-            <EditorContextProvider>
-              <Toaster />
-              <Nav>{children}</Nav>
-            </EditorContextProvider>
-          </WrappedNextUIProvider>
-        </CapacitorProvider>
+      <body className={`h-screen w-screen antialiased`}>
+          <CapacitorProvider>
+            <WrappedNextUIProvider>
+              <EditorContextProvider>
+                <Toaster />
+                <Nav>{children}</Nav>
+              </EditorContextProvider>
+            </WrappedNextUIProvider>
+          </CapacitorProvider>
       </body>
     </html>
   );

@@ -53,7 +53,7 @@ function createWindow() {
   }
   // Development launch
   else {
-    win.loadURL("http://localhost:3000/test?name=pulse-extension-template");
+    win.loadURL("http://localhost:3000");
     win.webContents.openDevTools();
     win.webContents.on("did-fail-load", (e, code, desc) => {
       win.webContents.reloadIgnoringCache();
@@ -75,7 +75,7 @@ async function handleSelectDir(event) {
     properties: ["openDirectory"],
   });
   if (!canceled) {
-    return filePaths[0];
+    return filePaths[0].replace(/\\/g, "/");
   }
 }
 
@@ -114,7 +114,7 @@ async function handleListProjects(event, uri) {
   return folders;
 }
 
-async function listPathContent(uri, options = {}) {
+async function listPathContent(uri, options) {
   const files = await fs.promises.readdir(uri, { withFileTypes: true });
 
   const promise = files
@@ -134,14 +134,14 @@ async function listPathContent(uri, options = {}) {
           subDirItems: options.isRecursive
             ? await listPathContent(absoluteUri, options)
             : [],
-          uri: absoluteUri,
+          uri: absoluteUri.replace(/\\/g, "/"),
         };
       }
 
       return {
         name,
         isFolder: false,
-        uri: absoluteUri,
+        uri: absoluteUri.replace(/\\/g, "/"),
       };
     });
 
@@ -172,7 +172,7 @@ async function handleCreateFile(event, uri) {
 }
 
 // Discover the content of a project
-async function handleListPathContent(event, uri, options = {}) {
+async function handleListPathContent(event, uri, options) {
   return await listPathContent(uri, options);
 }
 
@@ -189,7 +189,15 @@ async function handleReadFile(event, path) {
 
 async function handleWriteFile(event, data, path) {
   // Write the data at path
-  await fs.promises.writeFile(path, data);
+  // await fs.promises.writeFile(path, data);
+  // create path if it doesn't exist
+  const dir = path.split("/").slice(0, -1).join("/");
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  fs.writeFileSync(path, data);
 }
 
 async function handleCopyFiles(event, from, to) {

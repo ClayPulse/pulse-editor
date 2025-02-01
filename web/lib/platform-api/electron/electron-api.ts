@@ -16,7 +16,7 @@ export class ElectronAPI extends AbstractPlatformAPI {
   }
 
   async selectDir(): Promise<string | undefined> {
-    return await this.electronAPI.selectPath();
+    return await this.electronAPI.selectDir();
   }
 
   async selectFile(fileExtension?: string): Promise<File> {

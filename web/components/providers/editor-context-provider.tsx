@@ -11,8 +11,8 @@ import {
   EditorContextType,
   PersistentSettings,
 } from "@/lib/types";
-import { FileViewManager } from "@/lib/views/file-view-manager";
-import { createContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom";
 
 export const EditorContext = createContext<EditorContextType | undefined>(
   undefined,
@@ -57,6 +57,11 @@ export default function EditorContextProvider({
 
   // --- Platform API ---
   const { platformApi } = usePlatformApi();
+
+  useEffect(() => { 
+    window.React = React;
+    window.ReactDOM = ReactDOM;
+  },[])
 
   // Track all pressed keys
   useEffect(() => {

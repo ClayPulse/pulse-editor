@@ -1,14 +1,17 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import { AnimatePresence, motion } from "framer-motion";
-import AgentChatTerminalView from "./agent-chat-terminal-view";
+// import AgentChatTerminalView from "./agent-chat-terminal-view";
 import { useViewManager } from "@/lib/hooks/use-view-manager";
+import FileView from "./file-view";
+import { FileViewModel } from "@pulse-editor/types";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);
-  const { viewManager } = useViewManager();
+  const { updateFileView, openFileView } = useViewManager();
+  const {getActiveFileView} = useViewManager();
 
-  const activeView = viewManager?.getActiveFileView();
+  const activeView = getActiveFileView();
 
   // // Initialize view manager
   // useEffect(() => {
@@ -61,7 +64,7 @@ export default function ViewDisplayArea() {
       if (message.command === "updatePulseText") {
         const text: string = message.text;
         console.log("Received text from VSCode:", text);
-        viewManager?.updateFileView({
+        updateFileView({
           fileContent: text,
         });
       } else if (message.command === "openFile") {
@@ -72,7 +75,7 @@ export default function ViewDisplayArea() {
         );
 
         const file = new File([text], path);
-        viewManager?.openFileView(file);
+        openFileView(file);
 
         // Send a message to vscode parent iframe to notify changes made in Pulse
         // const callback = (viewDocument: FileViewModel) => {
@@ -89,6 +92,7 @@ export default function ViewDisplayArea() {
         //   );
         // };
         // TODO: need to find a new way to set callback with modular view extension
+        // SOLUTION: listen to File Change event from file-view and send message to VSCode
         // newView.setViewDocumentChangeCallback(callback);
       }
     });
@@ -118,6 +122,7 @@ export default function ViewDisplayArea() {
                 height="100%"
                 view={activeView}
               /> */}
+              <FileView model={activeView} />
             </>
           )}
         </div>
@@ -136,11 +141,11 @@ export default function ViewDisplayArea() {
                   : "0px",
               }}
             >
-              <AgentChatTerminalView
+              {/* <AgentChatTerminalView
                 ref={(ref) => {
                   // TODO: Refactor this to use view manager
                 }}
-              />
+              /> */}
             </motion.div>
           )}
         </AnimatePresence>

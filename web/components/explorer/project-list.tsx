@@ -29,15 +29,20 @@ function ProjectTab({
     const uri =
       editorContext?.persistSettings?.projectHomePath + "/" + projectName;
 
-    platformApi?.listPathContent(uri).then((objects) => {
-      editorContext?.setEditorStates((prev) => {
-        return {
-          ...prev,
-          project: projectName,
-          projectContent: objects,
-        };
+    platformApi
+      ?.listPathContent(uri, {
+        include: "all",
+        isRecursive: true,
+      })
+      .then((objects) => {
+        editorContext?.setEditorStates((prev) => {
+          return {
+            ...prev,
+            project: projectName,
+            projectContent: objects,
+          };
+        });
       });
-    });
   }
 
   function formatDateTime(date: Date) {

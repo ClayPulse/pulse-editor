@@ -17,7 +17,7 @@ export default function ProjectTitle() {
   const editorContext = useContext(EditorContext);
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
     useState(false);
-  const { viewManager } = useViewManager();
+  const { closeAllFileViews } = useViewManager();
 
   function closeProject() {
     editorContext?.setEditorStates((prev) => {
@@ -29,7 +29,7 @@ export default function ProjectTitle() {
     });
 
     // Clear view manager
-    viewManager?.closeAllFileViews();
+    closeAllFileViews();
   }
 
   function handleProjectMenu(key: Key) {
