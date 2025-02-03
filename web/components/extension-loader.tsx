@@ -1,63 +1,25 @@
-import useExtensionManager from "@/lib/hooks/use-extensions";
-import { ExtensionBlobInfo, ExtensionConfig } from "@/lib/types";
 import {
   FileViewModel,
   messageTimeout,
   ViewBoxMessage,
   ViewBoxMessageTypeEnum,
 } from "@pulse-editor/types";
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Loading from "./loading";
 import { MessageReceiver, MessageSender } from "@pulse-editor/shared-utils";
-import { init, loadRemote } from "@module-federation/runtime";
+import { loadRemote } from "@module-federation/runtime";
 import React from "react";
-import ReactDOM from "react-dom";
-
-init({
-  name: "pulse_editor",
-  remotes: [
-    {
-      name: "code_editor",
-      entry: "http://localhost:3001/mf-manifest.json",
-    },
-  ],
-  shared: {
-    react: {
-      version: "19.0.0-rc-65e06cb7-20241218",
-      scope: "default",
-      lib: () => React,
-      shareConfig: {
-        singleton: true,
-        requiredVersion: "19.0.0-rc-65e06cb7-20241218",
-      },
-    },
-    "react-dom": {
-      version: "19.0.0-rc-65e06cb7-20241218",
-      scope: "default",
-      lib: () => ReactDOM,
-      shareConfig: {
-        singleton: true,
-        requiredVersion: "19.0.0-rc-65e06cb7-20241218",
-      },
-    },
-  },
-});
+import { Extension } from "@/lib/types";
 
 export default function ExtensionLoader({
   extension,
   model,
 }: {
-  extension: ExtensionConfig;
-  model: FileViewModel;
+  extension: Extension;
+  model?: FileViewModel;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const { extensionManager } = useExtensionManager();
-
-  const [extensionBlobInfo, setExtensionBlobInfo] =
-    useState<ExtensionBlobInfo | null>(null);
 
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -121,7 +83,7 @@ export default function ExtensionLoader({
   }, [iframeWindow, sender]);
 
   useEffect(() => {
-    if (sender) {
+    if (sender && model) {
       sender.sendMessage(
         ViewBoxMessageTypeEnum.ViewFile,
         JSON.stringify(model),
@@ -131,51 +93,45 @@ export default function ExtensionLoader({
   }, [model, sender]);
 
   useEffect(() => {
-    if (extensionManager && extension) {
-      extensionManager.loadExtension(extension.name).then((info) => {
-        setExtensionBlobInfo(info);
-      });
-    }
-  }, [extensionManager, extension]);
+    function renderExtension(LoadedExtension: any) {
+      if (iframeRef.current) {
+        const iframe = iframeRef.current;
+        const iframeDoc = iframe.contentWindow?.document;
 
-  useEffect(() => {
-    if (extensionBlobInfo) {
-      // const LoadedExtension = dynamic(() =>
-      //   import(/* webpackIgnore: true */ extensionBlobInfo.bundleUri).then(
-      //     (mod) => mod.default,
-      //   ),
-      // );
-      loadRemote("code_editor/main").then((mod) => {
-        // @ts-expect-error Types are not available since @module-federation/enhanced
-        // cannot work in Nextjs App router. Hence types are not generated.
-        const { default: LoadedExtension } = mod;
+        if (iframeDoc) {
+          iframeDoc.body.innerHTML = '<div id="extension-root"></div>';
 
-        if (iframeRef.current) {
-          const iframe = iframeRef.current;
-          const iframeDoc = iframe.contentWindow?.document;
-
-          if (iframeDoc) {
-            const renderExtension = async () => {
-              iframeDoc.body.innerHTML = '<div id="extension-root"></div>';
-
-              const root = iframeDoc.getElementById("extension-root");
-              if (root) {
-                const rootElement = createRoot(root, {});
-                // Inject extension global styles into iframe
-                const link = iframeDoc.createElement("link");
-                link.rel = "stylesheet";
-                link.href = extensionBlobInfo.cssUri;
-                iframeDoc.head.appendChild(link);
-                rootElement.render(<LoadedExtension />);
-              }
-            };
-
-            renderExtension();
+          const root = iframeDoc.getElementById("extension-root");
+          if (root) {
+            const rootElement = createRoot(root, {});
+            // Inject extension global styles into iframe
+            const link = iframeDoc.createElement("link");
+            link.rel = "stylesheet";
+            link.href = `${extension.remoteOrigin}/${extension.config.id}/${extension.config.version}/__federation_expose_main.globals.css`;
+            iframeDoc.head.appendChild(link);
+            rootElement.render(<LoadedExtension />);
           }
         }
-      });
+      }
     }
-  }, [extensionBlobInfo]);
+
+    loadRemote(`${extension.config.id}/main`).then((mod) => {
+      // @ts-expect-error Types are not available since @module-federation/enhanced
+      // cannot work in Nextjs App router. Hence types are not generated.
+      const { default: LoadedExtension, Config } = mod;
+      console.log(Config);
+
+      renderExtension(LoadedExtension);
+    });
+  }, []);
+
+  function hardRefresh() {
+    navigator.serviceWorker.getRegistration().then(async (registration) => {
+      if (!registration) return;
+      await registration.unregister();
+      window.location.reload();
+    });
+  }
 
   return (
     <div className="relative">

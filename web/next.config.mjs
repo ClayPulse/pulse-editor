@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
-// import { ModuleFederationPlugin } from "@module-federation/enhanced/webpack";
+import { GenerateSW } from "workbox-webpack-plugin";
+
+// import path from "path";
+
+// const __dirname = path.resolve();
 
 const nextConfig = {
   reactStrictMode: true,
@@ -19,22 +23,15 @@ const nextConfig = {
       },
     ];
 
-    // config.plugins = [
-    //   new ModuleFederationPlugin({
-    //     name: "pulse_editor",
-    //     shared: {
-    //       react: {
-    //         import: "react", // the "react" package will be used a provided and fallback module
-    //         shareKey: "react", // under this name the shared module will be placed in the share scope
-    //         shareScope: "default", // share scope with this name will be used
-    //         singleton: true, // only a single version of the shared module is allowed
-    //       },
-    //       "react-dom": {
-    //         singleton: true, // only a single version of the shared module is allowed
-    //       },
-    //     },
-    //   }),
-    // ];
+    config.plugins.push(
+      new GenerateSW({
+        // Configurations specific to your Module Federation setup
+        // these options encourage the ServiceWorkers to get in there fast
+        // and not allow any straggling "old" SWs to hang around
+        clientsClaim: true,
+        skipWaiting: true,
+      }),
+    );
 
     return config;
   },

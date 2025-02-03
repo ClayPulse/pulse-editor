@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import "material-icons/iconfont/material-icons.css";
 import CapacitorProvider from "@/components/providers/capacitor-provider";
 import Nav from "@/components/nav";
+import RemoteExtensionProvider from "@/components/providers/remote-extension-provider";
 
 export const metadata: Metadata = {
   title: "Pulse Editor",
@@ -20,14 +21,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`h-screen w-screen antialiased`}>
-          <CapacitorProvider>
-            <WrappedNextUIProvider>
+        <CapacitorProvider>
+          <WrappedNextUIProvider>
+            <RemoteExtensionProvider>
               <EditorContextProvider>
                 <Toaster />
                 <Nav>{children}</Nav>
               </EditorContextProvider>
-            </WrappedNextUIProvider>
-          </CapacitorProvider>
+            </RemoteExtensionProvider>
+          </WrappedNextUIProvider>
+        </CapacitorProvider>
       </body>
     </html>
   );

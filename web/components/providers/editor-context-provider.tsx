@@ -33,7 +33,6 @@ const defaultEditorStates: EditorStates = {
   explorerSelectedNodeRefs: [],
   pressedKeys: [],
   openedViewModels: [],
-
 };
 
 export default function EditorContextProvider({
@@ -57,11 +56,6 @@ export default function EditorContextProvider({
 
   // --- Platform API ---
   const { platformApi } = usePlatformApi();
-
-  useEffect(() => { 
-    window.React = React;
-    window.ReactDOM = ReactDOM;
-  },[])
 
   // Track all pressed keys
   useEffect(() => {

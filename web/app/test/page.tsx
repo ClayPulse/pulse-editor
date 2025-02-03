@@ -1,65 +1,34 @@
 "use client";
 
-import useExtensionManager from "@/lib/hooks/use-extensions";
-import { ExtensionBlobInfo } from "@/lib/types";
-import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+import ExtensionLoader from "@/components/extension-loader";
+import { Extension } from "@/lib/types";
+import { loadRemote, registerRemotes } from "@module-federation/runtime";
+import { ExtensionTypeEnum } from "@pulse-editor/types";
+import { useEffect, useState } from "react";
 
-export default function Extension() {
-  const params = useSearchParams();
-
-  const name = params.get("name");
-
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const { extensionManager } = useExtensionManager();
-
-  const [extensionBlobInfo, setExtensionBlobInfo] =
-    useState<ExtensionBlobInfo | null>(null);
-
-  useEffect(() => {
-    if (extensionManager && name) {
-      extensionManager.loadExtension(name).then((info) => {
-        setExtensionBlobInfo(info);
-      });
-    }
-  }, [extensionManager, name]);
+export default function Test() {
+  const extension: Extension = {
+    config: {
+      // Do not use hyphen character '-' in the name
+      id: "pulse_code_view",
+      displayName: "Pulse Extension Template",
+      description: "Pulse extension template",
+      version: "v0.0.1",
+      extensionType: ExtensionTypeEnum.FileView,
+      fileTypes: ["txt", "json", "py", "cpp", "c", "tsx", "ts", "js", "jsx"],
+    },
+    isEnabled: true,
+    remoteOrigin: "http://localhost:3001",
+  };
 
   useEffect(() => {
-    if (extensionBlobInfo) {
-      const LoadedExtension = dynamic(() =>
-        import(/* webpackIgnore: true */ extensionBlobInfo.bundleUri).then(
-          (mod) => mod.default,
-        ),
-      );
-      if (iframeRef.current) { 
-        const iframe = iframeRef.current;
-        const iframeDoc =
-          iframe.contentDocument || iframe.contentWindow?.document;
+    registerRemotes([
+      {
+        name: extension.config.id,
+        entry: `${extension.remoteOrigin}/${extension.config.id}/${extension.config.version}/mf-manifest.json`,
+      },
+    ]);
+  }, []);
 
-        if (iframeDoc) {
-          const renderExtension = async () => {
-            iframeDoc.body.innerHTML = '<div id="extension-root"></div>';
-
-            const root = iframeDoc.getElementById("extension-root");
-            if (root) {
-              const rootElement = createRoot(root, {});
-              // Inject extension global styles into iframe
-              const link = iframeDoc.createElement("link");
-              link.rel = "stylesheet";
-              link.href = extensionBlobInfo.cssUri;
-              iframeDoc.head.appendChild(link);
-              rootElement.render(<LoadedExtension />);
-            }
-          };
-
-          renderExtension();
-        }
-      }
-    }
-  }, [extensionBlobInfo]);
-
-  return <iframe ref={iframeRef} />;
+  return <ExtensionLoader extension={extension} />;
 }

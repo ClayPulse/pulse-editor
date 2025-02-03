@@ -1,6 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
 import { AIModelConfig } from "./ai-model-config";
-import { SelectionInformation } from "@pulse-editor/types";
+import { ExtensionConfig, SelectionInformation } from "@pulse-editor/types";
 
 // #region Context
 export type EditorStates = {
@@ -60,8 +60,10 @@ export type PersistentSettings = {
 
   projectHomePath?: string;
 
-  enabledExtensions?: string[];
-  defaultFileTypeExtensionMap?: { [key: string]: ExtensionConfig };
+  extensions?: Extension[];
+  defaultFileTypeExtensionMap?: { [key: string]: Extension };
+  isExtensionDevMode?: boolean;
+  extensionDevServerURL?: string;
 };
 // #endregion
 
@@ -72,7 +74,7 @@ export type FileViewModel = {
   selections?: SelectionInformation[];
   suggestedLines?: LineChange[];
   isActive: boolean;
-};                                
+};
 // #endregion
 
 export type CodeCompletionInstruction = {
@@ -161,19 +163,6 @@ export type ContextMenuState = {
   isOpen: boolean;
 };
 
-export enum ExtensionTypeEnum {
-  FileView = "file-view",
-  TerminalView = "terminal-view",
-}
-
-export type ExtensionConfig = {
-  extensionType: ExtensionTypeEnum;
-  name: string;
-  description: string;
-  fileTypes?: string[];
-  preview?: string;
-};
-
 export type ListPathOptions = {
   include: "folders" | "files" | "all";
   isRecursive: boolean;
@@ -185,7 +174,8 @@ export type TabItem = {
   description: string;
 };
 
-export type ExtensionBlobInfo = {
-  cssUri: string;
-  bundleUri: string;
+export type Extension = {
+  config: ExtensionConfig;
+  isEnabled: boolean;
+  remoteOrigin: string;
 };

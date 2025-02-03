@@ -7,87 +7,35 @@ import {
   Switch,
   Tooltip,
 } from "@nextui-org/react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { llmProviderOptions } from "@/lib/llm/options";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
-import {
-  EditorContextType,
-  ExtensionConfig,
-  ExtensionTypeEnum,
-  PersistentSettings,
-} from "@/lib/types";
+import { EditorContextType, Extension, PersistentSettings } from "@/lib/types";
 import Icon from "../icon";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
-import useExtensionManager from "@/lib/hooks/use-extensions";
+import useExtensions from "@/lib/hooks/use-extensions";
+import { ExtensionTypeEnum } from "@pulse-editor/types";
 
-export default function AppSettingsModal({
-  isOpen,
-  setIsOpen,
-}: {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-}) {
-  const editorContext = useContext(EditorContext);
-  const updateEditorSettings = useCallback(
-    ({ settings }: { settings: Partial<PersistentSettings> | undefined }) => {
-      editorContext?.setPersistSettings((prev) => ({
-        ...prev,
-        ...settings,
-      }));
-    },
-    [],
-  );
-
-  return (
-    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen} title={"App Settings"}>
-      <>
-        <div className="flex w-full flex-col gap-2">
-          <AISettings
-            editorContext={editorContext}
-            updateEditorSettings={updateEditorSettings}
-          />
-          <Divider />
-          <SecuritySettings
-            editorContext={editorContext}
-            setIsOpen={setIsOpen}
-            updateEditorSettings={updateEditorSettings}
-          />
-          <Divider />
-          <ExtensionSettings
-            editorContext={editorContext}
-            updateEditorSettings={updateEditorSettings}
-          />
-        </div>
-      </>
-    </ModalWrapper>
-  );
-}
-
-function AISettings({
-  editorContext,
-  updateEditorSettings,
-}: {
-  editorContext?: EditorContextType;
-  updateEditorSettings: ({
-    settings,
-    editorContext,
-  }: {
-    settings: Partial<PersistentSettings> | undefined;
-    editorContext?: EditorContextType;
-  }) => void;
-}) {
+function AISettings({ editorContext }: { editorContext?: EditorContextType }) {
   const { selectAndSetProjectHome } = useExplorer();
 
   return (
     <>
       <div>
-        <p className="text-small">Editor Settings</p>
+        <p className="pb-2 text-medium font-bold">Editor Settings</p>
         <div className="w-full space-y-2">
           {editorContext?.persistSettings?.projectHomePath ? (
             <Input
@@ -96,10 +44,11 @@ function AISettings({
               isRequired
               value={editorContext?.persistSettings?.projectHomePath}
               onValueChange={(value) => {
-                updateEditorSettings({
-                  settings: {
+                editorContext.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
                     projectHomePath: value,
-                  },
+                  };
                 });
               }}
               endContent={
@@ -133,7 +82,7 @@ function AISettings({
         </div>
       </div>
       <div>
-        <p className="text-small">STT</p>
+        <p className="pb-2 text-medium font-bold">STT</p>
         <div className="w-full space-y-2">
           <Select
             items={sttProviderOptions}
@@ -143,12 +92,13 @@ function AISettings({
             label="Provider"
             placeholder="Select a provider"
             onChange={(e) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   sttProvider: e.target.value,
                   sttModel: undefined,
                   sttAPIKey: undefined,
-                },
+                };
               });
             }}
             isRequired
@@ -192,10 +142,11 @@ function AISettings({
                 : []
             }
             onChange={(e) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   sttModel: e.target.value,
-                },
+                };
               });
             }}
           >
@@ -224,10 +175,11 @@ function AISettings({
                   : (editorContext?.persistSettings?.sttAPIKey ?? "")
               }
               onValueChange={(value) => {
-                updateEditorSettings({
-                  settings: {
+                editorContext?.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
                     sttAPIKey: value,
-                  },
+                  };
                 });
               }}
               isDisabled={!editorContext?.persistSettings?.sttProvider}
@@ -238,7 +190,7 @@ function AISettings({
       </div>
       <Divider />
       <div>
-        <p className="text-small">LLM</p>
+        <p className="pb-2 text-medium font-bold">LLM</p>
         <div className="w-full space-y-2">
           <Select
             items={llmProviderOptions}
@@ -248,12 +200,13 @@ function AISettings({
             label="Provider"
             placeholder="Select a provider"
             onChange={(e) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   llmProvider: e.target.value,
                   llmModel: undefined,
                   llmAPIKey: undefined,
-                },
+                };
               });
             }}
             isRequired
@@ -292,10 +245,11 @@ function AISettings({
             placeholder="Select a model"
             isRequired
             onChange={(e) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   llmModel: e.target.value,
-                },
+                };
               });
             }}
             selectedKeys={
@@ -329,10 +283,11 @@ function AISettings({
                   : (editorContext?.persistSettings?.llmAPIKey ?? "")
               }
               onValueChange={(value) => {
-                updateEditorSettings({
-                  settings: {
+                editorContext?.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
                     llmAPIKey: value,
-                  },
+                  };
                 });
               }}
               isDisabled={!editorContext?.persistSettings?.llmProvider}
@@ -343,7 +298,7 @@ function AISettings({
       </div>
       <Divider />
       <div>
-        <p className="text-small">TTS</p>
+        <p className="pb-2 text-medium font-bold">TTS</p>
         <div className="w-full space-y-2">
           <Select
             items={ttsProviderOptions}
@@ -353,12 +308,13 @@ function AISettings({
             label="Provider"
             placeholder="Select a provider"
             onChange={(e) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   ttsProvider: e.target.value,
                   ttsModel: undefined,
                   ttsAPIKey: undefined,
-                },
+                };
               });
             }}
             isRequired
@@ -397,10 +353,11 @@ function AISettings({
             placeholder="Select a model"
             isRequired
             onChange={(e) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   ttsModel: e.target.value,
-                },
+                };
               });
             }}
             selectedKeys={
@@ -421,10 +378,11 @@ function AISettings({
             isRequired
             value={editorContext?.persistSettings?.ttsVoice ?? ""}
             onValueChange={(value) => {
-              updateEditorSettings({
-                settings: {
+              editorContext?.setPersistSettings((prev) => {
+                return {
+                  ...prev,
                   ttsVoice: value,
-                },
+                };
               });
             }}
             isDisabled={!editorContext?.persistSettings?.ttsProvider}
@@ -448,10 +406,11 @@ function AISettings({
                   : (editorContext?.persistSettings?.ttsAPIKey ?? "")
               }
               onValueChange={(value) => {
-                updateEditorSettings({
-                  settings: {
+                editorContext?.setPersistSettings((prev) => {
+                  return {
+                    ...prev,
                     ttsAPIKey: value,
-                  },
+                  };
                 });
               }}
               isDisabled={!editorContext?.persistSettings?.ttsProvider}
@@ -467,23 +426,15 @@ function AISettings({
 function SecuritySettings({
   editorContext,
   setIsOpen,
-  updateEditorSettings,
 }: {
   editorContext?: EditorContextType;
   setIsOpen: (open: boolean) => void;
-  updateEditorSettings: ({
-    settings,
-    editorContext,
-  }: {
-    settings: Partial<PersistentSettings> | undefined;
-    editorContext?: EditorContextType;
-  }) => void;
 }) {
   const [ttl, setTTL] = useState<string>("14");
 
   return (
-    <>
-      <p className="text-small">Security</p>
+    <div>
+      <p className="pb-2 text-medium font-bold">Security</p>
       <p className="text-small">
         Use a password to encrypt the API tokens. You will need to re-enter all
         API tokens if you forget the password.
@@ -494,10 +445,11 @@ function SecuritySettings({
           const newValue = e.target.checked;
           if (newValue) {
             setIsOpen(false);
-            updateEditorSettings({
-              settings: {
+            editorContext?.setPersistSettings((prev) => {
+              return {
+                ...prev,
                 isUsePassword: newValue,
-              },
+              };
             });
           } else {
             // Reset all settings
@@ -540,78 +492,76 @@ function SecuritySettings({
             toast.error("Invalid input. Using default 14 days.");
           }
 
-          updateEditorSettings({
-            settings: {
+          editorContext?.setPersistSettings((prev) => {
+            return {
+              ...prev,
               ttl: days === -1 ? -1 : days * 86400000,
-            },
+            };
           });
         }}
       />
-    </>
+    </div>
   );
 }
 
 function ExtensionSettings({
   editorContext,
-  updateEditorSettings,
 }: {
   editorContext?: EditorContextType;
-  updateEditorSettings: ({
-    settings,
-    editorContext,
-  }: {
-    settings: Partial<PersistentSettings> | undefined;
-    editorContext?: EditorContextType;
-  }) => void;
 }) {
-  const { extensionManager } = useExtensionManager();
+  const { listExtensions } = useExtensions();
   const [fileTypeExtensionMap, setFileTypeExtensionMap] = useState<
-    Map<string, ExtensionConfig[]>
+    Map<string, Extension[]>
   >(new Map());
+
+  const fileTypeEntries = Array.from(fileTypeExtensionMap.entries());
 
   // Load installed extensions
   useEffect(() => {
-    if (extensionManager) {
-      extensionManager.listExtensions().then((extensions) => {
-        extensions.forEach((extension) => {
-          if (extension.extensionType === ExtensionTypeEnum.FileView) {
-            const fileTypes = extension.fileTypes;
-            console.log(fileTypes);
+    listExtensions().then((extensions) => {
+      extensions.forEach((extension) => {
+        if (extension.config.extensionType === ExtensionTypeEnum.FileView) {
+          const fileTypes = extension.config.fileTypes;
+          console.log(fileTypes);
 
-            if (fileTypes) {
-              fileTypes.forEach((fileType) => {
-                if (!fileTypeExtensionMap.has(fileType)) {
-                  fileTypeExtensionMap.set(fileType, []);
-                }
-                fileTypeExtensionMap.get(fileType)?.push(extension);
-              });
-            } else {
-              const fileType = "*";
+          if (fileTypes) {
+            fileTypes.forEach((fileType) => {
               if (!fileTypeExtensionMap.has(fileType)) {
                 fileTypeExtensionMap.set(fileType, []);
               }
-
               fileTypeExtensionMap.get(fileType)?.push(extension);
+            });
+          } else {
+            const fileType = "*";
+            if (!fileTypeExtensionMap.has(fileType)) {
+              fileTypeExtensionMap.set(fileType, []);
             }
 
-            setFileTypeExtensionMap(new Map(fileTypeExtensionMap));
+            fileTypeExtensionMap.get(fileType)?.push(extension);
           }
-        });
+
+          setFileTypeExtensionMap(new Map(fileTypeExtensionMap));
+        }
       });
-    }
-  }, [extensionManager]);
+    });
+  }, []);
 
   return (
     <div>
-      <p className="text-small">Extension Settings</p>
+      <p className="pb-2 text-medium font-bold">Extension Settings</p>
       <div className="w-full space-y-2">
         <div>
-          <p className="text-small">
-            Configure default extension for file types
+          <p className="text-small font-bold">
+            File Type Default Extension Mapping
           </p>
-          <div className="mt-1 space-y-2">
-            {Array.from(fileTypeExtensionMap.entries()).map(
-              ([fileType, extensions]) => {
+          <div className="mb-4 mt-1 space-y-2">
+            {fileTypeEntries.length === 0 ? (
+              <p className="text-small">
+                No file types found. Please install extensions that support file
+                types.
+              </p>
+            ) : (
+              fileTypeEntries.map(([fileType, extensions]) => {
                 return (
                   <div key={fileType} className="grid grid-cols-2">
                     <p className="self-center text-medium">{"." + fileType}</p>
@@ -622,22 +572,21 @@ function ExtensionSettings({
                       placeholder="Select default extension"
                       onChange={(e) => {
                         const extension = extensions.find(
-                          (ext) => ext.name === e.target.value,
+                          (ext) => ext.config.id === e.target.value,
                         );
                         console.log(extension);
                         if (!extension) {
                           return;
                         }
 
-                        updateEditorSettings({
-                          editorContext,
-                          settings: {
+                        editorContext?.setPersistSettings((prev) => {
+                          return {
+                            ...prev,
                             defaultFileTypeExtensionMap: {
-                              ...editorContext?.persistSettings
-                                ?.defaultFileTypeExtensionMap,
+                              ...prev?.defaultFileTypeExtensionMap,
                               [fileType]: extension,
                             },
-                          },
+                          };
                         });
                       }}
                       selectedKeys={
@@ -645,26 +594,99 @@ function ExtensionSettings({
                           ?.defaultFileTypeExtensionMap
                           ? [
                               editorContext?.persistSettings
-                                ?.defaultFileTypeExtensionMap[fileType]?.name,
+                                ?.defaultFileTypeExtensionMap[fileType]?.config
+                                .id,
                             ]
                           : []
                       }
                     >
                       {extensions.map((extension) => {
                         return (
-                          <SelectItem key={extension.name}>
-                            {extension.name}
+                          <SelectItem key={extension.config.id}>
+                            {extension.config.id}
                           </SelectItem>
                         );
                       })}
                     </Select>
                   </div>
                 );
-              },
+              })
             )}
           </div>
         </div>
       </div>
+
+      <p className="text-small font-bold">Extension Dev Mode</p>
+      <p className="text-small">
+        Load extension from local extension dev server at http://localhost:3001.
+      </p>
+      <Switch
+        isSelected={editorContext?.persistSettings?.isExtensionDevMode ?? false}
+        onChange={(e) => {
+          editorContext?.setPersistSettings((prev) => ({
+            ...prev,
+            isExtensionDevMode: e.target.checked,
+          }));
+          if (e.target.checked) {
+            toast.success("Extension dev mode enabled");
+          } else {
+            toast.success("Extension dev mode disabled");
+          }
+        }}
+      >
+        Enable extension dev mode
+      </Switch>
+      {editorContext?.persistSettings?.isExtensionDevMode && (
+        <Input
+          label="Extension Dev Server URL"
+          size="md"
+          isRequired
+          placeholder={"http://localhost:3001/(extension_name)/(version)/"}
+          value={editorContext?.persistSettings?.extensionDevServerURL}
+          onValueChange={(value) => {
+            editorContext?.setPersistSettings((prev) => ({
+              ...prev,
+              extensionDevServerURL: value,
+            }));
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+export default function AppSettingsModal({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}) {
+  const editorContext = useContext(EditorContext);
+  // const setPersistSettings = useCallback(
+  //   ({ settings }: { settings: Partial<PersistentSettings> | undefined }) => {
+  //     editorContext?.setPersistSettings((prev) => ({
+  //       ...prev,
+  //       ...settings,
+  //     }));
+  //   },
+  //   [],
+  // );
+
+  return (
+    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen} title={"App Settings"}>
+      <>
+        <div className="flex w-full flex-col gap-2">
+          <AISettings editorContext={editorContext} />
+          <Divider />
+          <SecuritySettings
+            editorContext={editorContext}
+            setIsOpen={setIsOpen}
+          />
+          <Divider />
+          <ExtensionSettings editorContext={editorContext} />
+        </div>
+      </>
+    </ModalWrapper>
   );
 }

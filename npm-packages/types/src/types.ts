@@ -87,3 +87,18 @@ export type AgentMethodResult = {
   status: string;
   data: any;
 };
+
+export enum ExtensionTypeEnum {
+  FileView = "file-view",
+  TerminalView = "terminal-view",
+}
+
+export type ExtensionConfig = {
+  id: string;
+  displayName: string;
+  description: string;
+  version: string;
+  extensionType: ExtensionTypeEnum;
+  fileTypes?: string[];
+  preview?: string;
+};
