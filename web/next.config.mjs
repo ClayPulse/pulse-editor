@@ -1,10 +1,6 @@
 /** @type {import('next').NextConfig} */
 import { GenerateSW } from "workbox-webpack-plugin";
 
-// import path from "path";
-
-// const __dirname = path.resolve();
-
 const nextConfig = {
   reactStrictMode: true,
   output: "export",

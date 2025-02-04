@@ -7,21 +7,14 @@ import {
   Switch,
   Tooltip,
 } from "@nextui-org/react";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useContext, useEffect, useState } from "react";
 import { llmProviderOptions } from "@/lib/llm/options";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
-import { EditorContextType, Extension, PersistentSettings } from "@/lib/types";
+import { EditorContextType, Extension } from "@/lib/types";
 import Icon from "../icon";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
@@ -516,6 +509,13 @@ function ExtensionSettings({
 
   const fileTypeEntries = Array.from(fileTypeExtensionMap.entries());
 
+  const [devExtensionRemoteOrigin, setDevExtensionRemoteOrigin] =
+    useState<string>("http://localhost:3001");
+  const [devExtensionId, setDevExtensionId] = useState<string>("");
+  const [devExtensionVersion, setDevExtensionVersion] = useState<string>("");
+
+  const { installExtension } = useExtensions();
+
   // Load installed extensions
   useEffect(() => {
     listExtensions().then((extensions) => {
@@ -637,19 +637,61 @@ function ExtensionSettings({
         Enable extension dev mode
       </Switch>
       {editorContext?.persistSettings?.isExtensionDevMode && (
-        <Input
-          label="Extension Dev Server URL"
-          size="md"
-          isRequired
-          placeholder={"http://localhost:3001/(extension_name)/(version)/"}
-          value={editorContext?.persistSettings?.extensionDevServerURL}
-          onValueChange={(value) => {
-            editorContext?.setPersistSettings((prev) => ({
-              ...prev,
-              extensionDevServerURL: value,
-            }));
-          }}
-        />
+        <div className="space-y-2">
+          <Input
+            label="Extension Dev Server URL"
+            size="md"
+            isRequired
+            value={devExtensionRemoteOrigin}
+            onValueChange={(value) => {
+              setDevExtensionRemoteOrigin(value);
+            }}
+          />
+          <Input
+            label="Extension ID"
+            size="md"
+            isRequired
+            placeholder={"(extension_id)"}
+            value={devExtensionId}
+            onValueChange={(value) => {
+              setDevExtensionId(value);
+            }}
+          />
+          <Input
+            label="Extension Version"
+            size="md"
+            isRequired
+            placeholder={"(version)"}
+            value={devExtensionVersion}
+            onValueChange={(value) => {
+              setDevExtensionVersion(value);
+            }}
+          />
+          <Button
+            onPress={() => {
+              if (
+                devExtensionRemoteOrigin &&
+                devExtensionId &&
+                devExtensionVersion
+              ) {
+                const ext: Extension = {
+                  remoteOrigin: devExtensionRemoteOrigin,
+                  config: {
+                    id: devExtensionId,
+                    version: devExtensionVersion,
+                  },
+                  isEnabled: true,
+                };
+
+                installExtension(ext).then(() => {
+                  toast.success("Extension installed");
+                });
+              }
+            }}
+          >
+            Add Dev Extension
+          </Button>
+        </div>
       )}
     </div>
   );

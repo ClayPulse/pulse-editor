@@ -95,10 +95,10 @@ export enum ExtensionTypeEnum {
 
 export type ExtensionConfig = {
   id: string;
-  displayName: string;
-  description: string;
   version: string;
-  extensionType: ExtensionTypeEnum;
+  displayName?: string;
+  description?: string;
+  extensionType?: ExtensionTypeEnum;
   fileTypes?: string[];
   preview?: string;
 };

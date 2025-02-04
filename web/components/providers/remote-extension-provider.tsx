@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 import ReactDOM from "react-dom";
 import { Workbox } from "workbox-window";
 import { EditorContext } from "./editor-context-provider";
+import { Extension } from "@/lib/types";
 
 init({
   name: "pulse_editor",
@@ -47,16 +48,18 @@ export default function RemoteExtensionProvider({
   const editorContext = useContext(EditorContext);
 
   useEffect(() => {
-    // // Register all extensions
-    // const extensions = editorContext?.persistSettings?.extensions ?? [];
-    // const remotes = extensions.map((ext) => {
-    //   return {
-    //     name: ext.config.name,
-    //     entry: `${ext.remoteOrigin}/${ext.config.name}/${ext.config.version}/mf-manifest.json`,
-    //   };
-    // });
+    // Register all extensions
+    const extensions = editorContext?.persistSettings?.extensions ?? [];
+    const remotes = extensions.map((ext) => {
+      return {
+        name: ext.config.id,
+        entry: `${ext.remoteOrigin}/${ext.config.id}/${ext.config.version}/mf-manifest.json`,
+      };
+    });
 
-    // registerRemotes(remotes);  
+    registerRemotes(remotes);
+
+    // If extension dev mode is enabled, add the remote
 
     // // Add service worker to allow offline access to extensions
     // if ("serviceWorker" in navigator) {

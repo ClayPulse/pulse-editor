@@ -10,13 +10,16 @@ import Loading from "./loading";
 import { MessageReceiver, MessageSender } from "@pulse-editor/shared-utils";
 import { loadRemote } from "@module-federation/runtime";
 import React from "react";
-import { Extension } from "@/lib/types";
 
 export default function ExtensionLoader({
-  extension,
+  remoteOrigin,
+  moduleId,
+  moduleVersion,
   model,
 }: {
-  extension: Extension;
+  remoteOrigin: string;
+  moduleId: string;
+  moduleVersion: string;
   model?: FileViewModel;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -107,7 +110,7 @@ export default function ExtensionLoader({
             // Inject extension global styles into iframe
             const link = iframeDoc.createElement("link");
             link.rel = "stylesheet";
-            link.href = `${extension.remoteOrigin}/${extension.config.id}/${extension.config.version}/__federation_expose_main.globals.css`;
+            link.href = `${remoteOrigin}/${moduleId}/${moduleVersion}/__federation_expose_main.globals.css`;
             iframeDoc.head.appendChild(link);
             rootElement.render(<LoadedExtension />);
           }
@@ -115,7 +118,7 @@ export default function ExtensionLoader({
       }
     }
 
-    loadRemote(`${extension.config.id}/main`).then((mod) => {
+    loadRemote(`${moduleId}/main`).then((mod) => {
       // @ts-expect-error Types are not available since @module-federation/enhanced
       // cannot work in Nextjs App router. Hence types are not generated.
       const { default: LoadedExtension, Config } = mod;

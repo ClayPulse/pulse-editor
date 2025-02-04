@@ -1,4 +1,4 @@
-import { ExtensionConfig, FileViewModel } from "@/lib/types";
+import { Extension, FileViewModel } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import FileViewLayout from "./layout";
@@ -7,9 +7,9 @@ import ExtensionLoader from "../extension-loader";
 export default function FileView({ model }: { model: FileViewModel }) {
   const editorContext = useContext(EditorContext);
   const [fileType, setFileType] = useState<string | undefined>(undefined);
-  const [usedExtension, setUsedExtension] = useState<
-    ExtensionConfig | undefined
-  >(undefined);
+  const [usedExtension, setUsedExtension] = useState<Extension | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     // Get the filename from the file path
@@ -35,7 +35,12 @@ export default function FileView({ model }: { model: FileViewModel }) {
   return (
     <FileViewLayout height="100%" width="100%">
       {usedExtension ? (
-        <ExtensionLoader extension={usedExtension} model={model} />
+        <ExtensionLoader
+          remoteOrigin={usedExtension.remoteOrigin}
+          moduleId={usedExtension.config.id}
+          moduleVersion={usedExtension.config.version}
+          model={model}
+        />
       ) : (
         <div>
           No default view found for this file type. Find a compatible extension

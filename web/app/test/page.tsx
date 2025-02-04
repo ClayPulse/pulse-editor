@@ -30,5 +30,11 @@ export default function Test() {
     ]);
   }, []);
 
-  return <ExtensionLoader extension={extension} />;
+  return (
+    <ExtensionLoader
+      remoteOrigin={extension.remoteOrigin}
+      moduleId={extension.config.id}
+      moduleVersion={extension.config.version}
+    />
+  );
 }

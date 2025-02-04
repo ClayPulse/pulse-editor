@@ -11,21 +11,21 @@ export default function useExtensions() {
     return editorContext?.persistSettings?.extensions ?? [];
   }
 
-  async function installExtension(
-    name: string,
-    version: string,
-    remoteOrigin: string
-  ): Promise<void> {
+  async function installExtension(extension: Extension): Promise<void> {
+    const remoteOrigin = extension.remoteOrigin;
+    const id = extension.config.id;
+    const version = extension.config.version;
+    
     registerRemotes([
       {
-        name: name,
-        entry: `http://localhost:3001/${name}/${version}/mf-manifest.json`,
+        name: id,
+        entry: `${remoteOrigin}/${id}/${version}/mf-manifest.json`,
       },
     ]);
 
     // Types are not available since @module-federation/enhanced
     // cannot work in Nextjs App router. Hence types are not generated.
-    const mod: any = await loadRemote(`${name}/main`);
+    const mod: any = await loadRemote(`${id}/main`);
 
     const { Config }: { Config: ExtensionConfig } = mod;
 
@@ -138,6 +138,7 @@ export default function useExtensions() {
 
   return {
     listExtensions,
+    installExtension,
     uninstallExtension,
     enableExtension,
     disableExtension,

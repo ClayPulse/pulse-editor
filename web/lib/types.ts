@@ -63,7 +63,6 @@ export type PersistentSettings = {
   extensions?: Extension[];
   defaultFileTypeExtensionMap?: { [key: string]: Extension };
   isExtensionDevMode?: boolean;
-  extensionDevServerURL?: string;
 };
 // #endregion
 
