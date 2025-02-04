@@ -7,15 +7,11 @@ import { ExtensionConfig } from "@pulse-editor/types";
 export default function useExtensions() {
   const editorContext = useContext(EditorContext);
 
-  async function listExtensions(): Promise<Extension[]> {
-    return editorContext?.persistSettings?.extensions ?? [];
-  }
-
   async function installExtension(extension: Extension): Promise<void> {
     const remoteOrigin = extension.remoteOrigin;
     const id = extension.config.id;
     const version = extension.config.version;
-    
+
     registerRemotes([
       {
         name: id,
@@ -29,7 +25,7 @@ export default function useExtensions() {
 
     const { Config }: { Config: ExtensionConfig } = mod;
 
-    const extensions = await listExtensions();
+    const extensions = (await editorContext?.persistSettings?.extensions) ?? [];
 
     // Check if extension is already installed
     if (extensions.find((ext) => ext.config.id === Config.id)) {
@@ -54,7 +50,7 @@ export default function useExtensions() {
   }
 
   async function uninstallExtension(name: string): Promise<void> {
-    const extensions = await listExtensions();
+    const extensions = (await editorContext?.persistSettings?.extensions) ?? [];
     const ext = extensions.find((ext) => ext.config.id === name);
 
     if (!ext) return;
@@ -72,7 +68,7 @@ export default function useExtensions() {
   }
 
   async function enableExtension(name: string): Promise<void> {
-    const extensions = await listExtensions();
+    const extensions = (await editorContext?.persistSettings?.extensions) ?? [];
     const newExtensions = extensions.map((ext) => {
       if (ext.config.id === name) {
         ext.isEnabled = true;
@@ -86,7 +82,7 @@ export default function useExtensions() {
   }
 
   async function disableExtension(name: string): Promise<void> {
-    const extensions = await listExtensions();
+    const extensions = (await editorContext?.persistSettings?.extensions) ?? [];
     const newExtensions = extensions.map((ext) => {
       if (ext.config.id === name) {
         ext.isEnabled = false;
@@ -100,7 +96,7 @@ export default function useExtensions() {
   }
 
   async function getExtension(name: string): Promise<Extension | undefined> {
-    const extensions = await listExtensions();
+    const extensions = (await editorContext?.persistSettings?.extensions) ?? [];
     return extensions.find((ext) => ext.config.id === name) ?? undefined;
   }
 
@@ -137,7 +133,6 @@ export default function useExtensions() {
   }
 
   return {
-    listExtensions,
     installExtension,
     uninstallExtension,
     enableExtension,

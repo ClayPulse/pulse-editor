@@ -122,7 +122,6 @@ export default function ExtensionLoader({
       // @ts-expect-error Types are not available since @module-federation/enhanced
       // cannot work in Nextjs App router. Hence types are not generated.
       const { default: LoadedExtension, Config } = mod;
-      console.log(Config);
 
       renderExtension(LoadedExtension);
     });
@@ -137,14 +136,14 @@ export default function ExtensionLoader({
   }
 
   return (
-    <div className="relative">
-      {/* {!isLoaded && (
+    <div className="relative h-full w-full">
+      {!isLoaded && (
         <div className="absolute left-0 top-0 h-full w-full">
           <Loading />
         </div>
-      )} */}
+      )}
 
-      <iframe ref={iframeRef} />
+      <iframe ref={iframeRef} className="h-full w-full" />
     </div>
   );
 }

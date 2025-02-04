@@ -143,7 +143,9 @@ function ExtensionPreview({ extension }: { extension: Extension }) {
               className="h-12 text-medium sm:h-8 sm:text-sm"
               variant="light"
               onPress={(e) => {
-                uninstallExtension(extension.config.id);
+                uninstallExtension(extension.config.id).then(() => {
+                  toast.success("Extension uninstalled");
+                });
                 setContextMenuState({ x: 0, y: 0, isOpen: false });
               }}
             >
@@ -218,15 +220,11 @@ export default function ExtensionModal({
 
   const editorContext = useContext(EditorContext);
 
-  const { listExtensions } = useExtensions();
-
   useEffect(() => {
     if (isOpen) {
-      listExtensions().then((exts) => {
-        setInstalledExtensions(exts);
-      });
+      setInstalledExtensions(editorContext?.persistSettings?.extensions ?? []);
     }
-  }, [isOpen]);
+  }, [isOpen, editorContext?.persistSettings?.extensions ?? []]);
 
   return (
     <ModalWrapper

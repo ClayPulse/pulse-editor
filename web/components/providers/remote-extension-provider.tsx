@@ -47,27 +47,29 @@ export default function RemoteExtensionProvider({
 }) {
   const editorContext = useContext(EditorContext);
 
+  // useEffect(() => {
+  //   // Add service worker to allow offline access to extensions
+  //   if ("serviceWorker" in navigator) {
+  //     const wb = new Workbox("/service-worker.js");
+  //     wb.register();
+  //   }
+  // }, []);
+
   useEffect(() => {
     // Register all extensions
     const extensions = editorContext?.persistSettings?.extensions ?? [];
-    const remotes = extensions.map((ext) => {
-      return {
-        name: ext.config.id,
-        entry: `${ext.remoteOrigin}/${ext.config.id}/${ext.config.version}/mf-manifest.json`,
-      };
-    });
+    if (extensions.length > 0) {
+      const remotes = extensions.map((ext) => {
+        return {
+          name: ext.config.id,
+          entry: `${ext.remoteOrigin}/${ext.config.id}/${ext.config.version}/mf-manifest.json`,
+        };
+      });
 
-    registerRemotes(remotes);
-
-    // If extension dev mode is enabled, add the remote
-
-    // // Add service worker to allow offline access to extensions
-    // if ("serviceWorker" in navigator) {
-    //   const wb = new Workbox("/service-worker.js");
-
-    //   wb.register();
-    // }
-  }, []);
+      registerRemotes(remotes);
+      console.log("Registered remotes", remotes);
+    }
+  }, [editorContext?.persistSettings?.extensions]);
 
   return <>{children}</>;
 }

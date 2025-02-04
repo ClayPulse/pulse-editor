@@ -23,12 +23,12 @@ export default function RootLayout({
       <body className={`h-screen w-screen antialiased`}>
         <CapacitorProvider>
           <WrappedNextUIProvider>
-            <RemoteExtensionProvider>
-              <EditorContextProvider>
+            <EditorContextProvider>
+              <RemoteExtensionProvider>
                 <Toaster />
                 <Nav>{children}</Nav>
-              </EditorContextProvider>
-            </RemoteExtensionProvider>
+              </RemoteExtensionProvider>
+            </EditorContextProvider>
           </WrappedNextUIProvider>
         </CapacitorProvider>
       </body>

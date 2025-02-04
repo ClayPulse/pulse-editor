@@ -502,7 +502,6 @@ function ExtensionSettings({
 }: {
   editorContext?: EditorContextType;
 }) {
-  const { listExtensions } = useExtensions();
   const [fileTypeExtensionMap, setFileTypeExtensionMap] = useState<
     Map<string, Extension[]>
   >(new Map());
@@ -518,31 +517,30 @@ function ExtensionSettings({
 
   // Load installed extensions
   useEffect(() => {
-    listExtensions().then((extensions) => {
-      extensions.forEach((extension) => {
-        if (extension.config.extensionType === ExtensionTypeEnum.FileView) {
-          const fileTypes = extension.config.fileTypes;
-          console.log(fileTypes);
+    const extensions = editorContext?.persistSettings?.extensions ?? [];
+    extensions.forEach((extension) => {
+      if (extension.config.extensionType === ExtensionTypeEnum.FileView) {
+        const fileTypes = extension.config.fileTypes;
+        console.log(fileTypes);
 
-          if (fileTypes) {
-            fileTypes.forEach((fileType) => {
-              if (!fileTypeExtensionMap.has(fileType)) {
-                fileTypeExtensionMap.set(fileType, []);
-              }
-              fileTypeExtensionMap.get(fileType)?.push(extension);
-            });
-          } else {
-            const fileType = "*";
+        if (fileTypes) {
+          fileTypes.forEach((fileType) => {
             if (!fileTypeExtensionMap.has(fileType)) {
               fileTypeExtensionMap.set(fileType, []);
             }
-
             fileTypeExtensionMap.get(fileType)?.push(extension);
+          });
+        } else {
+          const fileType = "*";
+          if (!fileTypeExtensionMap.has(fileType)) {
+            fileTypeExtensionMap.set(fileType, []);
           }
 
-          setFileTypeExtensionMap(new Map(fileTypeExtensionMap));
+          fileTypeExtensionMap.get(fileType)?.push(extension);
         }
-      });
+
+        setFileTypeExtensionMap(new Map(fileTypeExtensionMap));
+      }
     });
   }, []);
 
@@ -574,7 +572,6 @@ function ExtensionSettings({
                         const extension = extensions.find(
                           (ext) => ext.config.id === e.target.value,
                         );
-                        console.log(extension);
                         if (!extension) {
                           return;
                         }
