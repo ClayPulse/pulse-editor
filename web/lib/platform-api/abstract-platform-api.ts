@@ -18,7 +18,7 @@ export abstract class AbstractPlatformAPI {
   // Discover project content
   abstract listPathContent(
     uri: string,
-    options?: ListPathOptions,
+    options: ListPathOptions,
   ): Promise<FileSystemObject[]>;
 
   // Create project

@@ -31,7 +31,7 @@ export class ElectronAPI extends AbstractPlatformAPI {
 
   async listPathContent(
     uri: string,
-    options?: ListPathOptions,
+    options: ListPathOptions,
   ): Promise<FileSystemObject[]> {
     return await this.electronAPI.listPathContent(uri, options);
   }

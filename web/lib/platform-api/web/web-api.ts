@@ -34,7 +34,7 @@ export class WebAPI extends AbstractPlatformAPI {
 
   async listPathContent(
     uri: string,
-    options?: ListPathOptions,
+    options: ListPathOptions,
   ): Promise<FileSystemObject[]> {
     toast.error("Not implemented");
     throw new Error("Method not implemented.");

@@ -71,7 +71,7 @@ export class CapacitorAPI extends AbstractPlatformAPI {
 
   async listPathContent(
     uri: string,
-    options?: ListPathOptions,
+    options: ListPathOptions,
   ): Promise<FileSystemObject[]> {
     // Try to get permissions to read the directory
     const permission = await Filesystem.requestPermissions();
@@ -100,7 +100,7 @@ export class CapacitorAPI extends AbstractPlatformAPI {
             name: file.name,
             isFolder: true,
             subDirItems: options?.isRecursive
-              ? await this.listPathContent(absoluteUri)
+              ? await this.listPathContent(absoluteUri, options)
               : [],
             uri: absoluteUri,
           };

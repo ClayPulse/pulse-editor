@@ -224,7 +224,7 @@ export default function ExtensionModal({
     if (isOpen) {
       setInstalledExtensions(editorContext?.persistSettings?.extensions ?? []);
     }
-  }, [isOpen, editorContext?.persistSettings?.extensions ?? []]);
+  }, [isOpen, editorContext?.persistSettings?.extensions]);
 
   return (
     <ModalWrapper
