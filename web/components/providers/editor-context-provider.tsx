@@ -3,6 +3,7 @@
 import { AIModelConfig } from "@/lib/ai-model-config";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { getModelLLM } from "@/lib/llm/llm";
+import { decrypt } from "@/lib/security/simple-password";
 import { getModelSTT } from "@/lib/stt/stt";
 import { getModelTTS } from "@/lib/tts/tts";
 import {
@@ -10,8 +11,8 @@ import {
   EditorContextType,
   PersistentSettings,
 } from "@/lib/types";
-import { ViewManager } from "@/lib/views/view-manager";
-import { createContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom";
 
 export const EditorContext = createContext<EditorContextType | undefined>(
   undefined,
@@ -31,6 +32,7 @@ const defaultEditorStates: EditorStates = {
   isToolbarOpen: true,
   explorerSelectedNodeRefs: [],
   pressedKeys: [],
+  openedViewModels: [],
 };
 
 export default function EditorContextProvider({
@@ -48,11 +50,6 @@ export default function EditorContextProvider({
     undefined,
   );
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
-
-  // --- View Management ---
-  const [viewManager, setViewManager] = useState<ViewManager | undefined>(
-    undefined,
-  );
 
   // --- AI Model Management ---
   const aiModelConfig = useRef<AIModelConfig>(new AIModelConfig());
@@ -101,6 +98,21 @@ export default function EditorContextProvider({
     }
   }, [platformApi]);
 
+  // Init extension folder
+  useEffect(() => {
+    if (platformApi) {
+      // Create the extensions folder if it doesn't exist
+      platformApi.getInstallationPath().then((path) => {
+        const extensionsPath = path + "/extensions";
+        platformApi.hasPath(extensionsPath).then((exists) => {
+          if (!exists) {
+            platformApi.createFolder(extensionsPath);
+          }
+        });
+      });
+    }
+  }, [platformApi]);
+
   // Save settings to local storage
   useEffect(() => {
     if (isSettingsLoaded) {
@@ -114,39 +126,60 @@ export default function EditorContextProvider({
 
   // Load STT
   useEffect(() => {
-    if (settings?.sttAPIKey && settings?.sttProvider && settings?.sttModel) {
+    if (
+      !editorStates.password &&
+      settings?.sttAPIKey &&
+      settings?.sttProvider &&
+      settings?.sttModel
+    ) {
       const model = getModelSTT(
-        settings?.sttAPIKey,
+        settings.sttAPIKey,
         settings?.sttProvider,
         settings?.sttModel,
       );
       aiModelConfig.current.setSTTModel(model);
     }
-  }, [settings?.sttAPIKey, settings?.sttProvider, settings?.sttModel]);
+  }, [
+    editorStates.password,
+    settings?.sttAPIKey,
+    settings?.sttProvider,
+    settings?.sttModel,
+  ]);
 
   // Load LLM
   useEffect(() => {
-    if (settings?.llmAPIKey && settings?.llmProvider && settings?.llmModel) {
+    if (
+      !editorStates.password &&
+      settings?.llmAPIKey &&
+      settings?.llmProvider &&
+      settings?.llmModel
+    ) {
       const model = getModelLLM(
-        settings?.llmAPIKey,
+        settings.llmAPIKey,
         settings?.llmProvider,
         settings?.llmModel,
         0.85,
       );
       aiModelConfig.current.setLLMModel(model);
     }
-  }, [settings?.llmAPIKey, settings?.llmProvider, settings?.llmModel]);
+  }, [
+    editorStates.password,
+    settings?.llmAPIKey,
+    settings?.llmProvider,
+    settings?.llmModel,
+  ]);
 
   // Load TTS
   useEffect(() => {
     if (
+      !editorStates.password &&
       settings?.ttsAPIKey &&
       settings?.ttsProvider &&
       settings?.ttsModel &&
       settings?.ttsVoice
     ) {
       const model = getModelTTS(
-        settings?.ttsAPIKey,
+        settings.ttsAPIKey,
         settings?.ttsProvider,
         settings?.ttsModel,
         settings?.ttsVoice,
@@ -154,6 +187,82 @@ export default function EditorContextProvider({
       aiModelConfig.current.setTTSModel(model);
     }
   }, [
+    editorStates.password,
+    settings?.ttsAPIKey,
+    settings?.ttsProvider,
+    settings?.ttsModel,
+    settings?.ttsVoice,
+  ]);
+
+  // Load API keys when password is entered
+  useEffect(() => {
+    if (editorStates.password && settings?.isPasswordSet) {
+      if (settings?.sttAPIKey && settings?.sttProvider && settings?.sttModel) {
+        const decryptedSTTAPIKey = decrypt(
+          settings.sttAPIKey,
+          editorStates.password,
+        );
+
+        const model = getModelSTT(
+          decryptedSTTAPIKey,
+          settings?.sttProvider,
+          settings?.sttModel,
+        );
+        aiModelConfig.current.setSTTModel(model);
+
+        console.log("decryptedSTTAPIKey", decryptedSTTAPIKey);
+      }
+
+      if (settings?.llmAPIKey && settings?.llmProvider && settings?.llmModel) {
+        const decryptedLLMAPIKey = decrypt(
+          settings.llmAPIKey,
+          editorStates.password,
+        );
+
+        const model = getModelLLM(
+          decryptedLLMAPIKey,
+          settings?.llmProvider,
+          settings?.llmModel,
+          0.85,
+        );
+        aiModelConfig.current.setLLMModel(model);
+
+        console.log("decryptedLLMAPIKey", decryptedLLMAPIKey);
+      }
+
+      if (
+        settings?.ttsAPIKey &&
+        settings?.ttsProvider &&
+        settings?.ttsModel &&
+        settings?.ttsVoice
+      ) {
+        const decryptedTTSAPIKey = decrypt(
+          settings.ttsAPIKey,
+          editorStates.password,
+        );
+
+        const model = getModelTTS(
+          decryptedTTSAPIKey,
+          settings?.ttsProvider,
+          settings?.ttsModel,
+          settings?.ttsVoice,
+        );
+        aiModelConfig.current.setTTSModel(model);
+
+        console.log("decryptedTTSAPIKey", decryptedTTSAPIKey);
+      }
+    }
+  }, [
+    editorStates.password,
+
+    settings?.sttAPIKey,
+    settings?.sttProvider,
+    settings?.sttModel,
+
+    settings?.llmAPIKey,
+    settings?.llmProvider,
+    settings?.llmModel,
+
     settings?.ttsAPIKey,
     settings?.ttsProvider,
     settings?.ttsModel,
@@ -167,8 +276,6 @@ export default function EditorContextProvider({
         setEditorStates,
         persistSettings: settings,
         setPersistSettings: setSettings,
-        viewManager,
-        setViewManager,
         aiModelConfig: aiModelConfig.current,
       }}
     >

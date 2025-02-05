@@ -34,17 +34,24 @@ function refreshProjectContent(
     editorContext?.persistSettings?.projectHomePath +
     "/" +
     editorContext?.editorStates.project;
-  platformApi?.discoverProjectContent(projectUri).then((objects) => {
-    editorContext?.setEditorStates((prev) => {
-      return {
-        ...prev,
-        projectContent: objects,
-        explorerSelectedNodeRefs: [],
-      };
-    });
+  platformApi
+    ?.listPathContent(projectUri, {
+      include: "all",
+      isRecursive: true,
+    })
+    .then((objects) => {
+      editorContext?.setEditorStates((prev) => {
+        return {
+          ...prev,
+          projectContent: objects,
+          explorerSelectedNodeRefs: [],
+        };
+      });
 
-    toast.success("Project content updated.");
-  });
+      console.log("Found project content:", objects);
+
+      toast.success("Project content updated.");
+    });
 }
 
 // A tree view node that represents a single file or folder

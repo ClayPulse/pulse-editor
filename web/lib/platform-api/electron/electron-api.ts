@@ -1,5 +1,6 @@
 import {
   FileSystemObject,
+  ListPathOptions,
   OpenFileDialogConfig,
   PersistentSettings,
   ProjectInfo,
@@ -14,16 +15,25 @@ export class ElectronAPI extends AbstractPlatformAPI {
     this.electronAPI = window.electronAPI;
   }
 
-  async selectPath(): Promise<string | undefined> {
-    return await this.electronAPI.selectPath();
+  async selectDir(): Promise<string | undefined> {
+    return await this.electronAPI.selectDir();
   }
 
-  async listPathProjects(uri: string): Promise<ProjectInfo[]> {
-    return await this.electronAPI.listPathProjects(uri);
+  async selectFile(fileExtension?: string): Promise<File> {
+    const data = await this.electronAPI.selectFile(fileExtension ?? "");
+
+    return new File([data], "file");
   }
 
-  async discoverProjectContent(uri: string): Promise<FileSystemObject[]> {
-    return await this.electronAPI.discoverProjectContent(uri);
+  async listProjects(projectHomePath: string): Promise<ProjectInfo[]> {
+    return await this.electronAPI.listProjects(projectHomePath);
+  }
+
+  async listPathContent(
+    uri: string,
+    options: ListPathOptions,
+  ): Promise<FileSystemObject[]> {
+    return await this.electronAPI.listPathContent(uri, options);
   }
 
   async createProject(uri: string): Promise<void> {
@@ -33,17 +43,21 @@ export class ElectronAPI extends AbstractPlatformAPI {
   async createFolder(uri: string): Promise<void> {
     await this.electronAPI.createFolder(uri);
   }
-  
+
   async createFile(uri: string): Promise<void> {
     await this.electronAPI.createFile(uri);
   }
-  
+
   async rename(oldUri: string, newUri: string): Promise<void> {
     await this.electronAPI.rename(oldUri, newUri);
   }
 
   async delete(uri: string): Promise<void> {
     await this.electronAPI.delete(uri);
+  }
+
+  async hasPath(uri: string): Promise<boolean> {
+    return await this.electronAPI.hasFile(uri);
   }
 
   async readFile(uri: string): Promise<File> {
@@ -61,6 +75,10 @@ export class ElectronAPI extends AbstractPlatformAPI {
     await this.electronAPI.writeFile(data, uri);
   }
 
+  async copyFiles(from: string, to: string): Promise<void> {
+    await this.electronAPI.copyFiles(from, to);
+  }
+
   async getPersistentSettings(): Promise<PersistentSettings> {
     const persistentSettings: PersistentSettings =
       await this.electronAPI.loadSettings();
@@ -74,5 +92,9 @@ export class ElectronAPI extends AbstractPlatformAPI {
 
   async resetPersistentSettings(): Promise<void> {
     await this.electronAPI.saveSettings({});
+  }
+
+  async getInstallationPath(): Promise<string> {
+    return await this.electronAPI.getInstallationPath();
   }
 }

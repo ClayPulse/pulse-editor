@@ -2,7 +2,7 @@
 
 import { useContext, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
-import { Button, DropdownItem } from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { ContextMenuState, ProjectInfo } from "@/lib/types";
 import ContextMenu from "../context-menu";
@@ -29,15 +29,20 @@ function ProjectTab({
     const uri =
       editorContext?.persistSettings?.projectHomePath + "/" + projectName;
 
-    platformApi?.discoverProjectContent(uri).then((objects) => {
-      editorContext?.setEditorStates((prev) => {
-        return {
-          ...prev,
-          project: projectName,
-          projectContent: objects,
-        };
+    platformApi
+      ?.listPathContent(uri, {
+        include: "all",
+        isRecursive: true,
+      })
+      .then((objects) => {
+        editorContext?.setEditorStates((prev) => {
+          return {
+            ...prev,
+            project: projectName,
+            projectContent: objects,
+          };
+        });
       });
-    });
   }
 
   function formatDateTime(date: Date) {

@@ -58,7 +58,7 @@ export default function ProjectSettingsModal({
       .rename(oldUri, newUri)
       .then(() => {
         toast.success("Project updated.");
-        platformApi.listPathProjects(homePath).then((projects) => {
+        platformApi.listProjects(homePath).then((projects) => {
           editorContext?.setEditorStates((prev) => {
             return {
               ...prev,
@@ -101,7 +101,7 @@ export default function ProjectSettingsModal({
       .createProject(uri)
       .then(() => {
         toast.success("Project created.");
-        platformApi.listPathProjects(homePath).then((projects) => {
+        platformApi.listProjects(homePath).then((projects) => {
           editorContext?.setEditorStates((prev) => {
             return {
               ...prev,
@@ -117,9 +117,8 @@ export default function ProjectSettingsModal({
   }
 
   return (
-    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
+    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen} title="Project Settings">
       <div className="flex h-full w-full flex-col items-center space-y-4 p-4">
-        <p>Project Settings</p>
         <Input
           label="Project Name"
           isRequired

@@ -1,8 +1,8 @@
-import { Dispatch, ForwardedRef, Ref, RefObject, SetStateAction } from "react";
-import { ViewManager } from "./views/view-manager";
+import { Dispatch, RefObject, SetStateAction } from "react";
 import { AIModelConfig } from "./ai-model-config";
-import { ViewTypeEnum } from "./views/available-views";
+import { ExtensionConfig, SelectionInformation } from "@pulse-editor/types";
 
+// #region Context
 export type EditorStates = {
   // Selection by drawing
   isDrawing: boolean;
@@ -32,6 +32,11 @@ export type EditorStates = {
   explorerSelectedNodeRefs: RefObject<TreeViewNodeRef | null>[];
 
   pressedKeys: string[];
+
+  // Password to access the credentials
+  password?: string;
+
+  openedViewModels: FileViewModel[];
 };
 
 export type PersistentSettings = {
@@ -49,26 +54,27 @@ export type PersistentSettings = {
 
   isUsePassword?: boolean;
   isPasswordSet?: boolean;
-  password?: string;
   ttl?: number;
 
   ttsVoice?: string;
 
   projectHomePath?: string;
-};
 
-export type DrawnLine = {
-  points: {
-    x: number;
-    y: number;
-  }[];
+  extensions?: Extension[];
+  defaultFileTypeExtensionMap?: { [key: string]: Extension };
+  isExtensionDevMode?: boolean;
 };
+// #endregion
 
-export type SelectionInformation = {
-  lineStart: number;
-  lineEnd: number;
-  text: string;
+// #region View Models
+export type FileViewModel = {
+  fileContent: string;
+  filePath: string;
+  selections?: SelectionInformation[];
+  suggestedLines?: LineChange[];
+  isActive: boolean;
 };
+// #endregion
 
 export type CodeCompletionInstruction = {
   text?: string;
@@ -85,13 +91,6 @@ export type CodeCompletionResult = {
 
 export type InlineSuggestionResult = {
   snippets: string[];
-};
-
-export type ViewDocument = {
-  fileContent: string;
-  filePath: string;
-  selections?: SelectionInformation[];
-  suggestedLines?: LineChange[];
 };
 
 export type LineChange = {
@@ -114,19 +113,11 @@ export type AgentConfig = {
   prompt: string;
 };
 
-export type ViewRef = {
-  getType: () => ViewTypeEnum;
-  updateViewDocument: (viewDocument: Partial<ViewDocument>) => void;
-};
-
 export type EditorContextType = {
   editorStates: EditorStates;
   setEditorStates: Dispatch<SetStateAction<EditorStates>>;
   persistSettings: PersistentSettings | undefined;
   setPersistSettings: Dispatch<SetStateAction<PersistentSettings | undefined>>;
-  viewManager: ViewManager | undefined;
-  setViewManager: Dispatch<SetStateAction<ViewManager | undefined>>;
-  // notifyViewManagerUpdate: () => void;
   aiModelConfig: AIModelConfig;
 };
 
@@ -143,8 +134,6 @@ export type SaveFileDialogConfig = {
 export type FileSystemObject = {
   name: string;
   uri: string;
-  extension?: string;
-  file?: File;
   isFolder: boolean;
   subDirItems?: FileSystemObject[];
 };
@@ -171,4 +160,21 @@ export type ContextMenuState = {
   x: number;
   y: number;
   isOpen: boolean;
+};
+
+export type ListPathOptions = {
+  include: "folders" | "files" | "all";
+  isRecursive: boolean;
+};
+
+export type TabItem = {
+  name: string;
+  icon?: string;
+  description: string;
+};
+
+export type Extension = {
+  config: ExtensionConfig;
+  isEnabled: boolean;
+  remoteOrigin: string;
 };

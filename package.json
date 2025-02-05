@@ -6,7 +6,10 @@
         "web",
         "desktop",
         "mobile",
-        "vscode-extension"
+        "vscode-extension",
+        "npm-packages/react-api",
+        "npm-packages/types",
+        "npm-packages/shared-utils"
     ],
     "scripts": {
         "web-dev": "npm run dev --workspace=web",
@@ -14,6 +17,7 @@
         "desktop-dev": "npm run dev --workspace=desktop",
         "desktop-build": "npm run web-build && npm run build --workspace=desktop",
         "android-dev": "npm run web-build && npm run android-dev --workspace=mobile",
-        "android-build": "npm run web-build && npm run android-build --workspace=mobile"
+        "android-build": "npm run web-build && npm run android-build --workspace=mobile",
+        "packages-build": "npm run build --workspace=npm-packages/react-api"
     }
 }

@@ -1,13 +1,7 @@
-import {
-  Button,
-  Input,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/react";
+import { Button, Input, ModalBody, ModalFooter } from "@nextui-org/react";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
-import { decrypt, encrypt } from "@/lib/security/simple-password";
+import { encrypt } from "@/lib/security/simple-password";
 import Icon from "../icon";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
@@ -23,13 +17,16 @@ export default function PasswordScreen({
   const [password, setPassword] = useState<string | undefined>(undefined);
 
   return (
-    <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
+    <ModalWrapper
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      title={
+        editorContext?.persistSettings?.isPasswordSet
+          ? "Enter your password"
+          : "Set a password"
+      }
+    >
       <>
-        <ModalHeader className="flex flex-col gap-1">
-          {editorContext?.persistSettings?.isPasswordSet
-            ? "Enter your password"
-            : "Set a password"}
-        </ModalHeader>
         <ModalBody>
           <Input
             endContent={<Icon name="lock" />}
@@ -48,6 +45,13 @@ export default function PasswordScreen({
               setIsOpen(false);
               // Reset all settings
               editorContext?.setPersistSettings(undefined);
+              // Remove password from memory
+              editorContext?.setEditorStates((prev) => {
+                return {
+                  ...prev,
+                  password: undefined,
+                };
+              });
             }}
             variant="light"
             disableRipple
@@ -71,51 +75,34 @@ export default function PasswordScreen({
                   return {
                     ...prev,
                     isPasswordSet: true,
-                    password: password,
+                    passwordInMem: password,
                   };
                 });
 
                 // Encrypt API tokens
-                const sttAPIKey = settings.sttAPIKey
+                const encryptedSTTAPIKey = settings.sttAPIKey
                   ? encrypt(settings.sttAPIKey, password)
                   : undefined;
-                const llmAPIKey = settings.llmAPIKey
+                const encryptedLLMAPIKey = settings.llmAPIKey
                   ? encrypt(settings.llmAPIKey, password)
                   : undefined;
-                const ttsAPIKey = settings.ttsAPIKey
+                const encryptedTTSAPIKey = settings.ttsAPIKey
                   ? encrypt(settings.ttsAPIKey, password)
                   : undefined;
                 // Save to local storage
                 editorContext?.setPersistSettings((prev) => {
                   return {
                     ...prev,
-                    sttAPIKey: sttAPIKey,
-                    llmAPIKey: llmAPIKey,
-                    ttsAPIKey: ttsAPIKey,
+                    sttAPIKey: encryptedSTTAPIKey,
+                    llmAPIKey: encryptedLLMAPIKey,
+                    ttsAPIKey: encryptedTTSAPIKey,
                   };
                 });
               } else {
-                // Decrypt API tokens
-                const encryptedSttAPIKey = editorContext?.persistSettings?.sttAPIKey;
-                const encryptedLlmAPIKey = editorContext?.persistSettings?.llmAPIKey;
-                const encryptedTtsAPIKey = editorContext?.persistSettings?.ttsAPIKey;
-                const sttAPIKey = encryptedSttAPIKey
-                  ? decrypt(encryptedSttAPIKey, password)
-                  : undefined;
-                const llmAPIKey = encryptedLlmAPIKey
-                  ? decrypt(encryptedLlmAPIKey, password)
-                  : undefined;
-                const ttsAPIKey = encryptedTtsAPIKey
-                  ? decrypt(encryptedTtsAPIKey, password)
-                  : undefined;
-
-                // Load password to context if the password was set
-                editorContext?.setPersistSettings((prev) => {
+                // Set the password in memory
+                editorContext.setEditorStates((prev) => {
                   return {
                     ...prev,
-                    sttAPIKey: sttAPIKey,
-                    llmAPIKey: llmAPIKey,
-                    ttsAPIKey: ttsAPIKey,
                     password: password,
                   };
                 });
