@@ -1,8 +1,16 @@
 import { Extension, FileViewModel } from "@/lib/types";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import FileViewLayout from "./layout";
 import ExtensionLoader from "../extension-loader";
+import { MessageReceiver, MessageSender } from "@pulse-editor/shared-utils";
+import {
+  messageTimeout,
+  ViewBoxMessage,
+  ViewBoxMessageTypeEnum,
+} from "@pulse-editor/types";
+import Loading from "../loading";
+import useFileViewMessages from "@/lib/hooks/messaging/use-file-view-messages";
 
 export default function FileView({ model }: { model: FileViewModel }) {
   const editorContext = useContext(EditorContext);
@@ -10,6 +18,8 @@ export default function FileView({ model }: { model: FileViewModel }) {
   const [usedExtension, setUsedExtension] = useState<Extension | undefined>(
     undefined,
   );
+
+  const { imc, isExtensionLoaded } = useFileViewMessages();
 
   useEffect(() => {
     // Get the filename from the file path
@@ -32,15 +42,31 @@ export default function FileView({ model }: { model: FileViewModel }) {
     }
   }, [fileType]);
 
+  useEffect(() => {
+    // Send view file update to the extension
+    if (isExtensionLoaded && imc && model) {
+      imc.sendMessage(
+        ViewBoxMessageTypeEnum.ViewFileChange,
+        JSON.stringify(model),
+      );
+    }
+  }, [isExtensionLoaded, imc, model]);
+
   return (
     <FileViewLayout height="100%" width="100%">
       {usedExtension ? (
-        <ExtensionLoader
-          remoteOrigin={usedExtension.remoteOrigin}
-          moduleId={usedExtension.config.id}
-          moduleVersion={usedExtension.config.version}
-          model={model}
-        />
+        <div className="relative h-full w-full">
+          {!isExtensionLoaded && (
+            <div className="absolute left-0 top-0 h-full w-full">
+              <Loading />
+            </div>
+          )}
+          <ExtensionLoader
+            remoteOrigin={usedExtension.remoteOrigin}
+            moduleId={usedExtension.config.id}
+            moduleVersion={usedExtension.config.version}
+          />
+        </div>
       ) : (
         <div>
           No default view found for this file type. Find a compatible extension

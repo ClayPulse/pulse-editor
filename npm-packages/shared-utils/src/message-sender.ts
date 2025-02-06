@@ -1,5 +1,4 @@
 import {
-  FinishedPayload,
   ViewBoxMessage,
   ViewBoxMessageTypeEnum,
 } from "@pulse-editor/types";
@@ -12,18 +11,28 @@ export class MessageSender {
     string,
     { resolve: (result: any) => void; reject: () => void }
   >;
-  constructor(targetWindow: Window, timeout: number) {
+
+  private moduleName: string;
+
+  constructor(
+    targetWindow: Window,
+    timeout: number,
+    pendingMessages: Map<
+      string,
+      { resolve: (result: any) => void; reject: () => void }
+    >,
+    moduleInfo: string
+  ) {
     this.targetWindow = targetWindow;
     this.timeout = timeout;
 
-    this.pendingMessages = new Map();
-
-    this.addFinishedMessageListener();
+    this.pendingMessages = pendingMessages;
+    this.moduleName = moduleInfo;
   }
 
-  async sendMessage(
+  public async sendMessage(
     handlingType: ViewBoxMessageTypeEnum,
-    payload: string,
+    payload?: string,
     abortSignal?: AbortSignal
   ): Promise<any> {
     // Generate a unique id for the message using timestamp
@@ -31,7 +40,8 @@ export class MessageSender {
     const message: ViewBoxMessage = {
       id,
       type: handlingType,
-      payload,
+      payload: payload,
+      from: this.moduleName,
     };
 
     return new Promise((resolve, reject) => {
@@ -49,7 +59,7 @@ export class MessageSender {
             type: ViewBoxMessageTypeEnum.Abort,
             payload: JSON.stringify({
               status: "Task aborted",
-              data: null
+              data: null,
             }),
           },
           "*"
@@ -87,20 +97,6 @@ export class MessageSender {
           abortSignal?.removeEventListener("abort", abortHandler);
           reject();
         };
-      }
-    });
-  }
-
-  private addFinishedMessageListener(): void {
-    this.targetWindow.addEventListener("message", (event) => {
-      const message = event.data as ViewBoxMessage;
-      if (message.type === ViewBoxMessageTypeEnum.Acknowledge) {
-        const pendingMessage = this.pendingMessages.get(message.id);
-        if (pendingMessage) {
-          const finishedPayload: FinishedPayload = JSON.parse(message.payload);
-          pendingMessage.resolve(finishedPayload.data);
-          this.pendingMessages.delete(message.id);
-        }
       }
     });
   }

@@ -21,21 +21,18 @@ export type FetchPayload = {
   options?: RequestInit;
 };
 
-export type FinishedPayload = {
-  status: string;
-  data: any;
-};
-
 /* Messages */
 export enum ViewBoxMessageTypeEnum {
-  // View file
-  ViewFile = "view-file",
-  // Fetch request
+  // Update view file
+  WriteViewFile = "write-view-file",
+  // View file change
+  ViewFileChange = "view-file-change",
+  // Network fetch request
   Fetch = "fetch",
   // Send notification
   Notification = "notification",
-  // Loading status
-  Loading = "loading",
+  // Get theme
+  GetTheme = "get-theme",
 
   /* Agents */
   // Get agent config
@@ -46,8 +43,10 @@ export enum ViewBoxMessageTypeEnum {
   /* Modality tools */
   OCR = "ocr",
 
-  // Notify Pulse that hook is ready
+  // Notify Pulse that extension window is available
   Ready = "ready",
+  // Notify Pulse that extension has finished loading
+  Loaded = "loaded",
   // A message to notify sender that the message
   // has been received and finished processing
   Acknowledge = "acknowledge",
@@ -57,8 +56,9 @@ export enum ViewBoxMessageTypeEnum {
 
 export type ViewBoxMessage = {
   id: string;
+  from: string;
   type: ViewBoxMessageTypeEnum;
-  payload: string;
+  payload?: string;
 };
 
 export enum NotificationTypeEnum {

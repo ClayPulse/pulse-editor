@@ -1,13 +1,6 @@
-import {
-  FileViewModel,
-  messageTimeout,
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
-} from "@pulse-editor/types";
-import { useEffect, useRef, useState } from "react";
+import { ViewBoxMessage } from "@pulse-editor/types";
+import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import Loading from "./loading";
-import { MessageReceiver, MessageSender } from "@pulse-editor/shared-utils";
 import { loadRemote } from "@module-federation/runtime";
 import React from "react";
 
@@ -15,85 +8,12 @@ export default function ExtensionLoader({
   remoteOrigin,
   moduleId,
   moduleVersion,
-  model,
 }: {
   remoteOrigin: string;
   moduleId: string;
   moduleVersion: string;
-  model?: FileViewModel;
 }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const handlerMap = new Map<
-    ViewBoxMessageTypeEnum,
-    (message: ViewBoxMessage) => Promise<void>
-  >();
-
-  handlerMap.set(
-    ViewBoxMessageTypeEnum.Loading,
-    async (message: ViewBoxMessage) => {
-      const payload = JSON.parse(message.payload);
-      setIsLoaded(payload.isLoaded);
-    },
-  );
-
-  // Init sender ref once received initial message from iframe
-  const [sender, setSender] = useState<MessageSender | null>(null);
-
-  const [iframeWindow, setIframeWindow] = useState<Window | null>(null);
-
-  useEffect(() => {
-    if (iframeRef.current?.contentWindow) {
-      // Attach the handler for the ViewFile message
-      const receiver = new MessageReceiver(
-        handlerMap,
-        iframeRef.current?.contentWindow,
-      );
-
-      const listener = (event: MessageEvent<ViewBoxMessage>) => {
-        const message = event.data;
-        console.log("Received message in main app", message);
-        receiver.receiveMessage(message);
-        const win = event.source as Window;
-        if (!iframeWindow) {
-          setIframeWindow(win);
-        }
-      };
-
-      const addMessageListener = () => {
-        window.addEventListener("message", listener);
-      };
-
-      const removeMessageListener = () => {
-        window.removeEventListener("message", listener);
-      };
-
-      addMessageListener();
-
-      return () => {
-        removeMessageListener();
-      };
-    }
-  }, [iframeRef]);
-
-  useEffect(() => {
-    if (!sender && iframeWindow) {
-      const newSender = new MessageSender(iframeWindow, messageTimeout);
-      setSender(newSender);
-    }
-  }, [iframeWindow, sender]);
-
-  useEffect(() => {
-    if (sender && model) {
-      sender.sendMessage(
-        ViewBoxMessageTypeEnum.ViewFile,
-        JSON.stringify(model),
-      );
-      console.log("Sent message to iframe", model);
-    }
-  }, [model, sender]);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     function renderExtension(LoadedExtension: any) {
@@ -127,23 +47,5 @@ export default function ExtensionLoader({
     });
   }, []);
 
-  function hardRefresh() {
-    navigator.serviceWorker.getRegistration().then(async (registration) => {
-      if (!registration) return;
-      await registration.unregister();
-      window.location.reload();
-    });
-  }
-
-  return (
-    <div className="relative h-full w-full">
-      {!isLoaded && (
-        <div className="absolute left-0 top-0 h-full w-full">
-          <Loading />
-        </div>
-      )}
-
-      <iframe ref={iframeRef} className="h-full w-full" />
-    </div>
-  );
+  return <iframe ref={iframeRef} className="h-full w-full" />;
 }

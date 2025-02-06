@@ -1,38 +1,44 @@
-import {
-  FinishedPayload,
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
-} from "@pulse-editor/types";
+import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
 
 export class MessageReceiver {
-  // handlingType: ViewBoxMessageTypeEnum;
-  // onReceiveMessage: (message: ViewBoxMessage) => Promise<void>;
-  private listenerMap: Map<
+  private handlerMap: Map<
     ViewBoxMessageTypeEnum,
-    (message: ViewBoxMessage) => Promise<any>
+    (senderWindow: Window, message: ViewBoxMessage) => Promise<any>
   >;
-  private targetWindow: Window;
   private pendingTasks: Map<
     string,
     {
       controller: AbortController;
     }
   >;
+  private moduleName: string;
 
   constructor(
     listenerMap: Map<
       ViewBoxMessageTypeEnum,
-      (message: ViewBoxMessage) => Promise<void>
+      (senderWindow: Window, message: ViewBoxMessage) => Promise<any>
     >,
-    targetWindow: Window
+    pendingTasks: Map<
+      string,
+      {
+        controller: AbortController;
+      }
+    >,
+    moduleInfo: string
   ) {
-    this.listenerMap = listenerMap;
-    this.targetWindow = targetWindow;
-
-    this.pendingTasks = new Map();
+    this.handlerMap = listenerMap;
+    this.pendingTasks = pendingTasks;
+    this.moduleName = moduleInfo;
   }
 
-  receiveMessage(message: ViewBoxMessage) {
+  public receiveMessage(senderWindow: Window, message: ViewBoxMessage) {
+    // Log the message
+    console.log(
+      `Module ${this.moduleName} received message from module ${message.from}:\n ${JSON.stringify(
+        message
+      )}`
+    );
+
     // Abort the task if the message type is Abort
     if (message.type === ViewBoxMessageTypeEnum.Abort) {
       const id = message.id;
@@ -46,12 +52,12 @@ export class MessageReceiver {
       return;
     }
 
-    const handler = this.listenerMap.get(message.type);
+    const handler = this.handlerMap.get(message.type);
     if (handler) {
       const controller = new AbortController();
       const signal = controller.signal;
 
-      const promise = handler(message);
+      const promise = handler(senderWindow, message);
       this.pendingTasks.set(message.id, {
         controller,
       });
@@ -60,11 +66,10 @@ export class MessageReceiver {
           // Don't send the result if the task has been aborted
           if (signal.aborted) return;
 
-          const payload: FinishedPayload = {
-            status: "Task completed",
-            data: result,
-          };
-          this.notifySenderFinished(message.id, payload);
+          // Acknowledge the sender with the result if the message type is not Acknowledge
+          if (message.type !== ViewBoxMessageTypeEnum.Acknowledge) {
+            this.acknowledgeSender(senderWindow, message.id, result);
+          }
         })
         .finally(() => {
           this.pendingTasks.delete(message.id);
@@ -72,12 +77,17 @@ export class MessageReceiver {
     }
   }
 
-  private notifySenderFinished(id: string, result: FinishedPayload): void {
+  private acknowledgeSender(
+    senderWindow: Window,
+    id: string,
+    payload: any
+  ): void {
     const message: ViewBoxMessage = {
       id,
       type: ViewBoxMessageTypeEnum.Acknowledge,
-      payload: JSON.stringify(result),
+      payload: JSON.stringify(payload),
+      from: this.moduleName,
     };
-    this.targetWindow.postMessage(message, "*");
+    senderWindow.postMessage(message, "*");
   }
 }
