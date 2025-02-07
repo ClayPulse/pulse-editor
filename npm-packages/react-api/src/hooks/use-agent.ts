@@ -43,7 +43,7 @@ export default function useAgent(moduleName: string, agentName: string) {
       imc
         .sendMessage(
           ViewBoxMessageTypeEnum.GetAgentConfig,
-          JSON.stringify({ name: agentName })
+          { name: agentName }
         )
         .then((response) => {
           const config = JSON.parse(response.payload) as AgentConfig;
@@ -65,7 +65,7 @@ export default function useAgent(moduleName: string, agentName: string) {
     const result = await imc
       .sendMessage(
         ViewBoxMessageTypeEnum.RunAgentMethod,
-        JSON.stringify({ agentName, methodName, payload }),
+        { agentName, methodName, payload },
         abortSignal
       )
       .then((response) => {

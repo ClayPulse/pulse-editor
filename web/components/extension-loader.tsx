@@ -1,8 +1,8 @@
-import { ViewBoxMessage } from "@pulse-editor/types";
 import { useEffect, useRef } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, Root } from "react-dom/client";
 import { loadRemote } from "@module-federation/runtime";
 import React from "react";
+import { root } from "postcss";
 
 export default function ExtensionLoader({
   remoteOrigin,
@@ -14,6 +14,7 @@ export default function ExtensionLoader({
   moduleVersion: string;
 }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const rootRef = useRef<Root | null>(null);
 
   useEffect(() => {
     function renderExtension(LoadedExtension: any) {
@@ -24,27 +25,51 @@ export default function ExtensionLoader({
         if (iframeDoc) {
           iframeDoc.body.innerHTML = '<div id="extension-root"></div>';
 
-          const root = iframeDoc.getElementById("extension-root");
-          if (root) {
-            const rootElement = createRoot(root, {});
+          const rootElement = iframeDoc.getElementById("extension-root");
+          if (rootElement) {
+            const root = createRoot(rootElement, {});
+            rootRef.current = root;
             // Inject extension global styles into iframe
             const link = iframeDoc.createElement("link");
             link.rel = "stylesheet";
             link.href = `${remoteOrigin}/${moduleId}/${moduleVersion}/__federation_expose_main.globals.css`;
             iframeDoc.head.appendChild(link);
-            rootElement.render(<LoadedExtension />);
+            root.render(<LoadedExtension />);
           }
         }
       }
     }
 
+    let isMounted = true;
+
     loadRemote(`${moduleId}/main`).then((mod) => {
+      // Prevent state updates if component is unmounted
+      if (!isMounted) return;
+
       // @ts-expect-error Types are not available since @module-federation/enhanced
       // cannot work in Nextjs App router. Hence types are not generated.
       const { default: LoadedExtension, Config } = mod;
 
       renderExtension(LoadedExtension);
     });
+
+    return () => {
+      // Unmount React module inside the iframe.
+      if (rootRef.current) {
+        // Defer unmounting to avoid React rendering conflicts.
+        setTimeout(() => {
+          rootRef.current?.unmount();
+          rootRef.current = null;
+
+          // Clear iframe content
+          if (iframeRef.current?.contentWindow?.document) {
+            iframeRef.current.contentWindow.document.body.innerHTML = "";
+          }
+        }, 0);
+      }
+
+      isMounted = false;
+    };
   }, []);
 
   return <iframe ref={iframeRef} className="h-full w-full" />;

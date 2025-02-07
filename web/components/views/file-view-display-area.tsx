@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import { AnimatePresence, motion } from "framer-motion";
 // import AgentChatTerminalView from "./agent-chat-terminal-view";
@@ -8,10 +8,7 @@ import { FileViewModel } from "@pulse-editor/types";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);
-  const { updateFileView, openFileView } = useViewManager();
-  const {getActiveFileView} = useViewManager();
-
-  const activeView = getActiveFileView();
+  const { updateFileView, openFileView, activeFileView } = useViewManager();
 
   // // Initialize view manager
   // useEffect(() => {
@@ -30,9 +27,9 @@ export default function ViewDisplayArea() {
 
   // useEffect(() => {
   //   if (editorContext?.viewManager) {
-  //     const activeView = editorContext.viewManager.getActiveView();
-  //     console.log("Active view:", activeView?.viewDocument.filePath);
-  //     setActiveView(activeView);
+  //     const activeFileView = editorContext.viewManager.getactiveFileView();
+  //     console.log("Active view:", activeFileView?.viewDocument.filePath);
+  //     setactiveFileView(activeFileView);
   //   }
   // }, [editorContext?.viewManager]);
 
@@ -64,9 +61,14 @@ export default function ViewDisplayArea() {
       if (message.command === "updatePulseText") {
         const text: string = message.text;
         console.log("Received text from VSCode:", text);
-        updateFileView({
-          fileContent: text,
-        });
+        if (activeFileView) {
+          const updatedFileView: FileViewModel = {
+            fileContent: text,
+            filePath: activeFileView.filePath,
+            isActive: true,
+          };
+          updateFileView(updatedFileView);
+        }
       } else if (message.command === "openFile") {
         const text: string = message.text;
         const path: string = message.path;
@@ -102,7 +104,7 @@ export default function ViewDisplayArea() {
     <div className="flex h-full w-full flex-col p-1">
       <div className="flex h-full w-full flex-col items-start justify-between gap-1.5 overflow-hidden rounded-xl bg-default p-2">
         <div className={`min-h-0 w-full flex-grow`}>
-          {!activeView ? (
+          {!activeFileView ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-y-1 pb-12 text-default-foreground">
               <h1 className="text-center text-2xl font-bold">
                 Welcome to Pulse Editor!
@@ -114,15 +116,18 @@ export default function ViewDisplayArea() {
           ) : (
             <>
               {/* <CodeEditorView
-                key={activeView.filePath}
+                key={activeFileView.filePath}
                 ref={(ref) => {
-                  if (ref) activeView.viewRef = ref;
+                  if (ref) activeFileView.viewRef = ref;
                 }}
                 width="100%"
                 height="100%"
-                view={activeView}
+                view={activeFileView}
               /> */}
-              <FileView model={activeView} />
+              <FileView
+                model={activeFileView}
+                updateFileView={updateFileView}
+              />
             </>
           )}
         </div>

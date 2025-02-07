@@ -21,9 +21,7 @@ export default function useFileView(moduleName: string) {
     [
       ViewBoxMessageTypeEnum.ViewFileChange,
       async (senderWindow: Window, message: ViewBoxMessage) => {
-        const payload = message.payload
-          ? (JSON.parse(message.payload) as FileViewModel)
-          : undefined;
+        const payload: FileViewModel | undefined = message.payload;
         console.log("Received view file message", payload);
         setViewFile(payload);
       },
@@ -41,10 +39,10 @@ export default function useFileView(moduleName: string) {
     imc.initOtherWindow(targetWindow);
     setImc(imc);
 
-    console.log("Sent ready message");
     imc.sendMessage(ViewBoxMessageTypeEnum.Ready);
 
     return () => {
+      console.log("Closing IMC for extension: ", moduleName);
       imc.close();
     };
   }, []);
@@ -55,10 +53,7 @@ export default function useFileView(moduleName: string) {
 
   function updateViewFile(file: FileViewModel) {
     // sender.sendMessage(ViewBoxMessageTypeEnum.ViewFile, JSON.stringify(file));
-    imc?.sendMessage(
-      ViewBoxMessageTypeEnum.WriteViewFile,
-      JSON.stringify(file)
-    );
+    imc?.sendMessage(ViewBoxMessageTypeEnum.WriteViewFile, file);
   }
 
   return {

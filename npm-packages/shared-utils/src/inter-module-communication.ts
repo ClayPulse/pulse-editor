@@ -83,6 +83,7 @@ export class InterModuleCommunication {
       receiver.receiveMessage(win, message);
     };
     window.addEventListener("message", this.listener);
+    console.log("Adding IMC listener in " + this.moduleName);
   }
 
   public initOtherWindow(window: Window) {
@@ -106,10 +107,7 @@ export class InterModuleCommunication {
       async (senderWindow: Window, message: ViewBoxMessage) => {
         const pendingMessage = this.otherPendingMessages?.get(message.id);
         if (pendingMessage) {
-          const finishedPayload = message.payload
-            ? JSON.parse(message.payload)
-            : undefined;
-          pendingMessage.resolve(finishedPayload);
+          pendingMessage.resolve(message.payload);
           this.otherPendingMessages?.delete(message.id);
         }
       }
@@ -124,7 +122,7 @@ export class InterModuleCommunication {
 
   public sendMessage(
     type: ViewBoxMessageTypeEnum,
-    payload?: string,
+    payload?: any,
     abortSignal?: AbortSignal
   ): Promise<any> {
     if (!this.sender) {

@@ -1,7 +1,4 @@
-import {
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
-} from "@pulse-editor/types";
+import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
 
 export class MessageSender {
   private targetWindow: Window;
@@ -32,7 +29,7 @@ export class MessageSender {
 
   public async sendMessage(
     handlingType: ViewBoxMessageTypeEnum,
-    payload?: string,
+    payload?: any,
     abortSignal?: AbortSignal
   ): Promise<any> {
     // Generate a unique id for the message using timestamp

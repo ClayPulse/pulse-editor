@@ -37,13 +37,10 @@ export default function useNotification(moduleName: string) {
     if (!imc) {
       throw new Error("IMC is not initialized.");
     }
-    imc.sendMessage(
-      ViewBoxMessageTypeEnum.Notification,
-      JSON.stringify({
-        text,
-        type,
-      })
-    );
+    imc.sendMessage(ViewBoxMessageTypeEnum.Notification, {
+      text,
+      type,
+    });
   }
 
   return { openNotification };

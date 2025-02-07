@@ -37,7 +37,7 @@ export default function useOCR(moduleName: string) {
     // Send the message to the extension
     const result = await imc.sendMessage(
       ViewBoxMessageTypeEnum.OCR,
-      JSON.stringify({ uri })
+      { uri }
     );
 
     return result.payload.text;

@@ -58,7 +58,7 @@ export type ViewBoxMessage = {
   id: string;
   from: string;
   type: ViewBoxMessageTypeEnum;
-  payload?: string;
+  payload?: any;
 };
 
 export enum NotificationTypeEnum {
