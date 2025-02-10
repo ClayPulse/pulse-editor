@@ -1,17 +1,17 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
+import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
 export default function useTheme(moduleName: string) {
   const [theme, setTheme] = useState<string>("light");
   const receiverHandlerMap = new Map<
-    ViewBoxMessageTypeEnum,
-    (senderWindow: Window, message: ViewBoxMessage) => Promise<void>
+    IMCMessageTypeEnum,
+    (senderWindow: Window, message: IMCMessage) => Promise<void>
   >();
 
   receiverHandlerMap.set(
-    ViewBoxMessageTypeEnum.GetTheme,
-    async (senderWindow: Window, message: ViewBoxMessage) => {
+    IMCMessageTypeEnum.GetTheme,
+    async (senderWindow: Window, message: IMCMessage) => {
       const theme = message.payload
         ? JSON.parse(message.payload).theme
         : "light";
@@ -31,7 +31,7 @@ export default function useTheme(moduleName: string) {
     setImc(imc);
 
     console.log("Sent ready message");
-    imc.sendMessage(ViewBoxMessageTypeEnum.Ready);
+    imc.sendMessage(IMCMessageTypeEnum.Ready);
 
     return () => {
       imc.close();

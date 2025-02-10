@@ -2,9 +2,8 @@ import { useEffect, useRef } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { loadRemote } from "@module-federation/runtime";
 import React from "react";
-import { root } from "postcss";
 
-export default function ExtensionLoader({
+export default function ViewExtensionLoader({
   remoteOrigin,
   moduleId,
   moduleVersion,

@@ -1,7 +1,7 @@
 import {
   messageTimeout,
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
+  IMCMessage,
+  IMCMessageTypeEnum,
 } from "@pulse-editor/types";
 import { MessageReceiver } from "./message-receiver";
 import { MessageSender } from "./message-sender";
@@ -38,8 +38,8 @@ export class InterModuleCommunication {
 
   private receiverHandlerMap:
     | Map<
-        ViewBoxMessageTypeEnum,
-        (senderWindow: Window, message: ViewBoxMessage) => Promise<any>
+        IMCMessageTypeEnum,
+        (senderWindow: Window, message: IMCMessage) => Promise<any>
       >
     | undefined;
 
@@ -52,15 +52,15 @@ export class InterModuleCommunication {
   public initThisWindow(
     window: Window,
     receiverHandlerMap: Map<
-      ViewBoxMessageTypeEnum,
-      (senderWindow: Window, message: ViewBoxMessage) => Promise<any>
+      IMCMessageTypeEnum,
+      (senderWindow: Window, message: IMCMessage) => Promise<any>
     >
   ) {
     this.thisWindow = window;
     this.receiverHandlerMap = receiverHandlerMap;
     this.thisPendingTasks = new Map();
 
-    if (receiverHandlerMap.has(ViewBoxMessageTypeEnum.Acknowledge)) {
+    if (receiverHandlerMap.has(IMCMessageTypeEnum.Acknowledge)) {
       throw new Error("Acknowledgement listener should not be added here");
     }
 
@@ -71,7 +71,7 @@ export class InterModuleCommunication {
     );
     this.receiver = receiver;
 
-    this.listener = (event: MessageEvent<ViewBoxMessage>) => {
+    this.listener = (event: MessageEvent<IMCMessage>) => {
       if (!receiver) {
         throw new Error(
           "Receiver not initialized at module " + this.moduleName
@@ -103,8 +103,8 @@ export class InterModuleCommunication {
       throw new Error("You must initialize the current window first.");
     }
     this.receiverHandlerMap.set(
-      ViewBoxMessageTypeEnum.Acknowledge,
-      async (senderWindow: Window, message: ViewBoxMessage) => {
+      IMCMessageTypeEnum.Acknowledge,
+      async (senderWindow: Window, message: IMCMessage) => {
         const pendingMessage = this.otherPendingMessages?.get(message.id);
         if (pendingMessage) {
           pendingMessage.resolve(message.payload);
@@ -120,8 +120,8 @@ export class InterModuleCommunication {
     }
   }
 
-  public sendMessage(
-    type: ViewBoxMessageTypeEnum,
+  public async sendMessage(
+    type: IMCMessageTypeEnum,
     payload?: any,
     abortSignal?: AbortSignal
   ): Promise<any> {
@@ -129,6 +129,6 @@ export class InterModuleCommunication {
       throw new Error("Sender not initialized");
     }
 
-    return this.sender.sendMessage(type, payload, abortSignal);
+    return await this.sender.sendMessage(type, payload, abortSignal);
   }
 }

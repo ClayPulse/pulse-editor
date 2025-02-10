@@ -1,11 +1,11 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
+import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
 export default function useIMC(
   receiverHandlerMap: Map<
-    ViewBoxMessageTypeEnum,
-    (senderWindow: Window, message: ViewBoxMessage) => Promise<any>
+    IMCMessageTypeEnum,
+    (senderWindow: Window, message: IMCMessage) => Promise<any>
   >,
 ) {
   const [imc, setImc] = useState<InterModuleCommunication | undefined>(

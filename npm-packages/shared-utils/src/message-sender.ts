@@ -1,4 +1,4 @@
-import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
+import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 
 export class MessageSender {
   private targetWindow: Window;
@@ -28,13 +28,13 @@ export class MessageSender {
   }
 
   public async sendMessage(
-    handlingType: ViewBoxMessageTypeEnum,
+    handlingType: IMCMessageTypeEnum,
     payload?: any,
     abortSignal?: AbortSignal
   ): Promise<any> {
     // Generate a unique id for the message using timestamp
     const id = new Date().getTime().toString();
-    const message: ViewBoxMessage = {
+    const message: IMCMessage = {
       id,
       type: handlingType,
       payload: payload,
@@ -53,7 +53,7 @@ export class MessageSender {
         this.targetWindow.postMessage(
           {
             id,
-            type: ViewBoxMessageTypeEnum.Abort,
+            type: IMCMessageTypeEnum.Abort,
             payload: JSON.stringify({
               status: "Task aborted",
               data: null,

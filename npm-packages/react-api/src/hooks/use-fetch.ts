@@ -1,5 +1,5 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
+import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
 export default function useFetch(moduleName: string) {
@@ -8,8 +8,8 @@ export default function useFetch(moduleName: string) {
   );
 
   const receiverHandlerMap = new Map<
-    ViewBoxMessageTypeEnum,
-    (senderWindow: Window, message: ViewBoxMessage) => Promise<void>
+    IMCMessageTypeEnum,
+    (senderWindow: Window, message: IMCMessage) => Promise<void>
   >();
 
   const targetWindow = window.parent;
@@ -22,7 +22,7 @@ export default function useFetch(moduleName: string) {
     setImc(imc);
 
     console.log("Sent ready message");
-    imc.sendMessage(ViewBoxMessageTypeEnum.Ready);
+    imc.sendMessage(IMCMessageTypeEnum.Ready);
 
     return () => {
       imc.close();
@@ -35,7 +35,7 @@ export default function useFetch(moduleName: string) {
     }
 
     return imc.sendMessage(
-      ViewBoxMessageTypeEnum.Fetch,
+      IMCMessageTypeEnum.Fetch,
       JSON.stringify({ uri, options })
     );
   }

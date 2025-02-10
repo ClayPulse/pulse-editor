@@ -1,8 +1,8 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
 import {
   NotificationTypeEnum,
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
+  IMCMessage,
+  IMCMessageTypeEnum,
 } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
@@ -12,8 +12,8 @@ export default function useNotification(moduleName: string) {
   );
 
   const receiverHandlerMap = new Map<
-    ViewBoxMessageTypeEnum,
-    (senderWindow: Window, message: ViewBoxMessage) => Promise<void>
+    IMCMessageTypeEnum,
+    (senderWindow: Window, message: IMCMessage) => Promise<void>
   >();
 
   const targetWindow = window.parent;
@@ -26,7 +26,7 @@ export default function useNotification(moduleName: string) {
     setImc(imc);
 
     console.log("Sent ready message");
-    imc.sendMessage(ViewBoxMessageTypeEnum.Ready);
+    imc.sendMessage(IMCMessageTypeEnum.Ready);
 
     return () => {
       imc.close();
@@ -37,7 +37,7 @@ export default function useNotification(moduleName: string) {
     if (!imc) {
       throw new Error("IMC is not initialized.");
     }
-    imc.sendMessage(ViewBoxMessageTypeEnum.Notification, {
+    imc.sendMessage(IMCMessageTypeEnum.Notification, {
       text,
       type,
     });

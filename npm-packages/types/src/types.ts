@@ -1,28 +1,5 @@
-export type Test = {
-  a: string;
-  b: number;
-};
-
-export type TextFileSelection = {
-  lineStart: number;
-  lineEnd: number;
-  text: string;
-};
-
-export type FileViewModel = {
-  fileContent: string;
-  filePath: string;
-  selections?: TextFileSelection[];
-  isActive: boolean;
-};
-
-export type FetchPayload = {
-  uri: string;
-  options?: RequestInit;
-};
-
-/* Messages */
-export enum ViewBoxMessageTypeEnum {
+/* Inter Module Communication messages */
+export enum IMCMessageTypeEnum {
   // Update view file
   WriteViewFile = "write-view-file",
   // View file change
@@ -35,8 +12,8 @@ export enum ViewBoxMessageTypeEnum {
   GetTheme = "get-theme",
 
   /* Agents */
-  // Get agent config
-  GetAgentConfig = "get-agent-config",
+  // Install agent
+  InstallAgent = "install-agent",
   // Execute agent method
   RunAgentMethod = "run-agent-method",
 
@@ -52,15 +29,38 @@ export enum ViewBoxMessageTypeEnum {
   Acknowledge = "acknowledge",
   // Notify abort
   Abort = "abort",
+  // Error
+  Error = "error",
 }
 
-export type ViewBoxMessage = {
+export type IMCMessage = {
   id: string;
   from: string;
-  type: ViewBoxMessageTypeEnum;
+  type: IMCMessageTypeEnum;
   payload?: any;
 };
 
+/* File view */
+export type TextFileSelection = {
+  lineStart: number;
+  lineEnd: number;
+  text: string;
+};
+
+export type FileViewModel = {
+  fileContent: string;
+  filePath: string;
+  selections?: TextFileSelection[];
+  isActive: boolean;
+};
+
+/* Fetch API */
+export type FetchPayload = {
+  uri: string;
+  options?: RequestInit;
+};
+
+/* Notification */
 export enum NotificationTypeEnum {
   Success = "success",
   Error = "error",
@@ -68,26 +68,7 @@ export enum NotificationTypeEnum {
   Warning = "warning",
 }
 
-export type SelectionInformation = {
-  lineStart: number;
-  lineEnd: number;
-  text: string;
-};
-
-export type AgentConfig = {
-  name: string;
-  // instanceId: string;
-  // version: string;
-
-  // TODO: add parameters and return types
-  availableMethods: string[];
-};
-
-export type AgentMethodResult = {
-  status: string;
-  data: any;
-};
-
+/* Extension settings */
 export enum ExtensionTypeEnum {
   FileView = "file-view",
   TerminalView = "terminal-view",
@@ -101,4 +82,46 @@ export type ExtensionConfig = {
   extensionType?: ExtensionTypeEnum;
   fileTypes?: string[];
   preview?: string;
+};
+
+/* Agent config */
+export type Agent = {
+  name: string;
+  version: string;
+  systemPrompt: string;
+  availableMethods: AgentMethod[];
+  LLMConfig: LLMConfig;
+};
+
+export type AgentMethod = {
+  name: string;
+  parameters: Record<string, AgentVariable>;
+  prompt: string;
+  returns: Record<string, AgentVariable>;
+  // If this config does not exist, use the class's LLMConfig
+  LLMConfig?: LLMConfig;
+};
+
+export type AgentVariable = {
+  type: AgentVariableType;
+  // Describe the variable for LLM to better understand it
+  description: string;
+};
+
+export type AgentVariableType =
+  | "string"
+  | "number"
+  | "boolean"
+  | AgentVariableTypeArray;
+
+type AgentVariableTypeArray = {
+  size: number;
+  elementType: AgentVariableType;
+};
+
+/* AI settings */
+export type LLMConfig = {
+  provider: string;
+  modelName: string;
+  temperature: number;
 };

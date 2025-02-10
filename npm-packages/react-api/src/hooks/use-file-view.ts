@@ -1,7 +1,7 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
 import {
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
+  IMCMessage,
+  IMCMessageTypeEnum,
   FileViewModel,
 } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
@@ -15,12 +15,12 @@ export default function useFileView(moduleName: string) {
   const targetWindow = window.parent;
 
   const receiverHandlerMap = new Map<
-    ViewBoxMessageTypeEnum,
-    (senderWindow: Window, message: ViewBoxMessage) => Promise<void>
+    IMCMessageTypeEnum,
+    (senderWindow: Window, message: IMCMessage) => Promise<void>
   >([
     [
-      ViewBoxMessageTypeEnum.ViewFileChange,
-      async (senderWindow: Window, message: ViewBoxMessage) => {
+      IMCMessageTypeEnum.ViewFileChange,
+      async (senderWindow: Window, message: IMCMessage) => {
         const payload: FileViewModel | undefined = message.payload;
         console.log("Received view file message", payload);
         setViewFile(payload);
@@ -39,7 +39,7 @@ export default function useFileView(moduleName: string) {
     imc.initOtherWindow(targetWindow);
     setImc(imc);
 
-    imc.sendMessage(ViewBoxMessageTypeEnum.Ready);
+    imc.sendMessage(IMCMessageTypeEnum.Ready);
 
     return () => {
       console.log("Closing IMC for extension: ", moduleName);
@@ -48,12 +48,12 @@ export default function useFileView(moduleName: string) {
   }, []);
 
   useEffect(() => {
-    imc?.sendMessage(ViewBoxMessageTypeEnum.Loaded);
+    imc?.sendMessage(IMCMessageTypeEnum.Loaded);
   }, [isLoaded, imc]);
 
   function updateViewFile(file: FileViewModel) {
     // sender.sendMessage(ViewBoxMessageTypeEnum.ViewFile, JSON.stringify(file));
-    imc?.sendMessage(ViewBoxMessageTypeEnum.WriteViewFile, file);
+    imc?.sendMessage(IMCMessageTypeEnum.WriteViewFile, file);
   }
 
   return {

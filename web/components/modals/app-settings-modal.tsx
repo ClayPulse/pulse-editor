@@ -8,7 +8,6 @@ import {
   Tooltip,
 } from "@nextui-org/react";
 import { useContext, useEffect, useState } from "react";
-import { llmProviderOptions } from "@/lib/llm/options";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
 import toast from "react-hot-toast";
@@ -21,6 +20,7 @@ import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import useExtensions from "@/lib/hooks/use-extensions";
 import { ExtensionTypeEnum } from "@pulse-editor/types";
+import { llmProviderOptions } from "@/lib/llm/options";
 
 function AISettings({ editorContext }: { editorContext?: EditorContextType }) {
   const { selectAndSetProjectHome } = useExplorer();

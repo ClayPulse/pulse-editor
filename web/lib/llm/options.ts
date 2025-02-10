@@ -1,11 +1,11 @@
-export interface LLMProviderOption {
+export type LLMProviderOption = {
   provider: string;
   isSupported: boolean;
   models: {
     model: string;
     isSupported: boolean;
   }[];
-}
+};
 
 export const llmProviderOptions: LLMProviderOption[] = [
   {
