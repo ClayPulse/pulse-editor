@@ -63,17 +63,17 @@ export class MessageSender {
         );
         reject(new Error("Request aborted"));
       };
+      // Attach abort listener
+      abortSignal?.addEventListener("abort", abortHandler);
 
+      // Send message
       this.pendingMessages.set(id, {
         resolve,
         reject,
       });
-
       this.targetWindow.postMessage(message, "*");
 
-      // Attach abort listener
-      abortSignal?.addEventListener("abort", abortHandler);
-
+      // Check timeout
       const timeoutId = setTimeout(() => {
         this.pendingMessages.delete(id);
         abortSignal?.removeEventListener("abort", abortHandler);

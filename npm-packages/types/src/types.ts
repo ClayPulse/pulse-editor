@@ -40,6 +40,18 @@ export type IMCMessage = {
   payload?: any;
 };
 
+// IMC receiver handler map
+export type ReceiverHandlerMap = Map<
+  IMCMessageTypeEnum,
+  {
+    (
+      senderWindow: Window,
+      message: IMCMessage,
+      abortSignal?: AbortSignal
+    ): Promise<any>;
+  }
+>;
+
 /* File view */
 export type TextFileSelection = {
   lineStart: number;

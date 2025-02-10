@@ -11,6 +11,7 @@ export default function useAgentRunner() {
     agent: Agent,
     methodName: string,
     args: Record<string, any>,
+    abortSignal?: AbortSignal,
   ): Promise<Record<string, any>> {
     const method = agent.availableMethods.find(
       (method) => method.name === methodName,
@@ -30,7 +31,7 @@ export default function useAgentRunner() {
 
     const prompt = getPrompt(agent, method, args);
 
-    const llmResult = await llm.generate(prompt, new AbortController().signal);
+    const llmResult = await llm.generate(prompt, abortSignal);
 
     const returns = extractReturns(llmResult);
 

@@ -2,6 +2,7 @@ import {
   messageTimeout,
   IMCMessage,
   IMCMessageTypeEnum,
+  ReceiverHandlerMap,
 } from "@pulse-editor/types";
 import { MessageReceiver } from "./message-receiver";
 import { MessageSender } from "./message-sender";
@@ -36,12 +37,7 @@ export class InterModuleCommunication {
 
   private moduleName: string;
 
-  private receiverHandlerMap:
-    | Map<
-        IMCMessageTypeEnum,
-        (senderWindow: Window, message: IMCMessage) => Promise<any>
-      >
-    | undefined;
+  private receiverHandlerMap: ReceiverHandlerMap | undefined;
 
   private listener: ((event: MessageEvent) => void) | undefined;
 
@@ -49,19 +45,17 @@ export class InterModuleCommunication {
     this.moduleName = moduleName;
   }
 
+  /* Initialize a receiver to receive message. */
   public initThisWindow(
     window: Window,
-    receiverHandlerMap: Map<
-      IMCMessageTypeEnum,
-      (senderWindow: Window, message: IMCMessage) => Promise<any>
-    >
+    receiverHandlerMap: ReceiverHandlerMap
   ) {
     this.thisWindow = window;
     this.receiverHandlerMap = receiverHandlerMap;
     this.thisPendingTasks = new Map();
 
     if (receiverHandlerMap.has(IMCMessageTypeEnum.Acknowledge)) {
-      throw new Error("Acknowledgement listener should not be added here");
+      throw new Error("Acknowledgement listener should not be added here.");
     }
 
     const receiver = new MessageReceiver(
@@ -86,6 +80,7 @@ export class InterModuleCommunication {
     console.log("Adding IMC listener in " + this.moduleName);
   }
 
+  /* Initialize a sender to send message ot the other window. */
   public initOtherWindow(window: Window) {
     this.otherWindow = window;
     this.otherPendingMessages = new Map();
@@ -98,10 +93,12 @@ export class InterModuleCommunication {
     );
     this.sender = sender;
 
-    // Add an acknowledgement listener for sent messages
     if (!this.receiverHandlerMap) {
       throw new Error("You must initialize the current window first.");
     }
+
+    // Add an acknowledgement handler in current window's receiver for results of sent messages.
+    // The current window must be initialized first. i.e. call initThisWindow() before initOtherWindow().
     this.receiverHandlerMap.set(
       IMCMessageTypeEnum.Acknowledge,
       async (senderWindow: Window, message: IMCMessage) => {

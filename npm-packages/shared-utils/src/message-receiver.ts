@@ -1,10 +1,11 @@
-import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
+import {
+  IMCMessage,
+  IMCMessageTypeEnum,
+  ReceiverHandlerMap,
+} from "@pulse-editor/types";
 
 export class MessageReceiver {
-  private handlerMap: Map<
-    IMCMessageTypeEnum,
-    (senderWindow: Window, message: IMCMessage) => Promise<any>
-  >;
+  private handlerMap: ReceiverHandlerMap;
   private pendingTasks: Map<
     string,
     {
@@ -14,10 +15,7 @@ export class MessageReceiver {
   private moduleName: string;
 
   constructor(
-    listenerMap: Map<
-      IMCMessageTypeEnum,
-      (senderWindow: Window, message: IMCMessage) => Promise<any>
-    >,
+    listenerMap: ReceiverHandlerMap,
     pendingTasks: Map<
       string,
       {
@@ -47,6 +45,7 @@ export class MessageReceiver {
       const pendingTask = this.pendingTasks.get(id);
 
       if (pendingTask) {
+        console.log("Aborting task", id);
         pendingTask.controller.abort();
         this.pendingTasks.delete(id);
       }
@@ -56,13 +55,15 @@ export class MessageReceiver {
 
     const handler = this.handlerMap.get(message.type);
     if (handler) {
+      // Create abort controller to listen for abort signal from sender.
+      // Then save the message id and abort controller to the pending tasks.
       const controller = new AbortController();
       const signal = controller.signal;
-
-      const promise = handler(senderWindow, message);
       this.pendingTasks.set(message.id, {
         controller,
       });
+
+      const promise = handler(senderWindow, message, signal);
       promise
         .then((result) => {
           // Don't send the result if the task has been aborted

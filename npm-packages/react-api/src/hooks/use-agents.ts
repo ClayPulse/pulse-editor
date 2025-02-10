@@ -1,9 +1,5 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import {
-  Agent,
-  IMCMessage,
-  IMCMessageTypeEnum,
-} from "@pulse-editor/types";
+import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
 export default function useAgents(moduleName: string) {
@@ -52,18 +48,23 @@ export default function useAgents(moduleName: string) {
   async function runAgentMethod(
     agentName: string,
     methodName: string,
-    parameters: Record<string, any>
+    parameters: Record<string, any>,
+    abortSignal?: AbortSignal
   ): Promise<Record<string, any>> {
     if (!imc) {
       throw new Error("IMC not initialized.");
     }
 
     const result = await imc
-      .sendMessage(IMCMessageTypeEnum.RunAgentMethod, {
-        agentName,
-        methodName,
-        parameters,
-      })
+      .sendMessage(
+        IMCMessageTypeEnum.RunAgentMethod,
+        {
+          agentName,
+          methodName,
+          parameters,
+        },
+        abortSignal
+      )
       .then((response) => {
         return response as Record<string, any>;
       });

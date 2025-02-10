@@ -3,7 +3,12 @@ import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import FileViewLayout from "./layout";
 import ViewExtensionLoader from "./view-extension-loader";
-import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
+import {
+  Agent,
+  IMCMessage,
+  IMCMessageTypeEnum,
+  ReceiverHandlerMap,
+} from "@pulse-editor/types";
 import Loading from "../loading";
 import useIMC from "@/lib/hooks/use-imc";
 import { decrypt } from "@/lib/security/simple-password";
@@ -27,13 +32,23 @@ export default function FileView({
 
   const { runAgentMethod } = useAgentRunner();
 
-  const receiverHandlerMap = new Map<
+  const receiverHandlerMap: ReceiverHandlerMap = new Map<
     IMCMessageTypeEnum,
-    (senderWindow: Window, message: IMCMessage) => Promise<any>
+    {
+      (
+        senderWindow: Window,
+        message: IMCMessage,
+        abortSignal?: AbortSignal,
+      ): Promise<any>;
+    }
   >([
     [
       IMCMessageTypeEnum.Ready,
-      async (senderWindow: Window, message: IMCMessage) => {
+      async (
+        senderWindow: Window,
+        message: IMCMessage,
+        abortSignal?: AbortSignal,
+      ) => {
         setIsExtensionWindowReady((prev) => true);
         setIsExtensionLoaded((prev) => false);
         imc?.initOtherWindow(senderWindow);
@@ -41,13 +56,21 @@ export default function FileView({
     ],
     [
       IMCMessageTypeEnum.Loaded,
-      async (senderWindow: Window, message: IMCMessage) => {
+      async (
+        senderWindow: Window,
+        message: IMCMessage,
+        abortSignal?: AbortSignal,
+      ) => {
         setIsExtensionLoaded((prev) => true);
       },
     ],
     [
       IMCMessageTypeEnum.WriteViewFile,
-      async (senderWindow: Window, message: IMCMessage) => {
+      async (
+        senderWindow: Window,
+        message: IMCMessage,
+        abortSignal?: AbortSignal,
+      ) => {
         if (message.payload) {
           const payload: FileViewModel = message.payload;
           updateFileView(payload);
@@ -56,7 +79,11 @@ export default function FileView({
     ],
     [
       IMCMessageTypeEnum.InstallAgent,
-      async (senderWindow: Window, message: IMCMessage) => {
+      async (
+        senderWindow: Window,
+        message: IMCMessage,
+        abortSignal?: AbortSignal,
+      ) => {
         if (!message.payload) {
           throw new Error("No agent config provided.");
         }
@@ -80,7 +107,11 @@ export default function FileView({
     ],
     [
       IMCMessageTypeEnum.RunAgentMethod,
-      async (senderWindow: Window, message: IMCMessage) => {
+      async (
+        senderWindow: Window,
+        message: IMCMessage,
+        abortSignal?: AbortSignal,
+      ) => {
         if (!message.payload) {
           throw new Error("No agent method config provided.");
         }
@@ -128,7 +159,12 @@ export default function FileView({
           throw new Error(`LLM for provider ${llmConfig.provider} not found.`);
         }
 
-        const result = await runAgentMethod(agent, methodName, parameters);
+        const result = await runAgentMethod(
+          agent,
+          methodName,
+          parameters,
+          abortSignal,
+        );
 
         return result;
       },
