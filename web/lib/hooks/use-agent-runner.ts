@@ -59,7 +59,7 @@ export default function useAgentRunner() {
 
     if (!apiKey) {
       toast.error(
-        `No API key found for provider ${provider} when running the agent ${agentName}.`,
+        `No API key found for provider ${provider} when running the agent ${agentName}. Please add an API key in agent configuration.`,
       );
       throw new Error(`No API key found for provider ${provider}.`);
     }

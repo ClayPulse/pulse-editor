@@ -89,6 +89,7 @@ export enum ExtensionTypeEnum {
 export type ExtensionConfig = {
   id: string;
   version: string;
+  author: string;
   displayName?: string;
   description?: string;
   extensionType?: ExtensionTypeEnum;
@@ -103,6 +104,7 @@ export type Agent = {
   systemPrompt: string;
   availableMethods: AgentMethod[];
   LLMConfig: LLMConfig;
+  description: string;
 };
 
 export type AgentMethod = {

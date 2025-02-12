@@ -64,7 +64,7 @@ export type PersistentSettings = {
   defaultFileTypeExtensionMap?: { [key: string]: Extension };
   isExtensionDevMode?: boolean;
 
-  agents?: Agent[];
+  installedAgents?: InstalledAgent[];
 
   apiKeys?: {
     [key: string]: string;
@@ -176,4 +176,21 @@ export type Extension = {
   config: ExtensionConfig;
   isEnabled: boolean;
   remoteOrigin: string;
+};
+
+export type InstalledAgent = Agent & {
+  author: {
+    type: "user" | "extension";
+    // Individual user or the author of a 3rd party extension
+    publisher: string;
+    // 3rd party extension name
+    extension?: string;
+  };
+};
+
+export type LLMUsage = {
+  provider: string;
+  usedModals: string[];
+  usedByAgents: string[];
+  totalUsageByAgents: number;
 };

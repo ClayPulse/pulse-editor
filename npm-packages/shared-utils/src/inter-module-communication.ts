@@ -128,4 +128,17 @@ export class InterModuleCommunication {
 
     return await this.sender.sendMessage(type, payload, abortSignal);
   }
+
+  public updateReceiverHandlerMap(
+    receiverHandlerMap: ReceiverHandlerMap
+  ): void {
+    if (!this.receiver) {
+      throw new Error("Receiver not initialized");
+    }
+
+    this.receiverHandlerMap?.clear();
+    receiverHandlerMap.forEach((value, key) => {
+      this.receiverHandlerMap?.set(key, value);
+    });
+  }
 }

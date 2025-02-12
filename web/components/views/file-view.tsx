@@ -1,4 +1,4 @@
-import { Extension, FileViewModel } from "@/lib/types";
+import { Extension, FileViewModel, InstalledAgent } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import FileViewLayout from "./layout";
@@ -7,11 +7,9 @@ import {
   Agent,
   IMCMessage,
   IMCMessageTypeEnum,
-  ReceiverHandlerMap,
 } from "@pulse-editor/types";
 import Loading from "../loading";
 import useIMC from "@/lib/hooks/use-imc";
-import { decrypt } from "@/lib/security/simple-password";
 import useAgentRunner from "@/lib/hooks/use-agent-runner";
 
 export default function FileView({
@@ -32,146 +30,7 @@ export default function FileView({
 
   const { runAgentMethod } = useAgentRunner();
 
-  const receiverHandlerMap: ReceiverHandlerMap = new Map<
-    IMCMessageTypeEnum,
-    {
-      (
-        senderWindow: Window,
-        message: IMCMessage,
-        abortSignal?: AbortSignal,
-      ): Promise<any>;
-    }
-  >([
-    [
-      IMCMessageTypeEnum.Ready,
-      async (
-        senderWindow: Window,
-        message: IMCMessage,
-        abortSignal?: AbortSignal,
-      ) => {
-        setIsExtensionWindowReady((prev) => true);
-        setIsExtensionLoaded((prev) => false);
-        imc?.initOtherWindow(senderWindow);
-      },
-    ],
-    [
-      IMCMessageTypeEnum.Loaded,
-      async (
-        senderWindow: Window,
-        message: IMCMessage,
-        abortSignal?: AbortSignal,
-      ) => {
-        setIsExtensionLoaded((prev) => true);
-      },
-    ],
-    [
-      IMCMessageTypeEnum.WriteViewFile,
-      async (
-        senderWindow: Window,
-        message: IMCMessage,
-        abortSignal?: AbortSignal,
-      ) => {
-        if (message.payload) {
-          const payload: FileViewModel = message.payload;
-          updateFileView(payload);
-        }
-      },
-    ],
-    [
-      IMCMessageTypeEnum.InstallAgent,
-      async (
-        senderWindow: Window,
-        message: IMCMessage,
-        abortSignal?: AbortSignal,
-      ) => {
-        if (!message.payload) {
-          throw new Error("No agent config provided.");
-        }
-
-        const agentConfig: Agent = message.payload;
-
-        // Install the agent
-        if (
-          !editorContext?.persistSettings?.agents?.find(
-            (agent) => agent.name === agentConfig.name,
-          )
-        ) {
-          editorContext?.setPersistSettings((prev) => {
-            return {
-              ...prev,
-              agents: [...(prev?.agents ?? []), agentConfig],
-            };
-          });
-        }
-      },
-    ],
-    [
-      IMCMessageTypeEnum.RunAgentMethod,
-      async (
-        senderWindow: Window,
-        message: IMCMessage,
-        abortSignal?: AbortSignal,
-      ) => {
-        if (!message.payload) {
-          throw new Error("No agent method config provided.");
-        }
-
-        const {
-          agentName,
-          methodName,
-          parameters,
-        }: {
-          agentName: string;
-          methodName: string;
-          parameters: Record<string, any>;
-        } = message.payload;
-        const agent = editorContext?.persistSettings?.agents?.find(
-          (agent) => agent.name === agentName,
-        );
-
-        if (!agent) {
-          throw new Error("Agent not found.");
-        }
-
-        const method = agent.availableMethods.find(
-          (method) => method.name === methodName,
-        );
-
-        if (!method) {
-          throw new Error("Agent method not found.");
-        }
-
-        // Use agent's default LLM config if method doesn't have one
-        const llmConfig = method.LLMConfig ? method.LLMConfig : agent.LLMConfig;
-
-        // Execute the agent method
-        const apiKey = editorContext?.persistSettings?.llmAPIKey
-          ? editorContext?.persistSettings?.isPasswordSet &&
-            editorContext?.editorStates.password
-            ? decrypt(
-                editorContext?.persistSettings?.llmAPIKey,
-                editorContext.editorStates.password,
-              )
-            : editorContext?.persistSettings?.llmAPIKey
-          : undefined;
-
-        if (!apiKey) {
-          throw new Error(`LLM for provider ${llmConfig.provider} not found.`);
-        }
-
-        const result = await runAgentMethod(
-          agent,
-          methodName,
-          parameters,
-          abortSignal,
-        );
-
-        return result;
-      },
-    ],
-  ]);
-
-  const { imc } = useIMC(receiverHandlerMap);
+  const { imc } = useIMC(getHandlerMap);
 
   useEffect(() => {
     // Get the filename from the file path
@@ -200,6 +59,131 @@ export default function FileView({
       imc.sendMessage(IMCMessageTypeEnum.ViewFileChange, model);
     }
   }, [isExtensionLoaded, imc]);
+
+  function getHandlerMap() {
+    const newMap = new Map<
+      IMCMessageTypeEnum,
+      {
+        (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ): Promise<any>;
+      }
+    >([
+      [
+        IMCMessageTypeEnum.Ready,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          setIsExtensionWindowReady((prev) => true);
+          setIsExtensionLoaded((prev) => false);
+          imc?.initOtherWindow(senderWindow);
+        },
+      ],
+      [
+        IMCMessageTypeEnum.Loaded,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          setIsExtensionLoaded((prev) => true);
+        },
+      ],
+      [
+        IMCMessageTypeEnum.WriteViewFile,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          if (message.payload) {
+            const payload: FileViewModel = message.payload;
+            updateFileView(payload);
+          }
+        },
+      ],
+      [
+        IMCMessageTypeEnum.InstallAgent,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          if (!message.payload) {
+            throw new Error("No agent config provided.");
+          }
+
+          const agentConfig: Agent = message.payload;
+
+          // Install the agent
+          if (
+            !editorContext?.persistSettings?.installedAgents?.find(
+              (agent) => agent.name === agentConfig.name,
+            )
+          ) {
+            editorContext?.setPersistSettings((prev) => {
+              const newAgent: InstalledAgent = {
+                ...agentConfig,
+                author: {
+                  type: "extension",
+                  extension: usedExtension?.config.displayName,
+                  publisher: usedExtension?.config.author ?? "unknown",
+                },
+              };
+              return {
+                ...prev,
+                installedAgents: [...(prev?.installedAgents ?? []), newAgent],
+              };
+            });
+          }
+        },
+      ],
+      [
+        IMCMessageTypeEnum.RunAgentMethod,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          if (!message.payload) {
+            throw new Error("No agent method config provided.");
+          }
+
+          const {
+            agentName,
+            methodName,
+            parameters,
+          }: {
+            agentName: string;
+            methodName: string;
+            parameters: Record<string, any>;
+          } = message.payload;
+
+          const agent = editorContext?.persistSettings?.installedAgents?.find(
+            (agent) => agent.name === agentName,
+          );
+
+          if (!agent) {
+            throw new Error("Agent not found.");
+          }
+
+          const result = await runAgentMethod(
+            agent,
+            methodName,
+            parameters,
+            abortSignal,
+          );
+
+          return result;
+        },
+      ],
+    ]);
+    return newMap;
+  }
 
   return (
     <FileViewLayout height="100%" width="100%">

@@ -1,13 +1,14 @@
+import { EditorContext } from "@/components/providers/editor-context-provider";
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
-import { useEffect, useState } from "react";
+import {
+  ReceiverHandlerMap,
+} from "@pulse-editor/types";
+import {useContext, useEffect, useState } from "react";
 
 export default function useIMC(
-  receiverHandlerMap: Map<
-    IMCMessageTypeEnum,
-    (senderWindow: Window, message: IMCMessage) => Promise<any>
-  >,
+  receiverHandlerMapGetter: () => ReceiverHandlerMap,
 ) {
+  const editorContext = useContext(EditorContext);
   const [imc, setImc] = useState<InterModuleCommunication | undefined>(
     undefined,
   );
@@ -26,9 +27,13 @@ export default function useIMC(
   useEffect(() => {
     if (imc) {
       // IMC must be present when initializing the other window
-      imc.initThisWindow(window, receiverHandlerMap);
+      imc.initThisWindow(window, receiverHandlerMapGetter());
     }
   }, [imc]);
+
+  useEffect(() => {
+    imc?.updateReceiverHandlerMap(receiverHandlerMapGetter());
+  }, [editorContext]);
 
   return { imc };
 }
