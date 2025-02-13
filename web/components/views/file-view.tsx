@@ -3,14 +3,11 @@ import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import FileViewLayout from "./layout";
 import ViewExtensionLoader from "./view-extension-loader";
-import {
-  Agent,
-  IMCMessage,
-  IMCMessageTypeEnum,
-} from "@pulse-editor/types";
+import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import Loading from "../loading";
 import useIMC from "@/lib/hooks/use-imc";
 import useAgentRunner from "@/lib/hooks/use-agent-runner";
+import { useTheme } from "next-themes";
 
 export default function FileView({
   model,
@@ -31,6 +28,8 @@ export default function FileView({
   const { runAgentMethod } = useAgentRunner();
 
   const { imc } = useIMC(getHandlerMap);
+
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     // Get the filename from the file path
@@ -59,6 +58,13 @@ export default function FileView({
       imc.sendMessage(IMCMessageTypeEnum.ViewFileChange, model);
     }
   }, [isExtensionLoaded, imc]);
+
+  useEffect(() => {
+    // Send theme update to the extension
+    if (isExtensionLoaded && imc) {
+      imc.sendMessage(IMCMessageTypeEnum.ThemeChange, resolvedTheme);
+    }
+  }, [isExtensionLoaded, imc, resolvedTheme]);
 
   function getHandlerMap() {
     const newMap = new Map<

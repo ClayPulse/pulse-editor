@@ -10,12 +10,10 @@ export default function useTheme(moduleName: string) {
   >();
 
   receiverHandlerMap.set(
-    IMCMessageTypeEnum.GetTheme,
+    IMCMessageTypeEnum.ThemeChange,
     async (senderWindow: Window, message: IMCMessage) => {
-      const theme = message.payload
-        ? JSON.parse(message.payload).theme
-        : "light";
-      setTheme(theme);
+      const theme = message.payload;
+      setTheme((prev) => theme);
     }
   );
 
@@ -26,7 +24,8 @@ export default function useTheme(moduleName: string) {
   useEffect(() => {
     // Init IMC
     const imc = new InterModuleCommunication(moduleName);
-    imc.initThisWindow(window, receiverHandlerMap);
+    imc.initThisWindow(window);
+    imc.updateReceiverHandlerMap(receiverHandlerMap);
     imc.initOtherWindow(targetWindow);
     setImc(imc);
 

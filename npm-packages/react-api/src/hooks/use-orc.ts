@@ -17,7 +17,8 @@ export default function useOCR(moduleName: string) {
   useEffect(() => {
     // Init IMC
     const imc = new InterModuleCommunication(moduleName);
-    imc.initThisWindow(window, receiverHandlerMap);
+    imc.initThisWindow(window);
+    imc.updateReceiverHandlerMap(receiverHandlerMap);
     imc.initOtherWindow(targetWindow);
     setImc(imc);
 

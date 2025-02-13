@@ -9,7 +9,7 @@ export enum IMCMessageTypeEnum {
   // Send notification
   Notification = "notification",
   // Get theme
-  GetTheme = "get-theme",
+  ThemeChange = "theme-change",
 
   /* Agents */
   // Install agent
