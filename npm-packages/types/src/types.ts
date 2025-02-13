@@ -89,7 +89,7 @@ export enum ExtensionTypeEnum {
 export type ExtensionConfig = {
   id: string;
   version: string;
-  author: string;
+  author?: string;
   displayName?: string;
   description?: string;
   extensionType?: ExtensionTypeEnum;
