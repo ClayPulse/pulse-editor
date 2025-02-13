@@ -1,6 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
 import { AIModelConfig } from "./ai-model-config";
-import { ExtensionConfig, SelectionInformation } from "@pulse-editor/types";
+import { Agent, ExtensionConfig, TextFileSelection } from "@pulse-editor/types";
 
 // #region Context
 export type EditorStates = {
@@ -63,6 +63,12 @@ export type PersistentSettings = {
   extensions?: Extension[];
   defaultFileTypeExtensionMap?: { [key: string]: Extension };
   isExtensionDevMode?: boolean;
+
+  installedAgents?: InstalledAgent[];
+
+  apiKeys?: {
+    [key: string]: string;
+  };
 };
 // #endregion
 
@@ -70,7 +76,7 @@ export type PersistentSettings = {
 export type FileViewModel = {
   fileContent: string;
   filePath: string;
-  selections?: SelectionInformation[];
+  selections?: TextFileSelection[];
   suggestedLines?: LineChange[];
   isActive: boolean;
 };
@@ -104,13 +110,6 @@ export type ChatMessage = {
   from: string;
   content: string;
   datetime: string;
-};
-
-export type AgentConfig = {
-  name: string;
-  icon?: string;
-  description?: string;
-  prompt: string;
 };
 
 export type EditorContextType = {
@@ -177,4 +176,21 @@ export type Extension = {
   config: ExtensionConfig;
   isEnabled: boolean;
   remoteOrigin: string;
+};
+
+export type InstalledAgent = Agent & {
+  author: {
+    type: "user" | "extension";
+    // Individual user or the author of a 3rd party extension
+    publisher: string;
+    // 3rd party extension name
+    extension?: string;
+  };
+};
+
+export type LLMUsage = {
+  provider: string;
+  usedModals: string[];
+  usedByAgents: string[];
+  totalUsageByAgents: number;
 };

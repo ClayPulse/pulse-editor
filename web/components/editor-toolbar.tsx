@@ -10,10 +10,12 @@ import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import toast from "react-hot-toast";
 import ExtensionModal from "./modals/extension-modal";
+import AgentConfigModal from "./modals/agent-config-modal";
 
 export default function EditorToolbar() {
   const editorContext = useContext(EditorContext);
 
+  const [isAgentListModalOpen, setIsAgentListModalOpen] = useState(false);
   const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
   const [isAppSettingsModalOpen, setAppIsSettingsModalOpen] = useState(false);
 
@@ -143,10 +145,17 @@ export default function EditorToolbar() {
                   variant="light"
                   isIconOnly
                   className="h-8 w-8 min-w-8 px-1 py-1 text-default-foreground"
+                  onPress={() => {
+                    setIsAgentListModalOpen(true);
+                  }}
                 >
                   <Icon name="smart_toy" variant="outlined" />
                 </Button>
               </Tooltip>
+              <AgentConfigModal
+                isOpen={isAgentListModalOpen}
+                setIsOpen={setIsAgentListModalOpen}
+              />
 
               <Tooltip content={"Discover Extensions"}>
                 <Button

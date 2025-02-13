@@ -6,7 +6,7 @@ import {
 import { BaseLLM } from "../llm/llm";
 import { BaseSTT } from "../stt/stt";
 import { BaseTTS } from "../tts/tts";
-import { SelectionInformation } from "@pulse-editor/types";
+import { TextFileSelection } from "@pulse-editor/types";
 
 export class CodeEditorAgent {
   stt: BaseSTT | undefined;
@@ -48,7 +48,7 @@ export class CodeEditorAgent {
 
   public async generateAgentCompletion(
     fileContent: string,
-    selectionInformationList: SelectionInformation[],
+    selectionInformationList: TextFileSelection[],
     instruction: CodeCompletionInstruction,
     signal?: AbortSignal,
   ): Promise<CodeCompletionResult> {
@@ -145,7 +145,7 @@ or if line 7 was modified from "let x = 5;" to "let x = 10;", you should return:
 
   private stringifyOneSelectionInformation(
     fileContent: string,
-    selectionInformation: SelectionInformation,
+    selectionInformation: TextFileSelection,
     index: number,
   ): string {
     const slicedContent = fileContent
@@ -169,7 +169,7 @@ ${selectionInformation.text}
 
   private stringifySelectionInformationList(
     fileContent: string,
-    selectionInformationList: SelectionInformation[],
+    selectionInformationList: TextFileSelection[],
   ): string {
     const selections = selectionInformationList
       .map((selectionInformation, index) =>

@@ -5,7 +5,7 @@ import { BaseLLM } from "@/lib/llm/llm";
 import { BaseSTT } from "@/lib/stt/stt";
 import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
-import { CodeEditorAgent } from "@/lib/agent/code-editor-agent";
+import { CodeEditorAgent } from "@/lib/agents/code-editor-agent";
 import { BaseTTS } from "@/lib/tts/tts";
 import EditorToolbar from "@/components/editor-toolbar";
 import { EditorContext } from "@/components/providers/editor-context-provider";
@@ -14,7 +14,7 @@ import { useViewManager } from "@/lib/hooks/use-view-manager";
 
 export default function Home() {
   const editorContext = useContext(EditorContext);
-  const { updateFileView, getActiveFileView } = useViewManager();
+  const { updateFileView, activeFileView } = useViewManager();
 
   // TODO: Use a timer to stop recorder if no speech is detected for more than 30 seconds
   const isProcessingRef = useRef(false);
@@ -64,7 +64,6 @@ export default function Home() {
         const ttsModel = editorContext?.aiModelConfig.getTTSModel() as BaseTTS;
 
         const agent = new CodeEditorAgent(sttModel, llmModel, ttsModel);
-        const activeViewModel = getActiveFileView();
         editorContext?.setEditorStates((prev) => ({
           ...prev,
           isListening: false,
@@ -72,8 +71,8 @@ export default function Home() {
         }));
         agent
           .generateAgentCompletion(
-            activeViewModel?.fileContent || "",
-            activeViewModel?.selections || [],
+            activeFileView?.fileContent || "",
+            activeFileView?.selections || [],
             {
               audio: blob,
             },
@@ -87,8 +86,10 @@ export default function Home() {
 
             // Apply changes
             updateFileView({
-              filePath: activeViewModel?.filePath || "",
+              filePath: activeFileView?.filePath || "",
               // suggestedLines: changes,
+              fileContent: result.text.codeCompletion,
+              isActive: true,
             });
 
             // Play the audio in the blob

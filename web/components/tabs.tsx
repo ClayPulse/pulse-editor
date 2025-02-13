@@ -8,14 +8,22 @@ export default function Tabs({
   tabItems,
   selectedItem,
   setSelectedItem,
+  isShowArrows,
+  onTabReady,
 }: {
   tabItems: TabItem[];
   selectedItem: TabItem | undefined;
   setSelectedItem: Dispatch<SetStateAction<TabItem | undefined>>;
+  isShowArrows?: boolean;
+  onTabReady?: (tabItem: TabItem | undefined) => void;
 }) {
   const tabDivRef = useRef<HTMLDivElement | null>(null);
   const [isLeftScrollable, setIsLeftScrollable] = useState<boolean>(false);
   const [isRightScrollable, setIsRightScrollable] = useState<boolean>(false);
+
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [targetLocation, setTargetLocation] = useState<number>(0);
+  const [targetWidth, setTargetWidth] = useState<number>(0);
 
   function updateScroll() {
     if (tabDivRef.current) {
@@ -31,39 +39,67 @@ export default function Tabs({
     updateScroll();
   }, [tabItems]);
 
+  useEffect(() => {
+    const targetElement = document.getElementById(selectedItem?.name || "");
+
+    if (targetElement) {
+      setTargetLocation(targetElement.offsetLeft);
+      setTargetWidth(targetElement.clientWidth);
+      setIsAnimating(true);
+    }
+  }, [selectedItem]);
+
   return (
-    <div className="mx-1 flex h-full items-center overflow-x-auto">
-      <Button
-        isIconOnly
-        variant="light"
-        size="sm"
-        onPress={() => {
-          // Scroll to the left
-          tabDivRef.current?.scrollBy({
-            left: -100,
-            behavior: "smooth",
-          });
+    <div className="flex h-full items-center overflow-x-auto px-2 scrollbar-hide">
+      {isShowArrows && (
+        <Button
+          isIconOnly
+          variant="light"
+          size="sm"
+          onPress={() => {
+            // Scroll to the left
+            tabDivRef.current?.scrollBy({
+              left: -100,
+              behavior: "smooth",
+            });
+          }}
+          isDisabled={!isLeftScrollable}
+        >
+          <Icon name="arrow_left" />
+        </Button>
+      )}
+      <div
+        className="relative flex items-center overflow-visible scrollbar-hide"
+        onScroll={(e) => {
+          updateScroll();
         }}
-        isDisabled={!isLeftScrollable}
       >
-        <Icon name="arrow_left" />
-      </Button>
-      <AnimatePresence>
+        <AnimatePresence>
+          <motion.div
+            className="absolute z-10 h-8 rounded-lg bg-content4 shadow-sm"
+            animate={{ x: targetLocation, width: targetWidth }} // Only animate x
+            transition={{
+              type: "spring",
+              duration: 0.8,
+            }}
+            onAnimationComplete={() => {
+              setIsAnimating(false);
+              if (onTabReady) {
+                onTabReady(selectedItem);
+              }
+            }}
+          />
+        </AnimatePresence>
         <div
           ref={tabDivRef}
           className="flex items-center overflow-x-auto scrollbar-hide"
-          onScroll={(e) => {
-            updateScroll();
-          }}
         >
           {tabItems.map((item) => (
-            <div key={item.name} className="relative flex h-full items-center">
-              {selectedItem?.name === item.name && (
-                <motion.div
-                  className="absolute z-10 h-8 w-full rounded-lg bg-content4 shadow-sm"
-                  layoutId="tab-indicator"
-                ></motion.div>
-              )}
+            <div
+              key={item.name}
+              id={item.name}
+              className="flex h-full items-center"
+            >
               <Tooltip content={item.description}>
                 <Button
                   className={`z-20 h-fit rounded-lg bg-transparent px-2 py-1`}
@@ -95,23 +131,25 @@ export default function Tabs({
             </div>
           ))}
         </div>
-      </AnimatePresence>
+      </div>
 
-      <Button
-        isIconOnly
-        variant="light"
-        size="sm"
-        onPress={() => {
-          // Scroll to the right
-          tabDivRef.current?.scrollBy({
-            left: 100,
-            behavior: "smooth",
-          });
-        }}
-        isDisabled={!isRightScrollable}
-      >
-        <Icon name="arrow_right" />
-      </Button>
+      {isShowArrows && (
+        <Button
+          isIconOnly
+          variant="light"
+          size="sm"
+          onPress={() => {
+            // Scroll to the right
+            tabDivRef.current?.scrollBy({
+              left: 100,
+              behavior: "smooth",
+            });
+          }}
+          isDisabled={!isRightScrollable}
+        >
+          <Icon name="arrow_right" />
+        </Button>
+      )}
     </div>
   );
 }

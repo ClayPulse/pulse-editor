@@ -20,6 +20,3 @@
 .keystore
 # act cli secrets for testing github actions locally
 *.secrets
-
-# Ignore extension folder
-/extensions

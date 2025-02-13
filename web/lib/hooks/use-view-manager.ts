@@ -1,9 +1,24 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "@/components/providers/editor-context-provider";
 import { FileViewModel } from "@pulse-editor/types";
+import { usePlatformApi } from "./use-platform-api";
 
 export function useViewManager() {
   const editorContext = useContext(EditorContext);
+  const { platformApi } = usePlatformApi();
+  const [activeFileView, setActiveFileView] = useState<
+    FileViewModel | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (!editorContext) {
+      throw new Error("Editor context is not available");
+    }
+    const activeView = editorContext.editorStates.openedViewModels.find(
+      (view) => view.isActive,
+    );
+    setActiveFileView(activeView);
+  }, [editorContext?.editorStates.openedViewModels]);
 
   async function openFileView(file: File) {
     const text = await file.text();
@@ -20,17 +35,47 @@ export function useViewManager() {
     const isAlreadyOpened = editorContext.editorStates.openedViewModels.find(
       (view) => view.filePath === model.filePath,
     );
-    if (isAlreadyOpened) {
-      setActiveFileView(model);
-      return;
+
+    if (!isAlreadyOpened) {
+      const updatedOpenedViewModels =
+        editorContext.editorStates.openedViewModels.map((v) => {
+          return {
+            ...v,
+            isActive: false,
+          };
+        });
+
+      editorContext.setEditorStates((prev) => {
+        return {
+          ...prev,
+          openedViewModels: [...updatedOpenedViewModels, model],
+        };
+      });
+    } else {
+      const updatedOpenedViewModels =
+        editorContext.editorStates.openedViewModels.map((v) => {
+          if (v.filePath === model.filePath) {
+            return {
+              ...v,
+              isActive: true,
+            };
+          } else {
+            return {
+              ...v,
+              isActive: false,
+            };
+          }
+        });
+
+      editorContext.setEditorStates((prev) => {
+        return {
+          ...prev,
+          openedViewModels: [...updatedOpenedViewModels],
+        };
+      });
     }
 
-    editorContext.setEditorStates((prev) => {
-      return {
-        ...prev,
-        openedViewModels: [...prev.openedViewModels, model],
-      };
-    });
+    return;
   }
 
   function getFileViewByFilePath(uri: string): FileViewModel | undefined {
@@ -56,7 +101,7 @@ export function useViewManager() {
     });
   }
 
-  function updateFileView(view: Partial<FileViewModel>) {
+  function updateFileView(view: FileViewModel) {
     if (!editorContext) {
       throw new Error("Editor context is not available");
     }
@@ -77,6 +122,11 @@ export function useViewManager() {
         openedViewModels: updatedViewModels,
       };
     });
+
+    // Update the file in file system
+
+    const updatedFile = new File([view.fileContent], view.filePath);
+    platformApi?.writeFile(updatedFile, view.filePath);
   }
 
   /**
@@ -101,44 +151,6 @@ export function useViewManager() {
     return editorContext.editorStates.openedViewModels.length;
   }
 
-  // TODO: Set view active based on layout
-  function setActiveFileView(view: FileViewModel) {
-    // Set all other views to inactive except the view
-    if (!editorContext) {
-      throw new Error("Editor context is not available");
-    }
-
-    editorContext.setEditorStates((prev) => {
-      const updatedViewModels = prev.openedViewModels.map((v) => {
-        if (v.filePath === view.filePath) {
-          return {
-            ...v,
-            isActive: true,
-          };
-        } else {
-          return {
-            ...v,
-            isActive: false,
-          };
-        }
-      });
-      return {
-        ...prev,
-        openedViewModels: updatedViewModels,
-      };
-    });
-  }
-
-  function getActiveFileView(): FileViewModel | undefined {
-    if (!editorContext) {
-      throw new Error("Editor context is not available");
-    }
-
-    return editorContext.editorStates.openedViewModels.find(
-      (view) => view.isActive,
-    );
-  }
-
   return {
     openFileView,
     getFileViewByFilePath,
@@ -146,7 +158,6 @@ export function useViewManager() {
     updateFileView,
     closeAllFileViews,
     fileViewCount,
-    setActiveFileView,
-    getActiveFileView,
+    activeFileView,
   };
 }

@@ -1,8 +1,4 @@
-import {
-  FinishedPayload,
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
-} from "@pulse-editor/types";
+import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 
 export class MessageSender {
   private targetWindow: Window;
@@ -12,26 +8,37 @@ export class MessageSender {
     string,
     { resolve: (result: any) => void; reject: () => void }
   >;
-  constructor(targetWindow: Window, timeout: number) {
+
+  private moduleName: string;
+
+  constructor(
+    targetWindow: Window,
+    timeout: number,
+    pendingMessages: Map<
+      string,
+      { resolve: (result: any) => void; reject: () => void }
+    >,
+    moduleInfo: string
+  ) {
     this.targetWindow = targetWindow;
     this.timeout = timeout;
 
-    this.pendingMessages = new Map();
-
-    this.addFinishedMessageListener();
+    this.pendingMessages = pendingMessages;
+    this.moduleName = moduleInfo;
   }
 
-  async sendMessage(
-    handlingType: ViewBoxMessageTypeEnum,
-    payload: string,
+  public async sendMessage(
+    handlingType: IMCMessageTypeEnum,
+    payload?: any,
     abortSignal?: AbortSignal
   ): Promise<any> {
     // Generate a unique id for the message using timestamp
     const id = new Date().getTime().toString();
-    const message: ViewBoxMessage = {
+    const message: IMCMessage = {
       id,
       type: handlingType,
-      payload,
+      payload: payload,
+      from: this.moduleName,
     };
 
     return new Promise((resolve, reject) => {
@@ -46,27 +53,27 @@ export class MessageSender {
         this.targetWindow.postMessage(
           {
             id,
-            type: ViewBoxMessageTypeEnum.Abort,
+            type: IMCMessageTypeEnum.Abort,
             payload: JSON.stringify({
               status: "Task aborted",
-              data: null
+              data: null,
             }),
           },
           "*"
         );
         reject(new Error("Request aborted"));
       };
+      // Attach abort listener
+      abortSignal?.addEventListener("abort", abortHandler);
 
+      // Send message
       this.pendingMessages.set(id, {
         resolve,
         reject,
       });
-
       this.targetWindow.postMessage(message, "*");
 
-      // Attach abort listener
-      abortSignal?.addEventListener("abort", abortHandler);
-
+      // Check timeout
       const timeoutId = setTimeout(() => {
         this.pendingMessages.delete(id);
         abortSignal?.removeEventListener("abort", abortHandler);
@@ -87,20 +94,6 @@ export class MessageSender {
           abortSignal?.removeEventListener("abort", abortHandler);
           reject();
         };
-      }
-    });
-  }
-
-  private addFinishedMessageListener(): void {
-    this.targetWindow.addEventListener("message", (event) => {
-      const message = event.data as ViewBoxMessage;
-      if (message.type === ViewBoxMessageTypeEnum.Acknowledge) {
-        const pendingMessage = this.pendingMessages.get(message.id);
-        if (pendingMessage) {
-          const finishedPayload: FinishedPayload = JSON.parse(message.payload);
-          pendingMessage.resolve(finishedPayload.data);
-          this.pendingMessages.delete(message.id);
-        }
       }
     });
   }

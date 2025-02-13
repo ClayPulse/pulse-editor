@@ -1,41 +1,40 @@
-import { MessageReceiver } from "@pulse-editor/shared-utils";
-import { ViewBoxMessage, ViewBoxMessageTypeEnum } from "@pulse-editor/types";
+import { InterModuleCommunication } from "@pulse-editor/shared-utils";
+import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
-export default function useTheme() {
+export default function useTheme(moduleName: string) {
   const [theme, setTheme] = useState<string>("light");
   const receiverHandlerMap = new Map<
-    ViewBoxMessageTypeEnum,
-    (message: ViewBoxMessage) => Promise<void>
+    IMCMessageTypeEnum,
+    (senderWindow: Window, message: IMCMessage) => Promise<void>
   >();
 
   receiverHandlerMap.set(
-    ViewBoxMessageTypeEnum.ViewFile,
-    async (message: ViewBoxMessage) => {
-      const payload = JSON.parse(message.payload);
-      setTheme(payload.theme);
+    IMCMessageTypeEnum.GetTheme,
+    async (senderWindow: Window, message: IMCMessage) => {
+      const theme = message.payload
+        ? JSON.parse(message.payload).theme
+        : "light";
+      setTheme(theme);
     }
   );
 
-  const receiver = new MessageReceiver(receiverHandlerMap, window.parent);
+  const [, setImc] = useState<InterModuleCommunication | undefined>(undefined);
+
+  const targetWindow = window.parent;
 
   useEffect(() => {
-    function listener(event: MessageEvent<ViewBoxMessage>) {
-      const message = event.data;
-      receiver.receiveMessage(message);
-    }
+    // Init IMC
+    const imc = new InterModuleCommunication(moduleName);
+    imc.initThisWindow(window, receiverHandlerMap);
+    imc.initOtherWindow(targetWindow);
+    setImc(imc);
 
-    function addMessageListener() {
-      window.addEventListener("message", listener);
-    }
+    console.log("Sent ready message");
+    imc.sendMessage(IMCMessageTypeEnum.Ready);
 
-    function removeMessageListener() {
-      window.removeEventListener("message", listener);
-    }
-
-    addMessageListener();
     return () => {
-      removeMessageListener();
+      imc.close();
     };
   }, []);
 

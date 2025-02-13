@@ -1,44 +1,51 @@
 import {
-  FinishedPayload,
-  ViewBoxMessage,
-  ViewBoxMessageTypeEnum,
+  IMCMessage,
+  IMCMessageTypeEnum,
+  ReceiverHandlerMap,
 } from "@pulse-editor/types";
 
 export class MessageReceiver {
-  // handlingType: ViewBoxMessageTypeEnum;
-  // onReceiveMessage: (message: ViewBoxMessage) => Promise<void>;
-  private listenerMap: Map<
-    ViewBoxMessageTypeEnum,
-    (message: ViewBoxMessage) => Promise<any>
-  >;
-  private targetWindow: Window;
+  private handlerMap: ReceiverHandlerMap;
   private pendingTasks: Map<
     string,
     {
       controller: AbortController;
     }
   >;
+  private moduleName: string;
 
   constructor(
-    listenerMap: Map<
-      ViewBoxMessageTypeEnum,
-      (message: ViewBoxMessage) => Promise<void>
+    listenerMap: ReceiverHandlerMap,
+    pendingTasks: Map<
+      string,
+      {
+        controller: AbortController;
+      }
     >,
-    targetWindow: Window
+    moduleInfo: string
   ) {
-    this.listenerMap = listenerMap;
-    this.targetWindow = targetWindow;
-
-    this.pendingTasks = new Map();
+    this.handlerMap = listenerMap;
+    this.pendingTasks = pendingTasks;
+    this.moduleName = moduleInfo;
   }
 
-  receiveMessage(message: ViewBoxMessage) {
+  public receiveMessage(senderWindow: Window, message: IMCMessage) {
+    // Log the message in dev mode
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `Module ${this.moduleName} received message from module ${message.from}:\n ${JSON.stringify(
+          message
+        )}`
+      );
+    }
+
     // Abort the task if the message type is Abort
-    if (message.type === ViewBoxMessageTypeEnum.Abort) {
+    if (message.type === IMCMessageTypeEnum.Abort) {
       const id = message.id;
       const pendingTask = this.pendingTasks.get(id);
 
       if (pendingTask) {
+        console.log("Aborting task", id);
         pendingTask.controller.abort();
         this.pendingTasks.delete(id);
       }
@@ -46,25 +53,37 @@ export class MessageReceiver {
       return;
     }
 
-    const handler = this.listenerMap.get(message.type);
+    const handler = this.handlerMap.get(message.type);
     if (handler) {
+      // Create abort controller to listen for abort signal from sender.
+      // Then save the message id and abort controller to the pending tasks.
       const controller = new AbortController();
       const signal = controller.signal;
-
-      const promise = handler(message);
       this.pendingTasks.set(message.id, {
         controller,
       });
+
+      const promise = handler(senderWindow, message, signal);
       promise
         .then((result) => {
           // Don't send the result if the task has been aborted
           if (signal.aborted) return;
 
-          const payload: FinishedPayload = {
-            status: "Task completed",
-            data: result,
+          // Acknowledge the sender with the result if the message type is not Acknowledge
+          if (message.type !== IMCMessageTypeEnum.Acknowledge) {
+            this.acknowledgeSender(senderWindow, message.id, result);
+          }
+        })
+        .catch((error) => {
+          // Send the error message to the sender
+          const errMsg: IMCMessage = {
+            id: message.id,
+            type: IMCMessageTypeEnum.Error,
+            payload: error.message,
+            from: this.moduleName,
           };
-          this.notifySenderFinished(message.id, payload);
+
+          senderWindow.postMessage(errMsg, "*");
         })
         .finally(() => {
           this.pendingTasks.delete(message.id);
@@ -72,12 +91,17 @@ export class MessageReceiver {
     }
   }
 
-  private notifySenderFinished(id: string, result: FinishedPayload): void {
-    const message: ViewBoxMessage = {
+  private acknowledgeSender(
+    senderWindow: Window,
+    id: string,
+    payload: any
+  ): void {
+    const message: IMCMessage = {
       id,
-      type: ViewBoxMessageTypeEnum.Acknowledge,
-      payload: JSON.stringify(result),
+      type: IMCMessageTypeEnum.Acknowledge,
+      payload: payload,
+      from: this.moduleName,
     };
-    this.targetWindow.postMessage(message, "*");
+    senderWindow.postMessage(message, "*");
   }
 }
