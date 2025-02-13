@@ -115,15 +115,6 @@ export default function ViewDisplayArea() {
             </div>
           ) : (
             <>
-              {/* <CodeEditorView
-                key={activeFileView.filePath}
-                ref={(ref) => {
-                  if (ref) activeFileView.viewRef = ref;
-                }}
-                width="100%"
-                height="100%"
-                view={activeFileView}
-              /> */}
               <FileView
                 model={activeFileView}
                 updateFileView={updateFileView}

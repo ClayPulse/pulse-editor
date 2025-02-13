@@ -17,16 +17,7 @@ export default function useFileView(moduleName: string) {
   const receiverHandlerMap = new Map<
     IMCMessageTypeEnum,
     (senderWindow: Window, message: IMCMessage) => Promise<void>
-  >([
-    [
-      IMCMessageTypeEnum.ViewFileChange,
-      async (senderWindow: Window, message: IMCMessage) => {
-        const payload: FileViewModel | undefined = message.payload;
-        console.log("Received view file message", payload);
-        setViewFile(payload);
-      },
-    ],
-  ]);
+  >();
 
   const [imc, setImc] = useState<InterModuleCommunication | undefined>(
     undefined
@@ -40,7 +31,11 @@ export default function useFileView(moduleName: string) {
     imc.initOtherWindow(targetWindow);
     setImc(imc);
 
-    imc.sendMessage(IMCMessageTypeEnum.Ready);
+    imc.sendMessage(IMCMessageTypeEnum.Ready).then(() => {
+      imc.sendMessage(IMCMessageTypeEnum.RequestViewFile).then((model) => {
+        setViewFile(model);
+      });
+    });
 
     return () => {
       console.log("Closing IMC for extension: ", moduleName);
@@ -49,7 +44,9 @@ export default function useFileView(moduleName: string) {
   }, []);
 
   useEffect(() => {
-    imc?.sendMessage(IMCMessageTypeEnum.Loaded);
+    if (isLoaded) {
+      imc?.sendMessage(IMCMessageTypeEnum.Loaded);
+    }
   }, [isLoaded, imc]);
 
   function updateViewFile(file: FileViewModel) {

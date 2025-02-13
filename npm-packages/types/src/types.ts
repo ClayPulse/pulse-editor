@@ -2,8 +2,10 @@
 export enum IMCMessageTypeEnum {
   // Update view file
   WriteViewFile = "write-view-file",
-  // View file change
-  ViewFileChange = "view-file-change",
+  // Request view file
+  RequestViewFile = "request-view-file",
+  // // View file change
+  // ViewFileChange = "view-file-change",
   // Network fetch request
   Fetch = "fetch",
   // Send notification

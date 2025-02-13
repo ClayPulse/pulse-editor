@@ -8,6 +8,7 @@ import Loading from "../loading";
 import useIMC from "@/lib/hooks/use-imc";
 import useAgentRunner from "@/lib/hooks/use-agent-runner";
 import { useTheme } from "next-themes";
+import { InterModuleCommunication } from "@pulse-editor/shared-utils";
 
 export default function FileView({
   model,
@@ -27,44 +28,71 @@ export default function FileView({
 
   const { runAgentMethod } = useAgentRunner();
 
-  const { imc } = useIMC(getHandlerMap);
+  const [imc, setImc] = useState<InterModuleCommunication | undefined>(
+    undefined,
+  );
 
   const { resolvedTheme } = useTheme();
 
+  const [fileUri, setFileUri] = useState<string | undefined>(undefined);
+
   useEffect(() => {
-    // Get the filename from the file path
-    const fileName = model.filePath.split("/").pop();
-    // Remove the first part of the filename -- remove front part of the filename
-    const fileType = fileName?.split(".").slice(1).join(".") ?? "";
-
-    // Get the extension config from the file type
-    const map = editorContext?.persistSettings?.defaultFileTypeExtensionMap;
-
-    if (map) {
-      if (map[fileType] === undefined) {
-        setHasExtension(false);
-        setUsedExtension(undefined);
-        return;
-      }
-      const extension = map[fileType];
-      setUsedExtension(extension);
-      setHasExtension(true);
-    }
+    if (fileUri !== model.filePath) setFileUri(model.filePath);
   }, [model]);
 
   useEffect(() => {
-    // Send view file update to the extension
-    if (isExtensionLoaded && imc) {
-      imc.sendMessage(IMCMessageTypeEnum.ViewFileChange, model);
+    function getAndLoadExtension() {
+      // Get the filename from the file path
+      const fileName = fileUri!.split("/").pop();
+      // Remove the first part of the filename -- remove front part of the filename
+      const fileType = fileName?.split(".").slice(1).join(".") ?? "";
+
+      // Get the extension config from the file type
+      const map = editorContext?.persistSettings?.defaultFileTypeExtensionMap;
+
+      if (map) {
+        const extension = map[fileType];
+        if (extension === undefined) {
+          setHasExtension(false);
+          setUsedExtension(undefined);
+          return;
+        }
+
+        // Create IMC
+        const newImc = new InterModuleCommunication("Pulse Editor Main");
+        newImc.initThisWindow(window);
+        newImc.updateReceiverHandlerMap(getHandlerMap());
+        setImc(newImc);
+
+        setUsedExtension(extension);
+        setHasExtension(true);
+      }
     }
-  }, [isExtensionLoaded, imc]);
+
+    if (fileUri) {
+      // Reset the extension and IMC
+      if (imc) {
+        imc.close();
+        setImc(undefined);
+
+        setIsExtensionWindowReady(false);
+        setIsExtensionLoaded(false);
+        setUsedExtension(undefined);
+      }
+      getAndLoadExtension();
+    }
+  }, [fileUri]);
 
   useEffect(() => {
     // Send theme update to the extension
-    if (isExtensionLoaded && imc) {
+    if (isExtensionWindowReady && imc) {
       imc.sendMessage(IMCMessageTypeEnum.ThemeChange, resolvedTheme);
     }
-  }, [isExtensionLoaded, imc, resolvedTheme]);
+  }, [isExtensionWindowReady, imc, resolvedTheme]);
+
+  useEffect(() => {
+    imc?.updateReceiverHandlerMap(getHandlerMap());
+  }, [editorContext, imc]);
 
   function getHandlerMap() {
     const newMap = new Map<
@@ -84,9 +112,12 @@ export default function FileView({
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
+          if (!imc) {
+            throw new Error("IMC not initialized.");
+          }
+          imc.initOtherWindow(senderWindow);
           setIsExtensionWindowReady((prev) => true);
           setIsExtensionLoaded((prev) => false);
-          imc?.initOtherWindow(senderWindow);
         },
       ],
       [
@@ -187,6 +218,16 @@ export default function FileView({
           return result;
         },
       ],
+      [
+        IMCMessageTypeEnum.RequestViewFile,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          return model;
+        },
+      ],
     ]);
     return newMap;
   }
@@ -200,12 +241,14 @@ export default function FileView({
               <Loading />
             </div>
           )}
-          <ViewExtensionLoader
-            key={model.filePath}
-            remoteOrigin={usedExtension.remoteOrigin}
-            moduleId={usedExtension.config.id}
-            moduleVersion={usedExtension.config.version}
-          />
+          {imc && (
+            <ViewExtensionLoader
+              key={fileUri}
+              remoteOrigin={usedExtension.remoteOrigin}
+              moduleId={usedExtension.config.id}
+              moduleVersion={usedExtension.config.version}
+            />
+          )}
         </div>
       ) : hasExtension ? (
         <div className="absolute left-0 top-0 h-full w-full">
