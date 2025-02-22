@@ -1,8 +1,8 @@
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
+import { AgentTool, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import { useEffect, useState } from "react";
 
-export default function useAgents(moduleName: string) {
+export default function useAgentTools(moduleName: string) {
   const [imc, setImc] = useState<InterModuleCommunication | undefined>(
     undefined
   );
@@ -16,7 +16,6 @@ export default function useAgents(moduleName: string) {
   const targetWindow = window.parent;
 
   useEffect(() => {
-    // Init IMC
     const imc = new InterModuleCommunication(moduleName);
     imc.initThisWindow(window);
     imc.updateReceiverHandlerMap(receiverHandlerMap);
@@ -31,13 +30,13 @@ export default function useAgents(moduleName: string) {
     };
   }, []);
 
-  async function installAgent(config: Agent) {
+  async function installAgentTool(tool: AgentTool) {
     if (!imc) {
       throw new Error("IMC not initialized.");
     }
 
     await imc
-      .sendMessage(IMCMessageTypeEnum.InstallAgent, config)
+      .sendMessage(IMCMessageTypeEnum.InstallAgentTool, tool)
       .then((response) => {
         if (response.type === IMCMessageTypeEnum.Error) {
           throw new Error(response.payload);
@@ -45,36 +44,5 @@ export default function useAgents(moduleName: string) {
       });
   }
 
-  async function runAgentMethod(
-    agentName: string,
-    methodName: string,
-    parameters: Record<string, any>,
-    abortSignal?: AbortSignal
-  ): Promise<Record<string, any>> {
-    if (!imc) {
-      throw new Error("IMC not initialized.");
-    }
-
-    const result = await imc
-      .sendMessage(
-        IMCMessageTypeEnum.RunAgentMethod,
-        {
-          agentName,
-          methodName,
-          parameters,
-        },
-        abortSignal
-      )
-      .then((response) => {
-        return response as Record<string, any>;
-      });
-
-    return result;
-  }
-
-  return {
-    installAgent,
-    runAgentMethod,
-    isReady,
-  };
+  return { installAgentTool };
 }

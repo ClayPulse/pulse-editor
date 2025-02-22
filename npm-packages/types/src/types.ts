@@ -19,6 +19,9 @@ export enum IMCMessageTypeEnum {
   // Execute agent method
   RunAgentMethod = "run-agent-method",
 
+  /* Tools */
+  InstallAgentTool = "install-agent-tool",
+
   /* Modality tools */
   OCR = "ocr",
 
@@ -107,9 +110,14 @@ export type Agent = {
   availableMethods: AgentMethod[];
   LLMConfig: LLMConfig;
   description: string;
+  tools?: AgentTool[];
 };
 
+/**
+ * An agent method is a sub task that an agent can perform.
+ */
 export type AgentMethod = {
+  access: AccessEnum;
   name: string;
   parameters: Record<string, AgentVariable>;
   prompt: string;
@@ -135,9 +143,31 @@ type AgentVariableTypeArray = {
   elementType: AgentVariableType;
 };
 
+/**
+ * A tool that agent can use during method execution.
+ *
+ * This is linked to a callback function created by user,
+ * tool developer, or extension.
+ *
+ * The tool may optionally return a value to running
+ * agent method.
+ */
+export type AgentTool = {
+  access: AccessEnum;
+  name: string;
+  description: string;
+  parameters: Record<string, AgentVariable>;
+  returns: Record<string, AgentVariable>;
+};
+
 /* AI settings */
 export type LLMConfig = {
   provider: string;
   modelName: string;
   temperature: number;
 };
+
+export enum AccessEnum {
+  public = "public",
+  private = "private",
+}
