@@ -1,0 +1,1 @@
+This directory contains source code for the NPM package "pulse-editor/api". Third party developers can use context and wrapper utilities to make their Pulse Editor using React.

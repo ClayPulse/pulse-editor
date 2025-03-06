@@ -31,24 +31,24 @@ jobs:
       - name: Zip the build (Linux)
         run: |
           ZIP_NAME="linux-x64.zip"
-          cd out-desktop
-          zip -r "../$ZIP_NAME" .
+          cd build/desktop
+          zip -r "../../$ZIP_NAME" .
         shell: bash
         if: runner.os == 'Linux'
 
       - name: Zip the build (Windows)
         run: |
           $ZipName = "windows-x64.zip"
-          Set-Location out-desktop
-          Compress-Archive -Path * -DestinationPath "../$ZipName" -Force
+          Set-Location build/desktop
+          Compress-Archive -Path * -DestinationPath "../../$ZipName" -Force
         shell: pwsh
         if: runner.os == 'Windows'
 
       - name: Zip the build (macOS)
         run: |
           ZIP_NAME="macos-arm64.zip"
-          cd out-desktop
-          zip -r "../$ZIP_NAME" .
+          cd build/desktop
+          zip -r "../../$ZIP_NAME" .
         shell: bash
         if: runner.os == 'macOS'
 

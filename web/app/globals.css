@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* @import "./preflight.css"; */
+
+:root {
+  --background: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+  }
+}
+
+body {
+  font-family: sans-serif;
+}
+
+@layer base {
+  body {
+    @apply text-default-foreground;
+  }
+
+  img {
+    @apply inline-block;
+  }
+
+  p {
+    @apply text-default-foreground;
+  }
+
+  input {
+    @apply text-default-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .view-layout {
+    @apply flex h-full w-full flex-col items-start justify-between rounded-2xl bg-default p-3;
+  }
+}

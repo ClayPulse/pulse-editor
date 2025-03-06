@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "target": "ES2017"
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "build/next/types/**/*.ts",
+    "next-env.d.ts",
+    "../build/next/types/**/*.ts",
+    "../npm-packages/react-api/src/hooks/use-orc.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "vscode-extension",
+    "build"
+  ]
+}
