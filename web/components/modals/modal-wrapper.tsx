@@ -1,5 +1,5 @@
 import { Button, Modal, ModalContent } from "@nextui-org/react";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 
 export default function ModalWrapper({
   children,

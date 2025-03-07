@@ -3,11 +3,11 @@
 import { useContext, useEffect, useState } from "react";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import { Button, Divider, Input, Link, Textarea } from "@nextui-org/react";
 import { InstalledAgent, LLMUsage, TabItem } from "@/lib/types";
-import Tabs from "../tabs";
-import PasswordInput from "../password-input";
+import Tabs from "../misc/tabs";
+import PasswordInput from "../misc/password-input";
 import { AgentMethod } from "@pulse-editor/types";
 import toast from "react-hot-toast";
 

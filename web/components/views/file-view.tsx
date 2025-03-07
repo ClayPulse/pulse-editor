@@ -4,7 +4,7 @@ import { EditorContext } from "../providers/editor-context-provider";
 import FileViewLayout from "./layout";
 import ViewExtensionLoader from "./view-extension-loader";
 import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
-import Loading from "../loading";
+import Loading from "../interface/loading";
 import useAgentRunner from "@/lib/hooks/use-agent-runner";
 import { useTheme } from "next-themes";
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";

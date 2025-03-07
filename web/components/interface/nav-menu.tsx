@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
-import Explorer from "./explorer/explorer";
+import Explorer from "../explorer/explorer";
 
 function MenuPanel({ children }: { children?: React.ReactNode }) {
   const isLandscape = useMediaQuery({

@@ -5,7 +5,7 @@ import EditorContextProvider from "@/components/providers/editor-context-provide
 import { Toaster } from "react-hot-toast";
 import "material-icons/iconfont/material-icons.css";
 import CapacitorProvider from "@/components/providers/capacitor-provider";
-import Nav from "@/components/nav";
+import Nav from "@/components/interface/nav";
 import RemoteExtensionProvider from "@/components/providers/remote-extension-provider";
 
 export const metadata: Metadata = {

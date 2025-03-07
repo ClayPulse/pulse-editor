@@ -4,8 +4,7 @@ export enum IMCMessageTypeEnum {
   WriteViewFile = "write-view-file",
   // Request view file
   RequestViewFile = "request-view-file",
-  // // View file change
-  // ViewFileChange = "view-file-change",
+
   // Network fetch request
   Fetch = "fetch",
   // Send notification
@@ -25,6 +24,10 @@ export enum IMCMessageTypeEnum {
   /* Modality tools */
   OCR = "ocr",
 
+  /* Terminal */
+  RequestTerminal = "request-terminal",
+
+  /* Extension statuses */
   // Notify Pulse that extension window is available
   Ready = "ready",
   // Notify Pulse that extension has finished loading
@@ -87,6 +90,7 @@ export enum NotificationTypeEnum {
 
 /* Extension settings */
 export enum ExtensionTypeEnum {
+  Generic = "generic",
   FileView = "file-view",
   TerminalView = "terminal-view",
 }
@@ -100,6 +104,7 @@ export type ExtensionConfig = {
   extensionType?: ExtensionTypeEnum;
   fileTypes?: string[];
   preview?: string;
+  enabledPlatforms?: Record<string, boolean>;
 };
 
 /* Agent config */

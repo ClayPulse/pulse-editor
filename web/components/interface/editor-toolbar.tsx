@@ -2,15 +2,15 @@
 
 import { Button, Divider, Tooltip } from "@nextui-org/react";
 import { useContext, useState } from "react";
-import Icon from "@/components/icon";
+import Icon from "@/components/misc/icon";
 import AppSettingsModal from "@/components/modals/app-settings-modal";
 import { AnimatePresence, motion } from "framer-motion";
-import { EditorContext } from "./providers/editor-context-provider";
+import { EditorContext } from "../providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import toast from "react-hot-toast";
-import ExtensionModal from "./modals/extension-modal";
-import AgentConfigModal from "./modals/agent-config-modal";
+import ExtensionModal from "../modals/extension-modal";
+import AgentConfigModal from "../modals/agent-config-modal";
 
 export default function EditorToolbar() {
   const editorContext = useContext(EditorContext);

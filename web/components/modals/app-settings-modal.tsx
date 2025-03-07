@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
 import { EditorContextType, Extension } from "@/lib/types";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";

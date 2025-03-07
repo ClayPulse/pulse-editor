@@ -1,17 +1,17 @@
 "use client";
 
 import { Button } from "@nextui-org/react";
-import Icon from "./icon";
+import Icon from "../misc/icon";
 import { useContext, useEffect, useState } from "react";
-import PasswordScreen from "./modals/password-modal";
+import PasswordScreen from "../modals/password-modal";
 import { useTheme } from "next-themes";
 import NavMenu from "./nav-menu";
-import { EditorContext } from "./providers/editor-context-provider";
+import { EditorContext } from "../providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import Loading from "./loading";
-import VoiceIndicator from "./voice-indicator";
-import ProjectTitle from "./project-title";
+import VoiceIndicator from "../voice-indicator";
+import ProjectIndicator from "./project-indicator";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -86,7 +86,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
               </Button>
             </div>
             <div className="col-start-2 flex flex-col items-center justify-center">
-              {editorContext?.editorStates.project && <ProjectTitle />}
+              {editorContext?.editorStates.project && <ProjectIndicator />}
               <VoiceIndicator />
             </div>
             <div className="col-start-3 flex justify-end">

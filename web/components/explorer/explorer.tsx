@@ -9,7 +9,7 @@ import { Button } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import ProjectSettingsModal from "../modals/project-settings-modal";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import toast from "react-hot-toast";
 import TreeViewGroup from "./tree-view";
 import { useViewManager } from "@/lib/hooks/use-view-manager";

@@ -8,15 +8,15 @@ import {
   VisuallyHidden,
 } from "@nextui-org/react";
 import ModalWrapper from "./modal-wrapper";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import { ContextMenuState, Extension, TabItem } from "@/lib/types";
 import useExtensions from "@/lib/hooks/use-extensions";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import toast from "react-hot-toast";
 import { useContext, useEffect, useState } from "react";
-import ContextMenu from "../context-menu";
-import Tabs from "../tabs";
-import Loading from "../loading";
+import ContextMenu from "../interface/context-menu";
+import Tabs from "../misc/tabs";
+import Loading from "../interface/loading";
 import { EditorContext } from "../providers/editor-context-provider";
 
 function EnableCheckBox({

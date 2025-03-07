@@ -1,7 +1,7 @@
 "use client";
 
 import { Key, useContext, useState } from "react";
-import { EditorContext } from "./providers/editor-context-provider";
+import { EditorContext } from "../providers/editor-context-provider";
 import {
   Button,
   Dropdown,
@@ -9,11 +9,11 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@nextui-org/react";
-import Icon from "./icon";
-import ProjectSettingsModal from "./modals/project-settings-modal";
+import Icon from "../misc/icon";
+import ProjectSettingsModal from "../modals/project-settings-modal";
 import { useViewManager } from "@/lib/hooks/use-view-manager";
 
-export default function ProjectTitle() {
+export default function ProjectIndicator() {
   const editorContext = useContext(EditorContext);
   const [isProjectSettingsModalOpen, setIsProjectSettingsModalOpen] =
     useState(false);

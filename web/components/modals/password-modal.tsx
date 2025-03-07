@@ -2,7 +2,7 @@ import { Button, Input, ModalBody, ModalFooter } from "@nextui-org/react";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { encrypt } from "@/lib/security/simple-password";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
 
