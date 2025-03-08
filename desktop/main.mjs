@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import fs from "fs";
+import { createTerminalServer } from "./lib/node-pty-server.js";
 
 // Change path to "Pulse Studio"
 app.setName("Pulse Studio");
@@ -227,6 +228,16 @@ function handleGetInstallationPath(event) {
   return uri;
 }
 
+let isCreatedTerminal = false;
+function handleCreateTerminal(event) { 
+  if (!isCreatedTerminal) {
+    createTerminalServer();
+    isCreatedTerminal = true;
+  }
+
+  return "wss://localhost:6060";
+}
+
 app.whenReady().then(() => {
   ipcMain.handle("select-dir", handleSelectDir);
   ipcMain.handle("select-file", handleSelectFile);
@@ -251,6 +262,8 @@ app.whenReady().then(() => {
   ipcMain.handle("save-settings", handleSaveSettings);
 
   ipcMain.handle("get-installation-path", handleGetInstallationPath);
+
+  ipcMain.handle("create-terminal", handleCreateTerminal);
 
   createWindow();
 });

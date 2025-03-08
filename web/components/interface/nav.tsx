@@ -10,7 +10,7 @@ import { EditorContext } from "../providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import Loading from "./loading";
-import VoiceIndicator from "../voice-indicator";
+import VoiceIndicator from "./voice-indicator";
 import ProjectIndicator from "./project-indicator";
 
 export default function Nav({ children }: { children: React.ReactNode }) {

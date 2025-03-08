@@ -188,6 +188,10 @@ export class WebAPI extends AbstractPlatformAPI {
     throw new Error("Method not implemented.");
   }
 
+  async createTerminal(): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
+
   // private getValue<T>(key: string): T | undefined {
   //   const itemStr = localStorage.getItem(key);
   //   if (itemStr) {

@@ -78,7 +78,7 @@ export default function EditorToolbar() {
               </Tooltip>
 
               <Divider className="mx-1" orientation="vertical" />
-              <Tooltip content={"Open Chat View"}>
+              <Tooltip content={"Open Agentic Terminal"}>
                 <Button
                   variant={
                     editorContext?.editorStates?.isChatViewOpen
@@ -97,7 +97,7 @@ export default function EditorToolbar() {
                     }
                   }}
                 >
-                  <Icon name="forum" variant="outlined" />
+                  <Icon name="terminal" variant="outlined" />
                 </Button>
               </Tooltip>
 

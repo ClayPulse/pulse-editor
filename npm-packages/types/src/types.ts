@@ -101,6 +101,7 @@ export type ExtensionConfig = {
   author?: string;
   displayName?: string;
   description?: string;
+  materialIcon?: string;
   extensionType?: ExtensionTypeEnum;
   fileTypes?: string[];
   preview?: string;

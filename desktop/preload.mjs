@@ -26,4 +26,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   saveSettings: (settings) => ipcRenderer.invoke("save-settings", settings),
 
   getInstallationPath: () => ipcRenderer.invoke("get-installation-path"),
+
+  createTerminal: () => ipcRenderer.invoke("create-terminal"),
 });
