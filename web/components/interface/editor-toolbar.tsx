@@ -78,7 +78,7 @@ export default function EditorToolbar() {
               </Tooltip>
 
               <Divider className="mx-1" orientation="vertical" />
-              <Tooltip content={"Open Agentic Terminal"}>
+              <Tooltip content={"Open Agentic Console"}>
                 <Button
                   variant={
                     editorContext?.editorStates?.isChatViewOpen

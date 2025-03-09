@@ -24,6 +24,43 @@ For detailed VSCode extension user guide, check out [VSCode Extension User Guide
 
 
 ## Getting Started -- Development Guide
+### Recommended Nodejs version
+Nodejs 20
+### Install dependencies
+You can install dependencies for all workspaces using
+```
+npm i
+```
+Or, for a specific workspace. e.g. for web:
+```
+npm i --workspace=web
+```
+
+### Install dependencies (desktop native modules)
+When dependencies in `desktop/`, use Electron's nodejs instead of local nodejs.
+
+Make sure you have installed necessary build tools.
+#### For Windows
+Nodejs Windows Installer should already include windows-build-tools. In addition, make sure [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk) is also available:
+
+#### For Linux
+```
+sudo apt install -y make python build-essential
+```
+
+Then you can rebuild native dependencies in `desktop/` using.
+```
+# For Windows
+./node_modules/.bin/electron-rebuild.ps1 -m desktop -v electron_version
+# For Linux
+./node_modules/.bin/electron-rebuild -m desktop -v electron_version
+```
+For example, Electron may warn you need NODE_MODULE_VERSION 128. The corresponding Electron version to NODE_MODULE_VERSION 128 is 32.x.x. If you have electron@32.3.3 installed (check desktop/package.json), you can run:
+```
+./node_modules/.bin/electron-rebuild -m desktop -v 32.3.3
+```
+
+
 ### Web Development
 Pulse Editor uses Next.js as the frontend (and backend -- TBD). 
 You can get started with local development by running: 

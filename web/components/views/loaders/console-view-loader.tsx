@@ -1,26 +1,25 @@
 import { Extension, FileViewModel, InstalledAgent } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
-import { EditorContext } from "../providers/editor-context-provider";
-import FileViewLayout from "./layout";
-import ViewExtensionLoader from "./view-extension-loader";
+import { EditorContext } from "../../providers/editor-context-provider";
+import FileViewLayout from "../layout";
+import ExtensionLoader from "../../misc/extension-loader";
 import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
-import Loading from "../interface/loading";
+import Loading from "../../interface/loading";
 import useAgentRunner from "@/lib/hooks/use-agent-runner";
 import { useTheme } from "next-themes";
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
+import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 
-export default function FileView({
-  model,
-  updateFileView,
+export default function ConsoleViewLoader({
+  consoleExt,
 }: {
-  model: FileViewModel;
-  updateFileView: (model: FileViewModel) => void;
+  consoleExt: Extension | undefined;
 }) {
   const editorContext = useContext(EditorContext);
   const [usedExtension, setUsedExtension] = useState<Extension | undefined>(
     undefined,
   );
-  const [hasExtension, setHasExtension] = useState(true);
+  const [hasExtension, setHasExtension] = useState(false);
 
   const [isExtensionWindowReady, setIsExtensionWindowReady] = useState(false);
   const [isExtensionLoaded, setIsExtensionLoaded] = useState(false);
@@ -33,42 +32,33 @@ export default function FileView({
 
   const { resolvedTheme } = useTheme();
 
-  const [fileUri, setFileUri] = useState<string | undefined>(undefined);
+  const { platformApi } = usePlatformApi();
 
   useEffect(() => {
-    if (fileUri !== model.filePath) setFileUri(model.filePath);
-  }, [model]);
+    // Start a terminal
+    platformApi?.createTerminal();
+  }, [platformApi]);
 
   useEffect(() => {
     function getAndLoadExtension() {
-      // Get the filename from the file path
-      const fileName = fileUri!.split("/").pop();
-      // Remove the first part of the filename -- remove front part of the filename
-      const fileType = fileName?.split(".").slice(1).join(".") ?? "";
-
-      // Get the extension config from the file type
-      const map = editorContext?.persistSettings?.defaultFileTypeExtensionMap;
-
-      if (map) {
-        const extension = map[fileType];
-        if (extension === undefined) {
-          setHasExtension(false);
-          setUsedExtension(undefined);
-          return;
-        }
-
-        // Create IMC
-        const newImc = new InterModuleCommunication("Pulse Editor Main");
-        newImc.initThisWindow(window);
-        newImc.updateReceiverHandlerMap(getHandlerMap());
-        setImc(newImc);
-
-        setUsedExtension(extension);
-        setHasExtension(true);
+      const extension = consoleExt;
+      if (extension === undefined) {
+        setHasExtension(false);
+        setUsedExtension(undefined);
+        return;
       }
+
+      // Create IMC
+      const newImc = new InterModuleCommunication("Pulse Editor Main");
+      newImc.initThisWindow(window);
+      newImc.updateReceiverHandlerMap(getHandlerMap());
+      setImc(newImc);
+
+      setUsedExtension(extension);
+      setHasExtension(true);
     }
 
-    if (fileUri) {
+    if (consoleExt) {
       // Reset the extension and IMC
       if (imc) {
         imc.close();
@@ -80,7 +70,7 @@ export default function FileView({
       }
       getAndLoadExtension();
     }
-  }, [fileUri]);
+  }, [consoleExt]);
 
   useEffect(() => {
     // Send theme update to the extension
@@ -111,6 +101,7 @@ export default function FileView({
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
+          console.log("Extension window ready.");
           if (!imc) {
             throw new Error("IMC not initialized.");
           }
@@ -126,20 +117,8 @@ export default function FileView({
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
+          console.log("Extension loaded.");
           setIsExtensionLoaded((prev) => true);
-        },
-      ],
-      [
-        IMCMessageTypeEnum.WriteViewFile,
-        async (
-          senderWindow: Window,
-          message: IMCMessage,
-          abortSignal?: AbortSignal,
-        ) => {
-          if (message.payload) {
-            const payload: FileViewModel = message.payload;
-            updateFileView(payload);
-          }
         },
       ],
       [
@@ -218,13 +197,16 @@ export default function FileView({
         },
       ],
       [
-        IMCMessageTypeEnum.RequestViewFile,
+        IMCMessageTypeEnum.RequestTerminal,
         async (
           senderWindow: Window,
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
-          return model;
+          // Get a shell terminal from native platform APIs
+          const terminalUri = await platformApi?.createTerminal();
+          console.log("Terminal URI:", terminalUri);
+          return terminalUri;
         },
       ],
     ]);
@@ -232,7 +214,7 @@ export default function FileView({
   }
 
   return (
-    <FileViewLayout height="100%" width="100%">
+    <div className="relative h-full w-full">
       {usedExtension ? (
         <div className="relative h-full w-full">
           {!isExtensionLoaded && (
@@ -241,8 +223,8 @@ export default function FileView({
             </div>
           )}
           {imc && (
-            <ViewExtensionLoader
-              key={fileUri}
+            <ExtensionLoader
+              key={usedExtension.config.id}
               remoteOrigin={usedExtension.remoteOrigin}
               moduleId={usedExtension.config.id}
               moduleVersion={usedExtension.config.version}
@@ -254,12 +236,8 @@ export default function FileView({
           <Loading />
         </div>
       ) : (
-        <div>
-          No default view found for this file type. Find a compatible extension
-          in marketplace, and enable it in settings as the default method to
-          open this file.
-        </div>
+        <div>Select a tab to view console.</div>
       )}
-    </FileViewLayout>
+    </div>
   );
 }

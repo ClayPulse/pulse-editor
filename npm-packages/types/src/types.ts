@@ -92,7 +92,7 @@ export enum NotificationTypeEnum {
 export enum ExtensionTypeEnum {
   Generic = "generic",
   FileView = "file-view",
-  TerminalView = "terminal-view",
+  ConsoleView = "console-view",
 }
 
 export type ExtensionConfig = {

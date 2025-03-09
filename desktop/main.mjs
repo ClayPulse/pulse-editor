@@ -235,7 +235,9 @@ function handleCreateTerminal(event) {
     isCreatedTerminal = true;
   }
 
-  return "wss://localhost:6060";
+  return {
+    socketUrl: "ws://localhost:6060"
+  };
 }
 
 app.whenReady().then(() => {

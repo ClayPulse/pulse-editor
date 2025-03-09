@@ -10,24 +10,25 @@ import {
 } from "react";
 import FileViewLayout from "./layout";
 import { ChatMessage, TabItem, Extension } from "@/lib/types";
-import { Avatar, Button, Divider, Input, Tooltip } from "@nextui-org/react";
+import { Avatar, Button, Divider, Tooltip } from "@nextui-org/react";
 import { BeatLoader } from "react-spinners";
 import AgentConfigModal from "../modals/agent-config-modal";
 import { EditorContext } from "../providers/editor-context-provider";
 import Tabs from "@/components/misc/tabs";
 import Icon from "../misc/icon";
 import { ExtensionTypeEnum } from "@pulse-editor/types";
+import ConsoleViewLoader from "./loaders/console-view-loader";
 
-function TerminalNavBar({
-  terminalExts,
-  setTerminalExts,
-  selectedTerminalExt,
-  setSelectedTerminalExt,
+function ConsoleNavBar({
+  consoles,
+  setConsoles,
+  selectedConsole,
+  setSelectedConsole,
 }: {
-  terminalExts: Extension[];
-  setTerminalExts: Dispatch<SetStateAction<Extension[]>>;
-  selectedTerminalExt: Extension | undefined;
-  setSelectedTerminalExt: Dispatch<SetStateAction<Extension | undefined>>;
+  consoles: Extension[];
+  setConsoles: Dispatch<SetStateAction<Extension[]>>;
+  selectedConsole: Extension | undefined;
+  setSelectedConsole: Dispatch<SetStateAction<Extension | undefined>>;
 }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -35,7 +36,7 @@ function TerminalNavBar({
     <div className="flex h-10 w-full flex-shrink-0 items-center bg-content2 text-content2-foreground">
       <Tabs
         tabItems={
-          terminalExts?.map((extension) => {
+          consoles?.map((extension) => {
             const item: TabItem = {
               name: extension.config.displayName ?? extension.config.id,
               icon: extension.config.materialIcon,
@@ -46,20 +47,20 @@ function TerminalNavBar({
         }
         selectedItem={{
           name:
-            selectedTerminalExt?.config.displayName ??
-            selectedTerminalExt?.config.id ??
+            selectedConsole?.config.displayName ??
+            selectedConsole?.config.id ??
             "",
-          icon: selectedTerminalExt?.config.materialIcon,
-          description: selectedTerminalExt?.config.description ?? "",
+          icon: selectedConsole?.config.materialIcon,
+          description: selectedConsole?.config.description ?? "",
         }}
         setSelectedItem={(item) => {
           if (item) {
-            const ext = terminalExts.find(
+            const ext = consoles.find(
               (ext) =>
                 ext.config.displayName === item.name ||
                 ext.config.id === item.name,
             );
-            setSelectedTerminalExt(ext);
+            setSelectedConsole(ext);
           }
         }}
       />
@@ -99,21 +100,21 @@ function TerminalNavBar({
             <Icon name="refresh" />
           </Button>
         </Tooltip> */}
-        <Tooltip content="Close terminal">
+        <Tooltip content="Close tab">
           <Button
             isIconOnly
             variant="light"
             size="sm"
             onPress={() => {
-              if (selectedTerminalExt) {
-                const newTermExts = terminalExts.filter(
+              if (selectedConsole) {
+                const newTermExts = consoles.filter(
                   (ext) =>
                     ext.config.displayName !==
-                      selectedTerminalExt.config.displayName &&
-                    ext.config.id !== selectedTerminalExt.config.id,
+                      selectedConsole.config.displayName &&
+                    ext.config.id !== selectedConsole.config.id,
                 );
-                setTerminalExts(newTermExts);
-                setSelectedTerminalExt(newTermExts[0]);
+                setConsoles(newTermExts);
+                setSelectedConsole(newTermExts[0]);
               }
             }}
           >
@@ -125,49 +126,49 @@ function TerminalNavBar({
   );
 }
 
-export default function AgenticTerminalPanel() {
-  const [terminals, setTerminals] = useState<Extension[]>([]);
-  const [selectedTerminal, setSelectedTerminal] = useState<
-    Extension | undefined
-  >(undefined);
-
-  const chatHistoryMap = useRef<Map<string, ChatMessage[]>>(new Map());
-  const [currentChatHistory, setCurrentChatHistory] = useState<ChatMessage[]>(
-    [],
+export default function AgenticConsolePanel() {
+  const [consoles, setConsoles] = useState<Extension[]>([]);
+  const [selectedConsole, setSelectedConsole] = useState<Extension | undefined>(
+    undefined,
   );
 
-  const [inputValue, setInputValue] = useState<string>("");
-  const chatListRef = useRef<HTMLDivElement>(null);
-  const [isThinking, setIsThinking] = useState<boolean>(false);
+  // const chatHistoryMap = useRef<Map<string, ChatMessage[]>>(new Map());
+  // const [currentChatHistory, setCurrentChatHistory] = useState<ChatMessage[]>(
+  //   [],
+  // );
+
+  // const [inputValue, setInputValue] = useState<string>("");
+  // const chatListRef = useRef<HTMLDivElement>(null);
+  // const [isThinking, setIsThinking] = useState<boolean>(false);
 
   const editorContext = useContext(EditorContext);
 
   useEffect(() => {
     // Load extensions from editor context
     if (editorContext?.persistSettings?.extensions) {
-      setTerminals(
-        editorContext.persistSettings?.extensions.filter(
-          (extension) =>
-            extension.config.extensionType === ExtensionTypeEnum.TerminalView,
-        ),
+      const foundConsoles = editorContext.persistSettings?.extensions.filter(
+        (extension) =>
+          extension.config.extensionType === ExtensionTypeEnum.ConsoleView,
       );
+      console.log(
+        "Found consoles:",
+        foundConsoles.map((ext) => ext.config.displayName),
+      );
+      setConsoles(foundConsoles);
     }
   }, []);
 
-  useEffect(() => {
-    // Scroll chat list to bottom
-    if (chatListRef.current) {
-      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
-    }
+  // useEffect(() => {
+  //   // Scroll chat list to bottom
+  //   if (chatListRef.current) {
+  //     chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+  //   }
 
-    // Update chat history map
-    if (selectedTerminal) {
-      chatHistoryMap.current.set(
-        selectedTerminal.config.id,
-        currentChatHistory,
-      );
-    }
-  }, [currentChatHistory]);
+  //   // Update chat history map
+  //   if (selectedConsole) {
+  //     chatHistoryMap.current.set(selectedConsole.config.id, currentChatHistory);
+  //   }
+  // }, [currentChatHistory]);
 
   // useEffect(() => {
   //   if (selectedTerminal) {
@@ -196,8 +197,8 @@ export default function AgenticTerminalPanel() {
   // }, [selectedTerminal]);
 
   useEffect(() => {
-    setSelectedTerminal(terminals[0] || undefined);
-  }, [terminals]);
+    setSelectedConsole(consoles[0] || undefined);
+  }, [consoles]);
 
   // async function onInputSubmit(content: string) {
   //   if (!agentRef.current) {
@@ -249,39 +250,42 @@ export default function AgenticTerminalPanel() {
   //   setIsThinking(false);
   // }
 
-  function MessageBlock({ message }: { message: ChatMessage }) {
-    return (
-      <div className="flex w-full space-x-2 text-base">
-        <div className="pt-0.5">
-          <Avatar />
-        </div>
-        <div className="flex w-full min-w-0 flex-grow flex-col space-y-1.5">
-          <div className="flex h-4 space-x-3">
-            <p className="font-bold">
-              {message.from === "User" ? "You" : message.from}
-            </p>
-            <p className="opacity-60">{message.datetime}</p>
-          </div>
-          <div className="w-full">
-            <p className="w-full whitespace-pre-wrap break-words">
-              {message.content}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // function MessageBlock({ message }: { message: ChatMessage }) {
+  //   return (
+  //     <div className="flex w-full space-x-2 text-base">
+  //       <div className="pt-0.5">
+  //         <Avatar />
+  //       </div>
+  //       <div className="flex w-full min-w-0 flex-grow flex-col space-y-1.5">
+  //         <div className="flex h-4 space-x-3">
+  //           <p className="font-bold">
+  //             {message.from === "User" ? "You" : message.from}
+  //           </p>
+  //           <p className="opacity-60">{message.datetime}</p>
+  //         </div>
+  //         <div className="w-full">
+  //           <p className="w-full whitespace-pre-wrap break-words">
+  //             {message.content}
+  //           </p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <FileViewLayout>
       <div className="flex h-full w-full flex-col bg-content1 pb-3">
-        <TerminalNavBar
-          terminalExts={terminals}
-          setTerminalExts={setTerminals}
-          selectedTerminalExt={selectedTerminal}
-          setSelectedTerminalExt={setSelectedTerminal}
+        <ConsoleNavBar
+          consoles={consoles}
+          setConsoles={setConsoles}
+          selectedConsole={selectedConsole}
+          setSelectedConsole={setSelectedConsole}
         />
-        <div
+
+        <ConsoleViewLoader consoleExt={selectedConsole} />
+
+        {/* <div
           ref={chatListRef}
           className="min-h-0 w-full flex-grow space-y-2 overflow-y-auto px-4 py-1"
         >
@@ -293,7 +297,7 @@ export default function AgenticTerminalPanel() {
               <BeatLoader className="[&>span]:!bg-content1-foreground" />
             </div>
           )}
-        </div>
+        </div> */}
         {/* 
         <Input
           className="px-2"

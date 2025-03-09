@@ -1,9 +1,9 @@
 import { useContext, useEffect } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import { AnimatePresence, motion } from "framer-motion";
-import AgenticTerminalPanel from "./agentic-terminal-panel";
+import AgenticConsolePanel from "./agentic-console-panel";
 import { useViewManager } from "@/lib/hooks/use-view-manager";
-import FileView from "./file-view";
+import FileViewLoader from "./loaders/file-view-loader";
 import { FileViewModel } from "@pulse-editor/types";
 
 export default function ViewDisplayArea() {
@@ -117,7 +117,7 @@ export default function ViewDisplayArea() {
             </div>
           ) : (
             <>
-              <FileView
+              <FileViewLoader
                 model={activeFileView}
                 updateFileView={updateFileView}
               />
@@ -139,7 +139,7 @@ export default function ViewDisplayArea() {
                   : "0px",
               }}
             >
-              <AgenticTerminalPanel />
+              <AgenticConsolePanel />
             </motion.div>
           )}
         </AnimatePresence>

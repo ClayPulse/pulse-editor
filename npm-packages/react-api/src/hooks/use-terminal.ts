@@ -15,7 +15,8 @@ export default function useTerminal(moduleName: string) {
     if (isReady) {
       imc?.sendMessage(IMCMessageTypeEnum.RequestTerminal).then((response) => {
         const { socketUrl } = response;
-        setSocketUrl(socketUrl);
+        setSocketUrl((prev)=> socketUrl);
+        imc.sendMessage(IMCMessageTypeEnum.Loaded);
       });
     }
   }, [isReady]);

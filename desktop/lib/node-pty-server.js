@@ -6,7 +6,7 @@ import pty from "node-pty";
 let sharedPtyProcess = null;
 let sharedTerminalMode = false;
 
-const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
+const shell = os.platform() === "win32" ? "pwsh.exe" : "bash";
 
 const spawnShell = () => {
   return pty.spawn(shell, [], {
