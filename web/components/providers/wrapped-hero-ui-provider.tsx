@@ -1,19 +1,19 @@
 // app/providers.tsx
 "use client";
 
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import { ThemeProvider } from "next-themes";
 
-export function WrappedNextUIProvider({
+export function WrappedHeroUIProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <NextUIProvider className="h-full w-full">
+    <HeroUIProvider className="h-full w-full">
       <ThemeProvider attribute="class">
         <div className="h-full w-full bg-white dark:bg-black">{children}</div>
       </ThemeProvider>
-    </NextUIProvider>
+    </HeroUIProvider>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input, Switch } from "@nextui-org/react";
+import { Button, Input, Switch } from "@heroui/react";
 import ModalWrapper from "./modal-wrapper";
 import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";

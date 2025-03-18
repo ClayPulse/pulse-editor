@@ -1,4 +1,4 @@
-import { Button, Input, InputProps } from "@nextui-org/react";
+import { Button, Input, InputProps } from "@heroui/react";
 import { SVGProps, useState } from "react";
 import Icon from "./icon";
 

@@ -1,4 +1,4 @@
-import { Button, Modal, ModalContent } from "@nextui-org/react";
+import { Button, Modal, ModalContent } from "@heroui/react";
 import Icon from "../misc/icon";
 
 export default function ModalWrapper({

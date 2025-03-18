@@ -2,7 +2,7 @@
 
 import { useContext, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { ContextMenuState, ProjectInfo } from "@/lib/types";
 import ContextMenu from "../interface/context-menu";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { WrappedNextUIProvider } from "../components/providers/wrapped-next-ui-provider";
+import { WrappedHeroUIProvider } from "../components/providers/wrapped-hero-ui-provider";
 import EditorContextProvider from "@/components/providers/editor-context-provider";
 import { Toaster } from "react-hot-toast";
 import "material-icons/iconfont/material-icons.css";
@@ -22,14 +22,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`h-screen w-screen antialiased`}>
         <CapacitorProvider>
-          <WrappedNextUIProvider>
+          <WrappedHeroUIProvider>
             <EditorContextProvider>
               <RemoteExtensionProvider>
                 <Toaster />
                 <Nav>{children}</Nav>
               </RemoteExtensionProvider>
             </EditorContextProvider>
-          </WrappedNextUIProvider>
+          </WrappedHeroUIProvider>
         </CapacitorProvider>
       </body>
     </html>
