@@ -9,19 +9,27 @@ export default function useTerminal(moduleName: string) {
   >();
 
   const { imc, isReady } = useIMC(moduleName, receiverHandlerMap);
-  const [socketUrl, setSocketUrl] = useState<string | undefined>(undefined);
+  const [websocketUrl, setWebsocketUrl] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     if (isReady) {
       imc?.sendMessage(IMCMessageTypeEnum.RequestTerminal).then((response) => {
-        const { socketUrl } = response;
-        setSocketUrl((prev)=> socketUrl);
+        const {
+          websocketUrl,
+        }: {
+          websocketUrl: string;
+        } = response;
+
+        setWebsocketUrl(websocketUrl);
+
         imc.sendMessage(IMCMessageTypeEnum.Loaded);
       });
     }
   }, [isReady]);
 
   return {
-    socketUrl,
+    websocketUrl,
   };
 }

@@ -7,7 +7,7 @@ import AppSettingsModal from "@/components/modals/app-settings-modal";
 import { AnimatePresence, motion } from "framer-motion";
 import { EditorContext } from "../providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import { PlatformEnum } from "@/lib/types";
 import toast from "react-hot-toast";
 import ExtensionModal from "../modals/extension-modal";
 import AgentConfigModal from "../modals/agent-config-modal";

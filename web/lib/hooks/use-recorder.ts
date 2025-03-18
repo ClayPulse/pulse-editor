@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-// Helpers
 
 export default function useRecorder() {
   // Recording refs

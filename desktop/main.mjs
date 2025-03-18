@@ -229,15 +229,13 @@ function handleGetInstallationPath(event) {
 }
 
 let isCreatedTerminal = false;
-function handleCreateTerminal(event) { 
+function handleCreateTerminal(event) {
   if (!isCreatedTerminal) {
     createTerminalServer();
     isCreatedTerminal = true;
   }
 
-  return {
-    socketUrl: "ws://localhost:6060"
-  };
+  return "ws://localhost:6060";
 }
 
 app.whenReady().then(() => {

@@ -3,7 +3,7 @@
 import { TreeViewGroupRef, FileViewModel } from "@/lib/types";
 import { useContext, useEffect, useRef, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import { PlatformEnum } from "@/lib/types";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { Button } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";

@@ -237,7 +237,6 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     });
   }
 
-
   async getPersistentSettings(): Promise<PersistentSettings> {
     try {
       const res = await Filesystem.readFile({
@@ -279,8 +278,9 @@ export class CapacitorAPI extends AbstractPlatformAPI {
   }
 
   async createTerminal(): Promise<string> {
-    // Get Termux SSH server or websocket server
-    throw new Error("Method not implemented.");
+    throw new Error(
+      "Method not implemented. Please use Termux for terminal connection via SSH.",
+    );
   }
 
   private getPathAndDir(uri: string): {

@@ -1,7 +1,6 @@
-import { Extension, FileViewModel, InstalledAgent } from "@/lib/types";
+import { Extension, InstalledAgent } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../../providers/editor-context-provider";
-import FileViewLayout from "../layout";
 import ExtensionLoader from "../../misc/extension-loader";
 import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
 import Loading from "../../interface/loading";
@@ -9,6 +8,8 @@ import useAgentRunner from "@/lib/hooks/use-agent-runner";
 import { useTheme } from "next-themes";
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
+import { getPlatform } from "@/lib/platform-api/platform-checker";
+import { PlatformEnum } from "@/lib/types";
 
 export default function ConsoleViewLoader({
   consoleExt,
@@ -33,11 +34,6 @@ export default function ConsoleViewLoader({
   const { resolvedTheme } = useTheme();
 
   const { platformApi } = usePlatformApi();
-
-  useEffect(() => {
-    // Start a terminal
-    platformApi?.createTerminal();
-  }, [platformApi]);
 
   useEffect(() => {
     function getAndLoadExtension() {
@@ -203,10 +199,18 @@ export default function ConsoleViewLoader({
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
+          const platform = getPlatform();
           // Get a shell terminal from native platform APIs
-          const terminalUri = await platformApi?.createTerminal();
-          console.log("Terminal URI:", terminalUri);
-          return terminalUri;
+          if (platform === PlatformEnum.Capacitor) {
+            return {
+              websocketUrl: editorContext?.persistSettings?.mobileHost,
+            };
+          } else {
+            const wsUrl = await platformApi?.createTerminal();
+            return {
+              websocketUrl: wsUrl,
+            };
+          }
         },
       ],
     ]);
