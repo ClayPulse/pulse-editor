@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Divider, Tooltip } from "@nextui-org/react";
+import { Button, Divider, Tooltip } from "@heroui/react";
 import { useContext, useState } from "react";
 import Icon from "@/components/misc/icon";
 import AppSettingsModal from "@/components/modals/app-settings-modal";

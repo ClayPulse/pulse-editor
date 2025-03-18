@@ -8,7 +8,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Icon from "../misc/icon";
 import ProjectSettingsModal from "../modals/project-settings-modal";
 import { useViewManager } from "@/lib/hooks/use-view-manager";

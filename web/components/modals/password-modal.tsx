@@ -1,4 +1,4 @@
-import { Button, Input, ModalBody, ModalFooter } from "@nextui-org/react";
+import { Button, Input, ModalBody, ModalFooter } from "@heroui/react";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { encrypt } from "@/lib/security/simple-password";

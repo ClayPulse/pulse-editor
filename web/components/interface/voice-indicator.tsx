@@ -9,7 +9,7 @@ import {
   PuffLoader,
   PulseLoader,
 } from "react-spinners";
-import { colors } from "@nextui-org/react";
+import { colors } from "@heroui/react";
 
 export default function VoiceIndicator() {
   const editorContext = useContext(EditorContext);

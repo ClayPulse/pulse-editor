@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
 import Icon from "../misc/icon";
-import { Button, Divider, Input, Link, Textarea } from "@nextui-org/react";
+import { Button, Divider, Input, Link, Textarea } from "@heroui/react";
 import { InstalledAgent, LLMUsage, TabItem } from "@/lib/types";
 import Tabs from "../misc/tabs";
 import PasswordInput from "../misc/password-input";

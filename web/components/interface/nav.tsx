@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import Icon from "../misc/icon";
 import { useContext, useEffect, useState } from "react";
 import PasswordScreen from "../modals/password-modal";

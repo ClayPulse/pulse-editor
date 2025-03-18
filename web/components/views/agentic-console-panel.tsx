@@ -10,7 +10,7 @@ import {
 } from "react";
 import FileViewLayout from "./layout";
 import { ChatMessage, TabItem, Extension } from "@/lib/types";
-import { Avatar, Button, Divider, Tooltip } from "@nextui-org/react";
+import { Avatar, Button, Divider, Tooltip } from "@heroui/react";
 import { BeatLoader } from "react-spinners";
 import AgentConfigModal from "../modals/agent-config-modal";
 import { EditorContext } from "../providers/editor-context-provider";

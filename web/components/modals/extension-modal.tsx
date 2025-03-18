@@ -6,7 +6,7 @@ import {
   tv,
   useCheckbox,
   VisuallyHidden,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import ModalWrapper from "./modal-wrapper";
 import Icon from "../misc/icon";
 import { ContextMenuState, Extension, TabItem } from "@/lib/types";

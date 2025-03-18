@@ -6,7 +6,7 @@ import {
   SelectItem,
   Switch,
   Tooltip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useContext, useEffect, useState } from "react";
 import { sttProviderOptions } from "@/lib/stt/options";
 import { ttsProviderOptions } from "@/lib/tts/options";
