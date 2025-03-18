@@ -14,10 +14,10 @@ import toast from "react-hot-toast";
 import ModalWrapper from "./modal-wrapper";
 import { EditorContext } from "../providers/editor-context-provider";
 import { EditorContextType, Extension } from "@/lib/types";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import { PlatformEnum } from "@/lib/types";
 import useExtensions from "@/lib/hooks/use-extensions";
 import { ExtensionTypeEnum } from "@pulse-editor/types";
 import { llmProviderOptions } from "@/lib/llm/options";
@@ -497,7 +497,7 @@ function SecuritySettings({
   );
 }
 
-function ExtensionSettings({
+function DevExtensionSettings({
   editorContext,
 }: {
   editorContext?: EditorContextType;
@@ -546,7 +546,7 @@ function ExtensionSettings({
 
   return (
     <div>
-      <p className="pb-2 text-medium font-bold">Extension Settings</p>
+      <p className="pb-2 text-medium font-bold">Dev Extension Settings</p>
       <div className="w-full space-y-2">
         <div>
           <p className="text-small font-bold">
@@ -694,6 +694,35 @@ function ExtensionSettings({
   );
 }
 
+function ExtensionDefinedSettings({
+  editorContext,
+}: {
+  editorContext: EditorContextType | undefined;
+}) {
+  return (
+    <div>
+      <p className="pb-2 text-medium font-bold">Extension Defined Settings</p>
+      <p className="text-small font-bold">Pulse Editor Terminal</p>
+      <div className="w-full space-y-2">
+        <Input
+          label="Device Host Address"
+          size="md"
+          isRequired
+          value={editorContext?.persistSettings?.mobileHost ?? ""}
+          onValueChange={(value) => {
+            editorContext?.setPersistSettings((prev) => {
+              return {
+                ...prev,
+                mobileHost: value,
+              };
+            });
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function AppSettingsModal({
   isOpen,
   setIsOpen,
@@ -702,15 +731,6 @@ export default function AppSettingsModal({
   setIsOpen: (open: boolean) => void;
 }) {
   const editorContext = useContext(EditorContext);
-  // const setPersistSettings = useCallback(
-  //   ({ settings }: { settings: Partial<PersistentSettings> | undefined }) => {
-  //     editorContext?.setPersistSettings((prev) => ({
-  //       ...prev,
-  //       ...settings,
-  //     }));
-  //   },
-  //   [],
-  // );
 
   return (
     <ModalWrapper isOpen={isOpen} setIsOpen={setIsOpen} title={"App Settings"}>
@@ -723,7 +743,9 @@ export default function AppSettingsModal({
             setIsOpen={setIsOpen}
           />
           <Divider />
-          <ExtensionSettings editorContext={editorContext} />
+          <DevExtensionSettings editorContext={editorContext} />
+          <Divider />
+          <ExtensionDefinedSettings editorContext={editorContext} />
         </div>
       </>
     </ModalWrapper>

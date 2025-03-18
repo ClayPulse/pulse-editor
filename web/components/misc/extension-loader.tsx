@@ -3,7 +3,7 @@ import { createRoot, Root } from "react-dom/client";
 import { loadRemote } from "@module-federation/runtime";
 import React from "react";
 
-export default function ViewExtensionLoader({
+export default function ExtensionLoader({
   remoteOrigin,
   moduleId,
   moduleVersion,

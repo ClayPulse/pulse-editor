@@ -1,6 +1,6 @@
-import { InterModuleCommunication } from "@pulse-editor/shared-utils";
 import { IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useIMC from "../lib/hooks/use-imc";
 
 export default function useTheme(moduleName: string) {
   const [theme, setTheme] = useState<string>("light");
@@ -10,33 +10,14 @@ export default function useTheme(moduleName: string) {
   >();
 
   receiverHandlerMap.set(
-    IMCMessageTypeEnum.GetTheme,
+    IMCMessageTypeEnum.ThemeChange,
     async (senderWindow: Window, message: IMCMessage) => {
-      const theme = message.payload
-        ? JSON.parse(message.payload).theme
-        : "light";
-      setTheme(theme);
+      const theme = message.payload;
+      setTheme((prev) => theme);
     }
   );
 
-  const [, setImc] = useState<InterModuleCommunication | undefined>(undefined);
-
-  const targetWindow = window.parent;
-
-  useEffect(() => {
-    // Init IMC
-    const imc = new InterModuleCommunication(moduleName);
-    imc.initThisWindow(window, receiverHandlerMap);
-    imc.initOtherWindow(targetWindow);
-    setImc(imc);
-
-    console.log("Sent ready message");
-    imc.sendMessage(IMCMessageTypeEnum.Ready);
-
-    return () => {
-      imc.close();
-    };
-  }, []);
+  const { imc } = useIMC(moduleName, receiverHandlerMap);
 
   return {
     theme,

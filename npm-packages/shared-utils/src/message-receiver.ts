@@ -30,6 +30,9 @@ export class MessageReceiver {
   }
 
   public receiveMessage(senderWindow: Window, message: IMCMessage) {
+    // Not handling messages from self
+    if (this.moduleName === message.from) return;
+
     // Log the message in dev mode
     if (process.env.NODE_ENV === "development") {
       console.log(

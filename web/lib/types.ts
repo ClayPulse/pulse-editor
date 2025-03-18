@@ -69,6 +69,9 @@ export type PersistentSettings = {
   apiKeys?: {
     [key: string]: string;
   };
+
+
+  mobileHost?: string;
 };
 // #endregion
 
@@ -194,3 +197,10 @@ export type LLMUsage = {
   usedByAgents: string[];
   totalUsageByAgents: number;
 };
+
+export enum PlatformEnum {
+  Capacitor = "capacitor",
+  Electron = "electron",
+  VSCode = "vscode",
+  Web = "web",
+}

@@ -226,6 +226,17 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     }
   }
 
+  async copyFiles(from: string, to: string): Promise<void> {
+    const oldPathDir = this.getPathAndDir(from);
+    const newPathDir = this.getPathAndDir(to);
+    await Filesystem.copy({
+      from: oldPathDir.path,
+      to: newPathDir.path,
+      directory: oldPathDir.directory,
+      toDirectory: newPathDir.directory,
+    });
+  }
+
   async getPersistentSettings(): Promise<PersistentSettings> {
     try {
       const res = await Filesystem.readFile({
@@ -266,15 +277,10 @@ export class CapacitorAPI extends AbstractPlatformAPI {
     return "";
   }
 
-  async copyFiles(from: string, to: string): Promise<void> {
-    const oldPathDir = this.getPathAndDir(from);
-    const newPathDir = this.getPathAndDir(to);
-    await Filesystem.copy({
-      from: oldPathDir.path,
-      to: newPathDir.path,
-      directory: oldPathDir.directory,
-      toDirectory: newPathDir.directory,
-    });
+  async createTerminal(): Promise<string> {
+    throw new Error(
+      "Method not implemented. Please use Termux for terminal connection via SSH.",
+    );
   }
 
   private getPathAndDir(uri: string): {

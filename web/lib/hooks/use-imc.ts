@@ -1,9 +1,7 @@
 import { EditorContext } from "@/components/providers/editor-context-provider";
 import { InterModuleCommunication } from "@pulse-editor/shared-utils";
-import {
-  ReceiverHandlerMap,
-} from "@pulse-editor/types";
-import {useContext, useEffect, useState } from "react";
+import { ReceiverHandlerMap } from "@pulse-editor/types";
+import { useContext, useEffect, useState } from "react";
 
 export default function useIMC(
   receiverHandlerMapGetter: () => ReceiverHandlerMap,
@@ -27,7 +25,8 @@ export default function useIMC(
   useEffect(() => {
     if (imc) {
       // IMC must be present when initializing the other window
-      imc.initThisWindow(window, receiverHandlerMapGetter());
+      imc.initThisWindow(window);
+      imc.updateReceiverHandlerMap(receiverHandlerMapGetter());
     }
   }, [imc]);
 

@@ -46,20 +46,13 @@ export class InterModuleCommunication {
   }
 
   /* Initialize a receiver to receive message. */
-  public initThisWindow(
-    window: Window,
-    receiverHandlerMap: ReceiverHandlerMap
-  ) {
+  public initThisWindow(window: Window) {
     this.thisWindow = window;
-    this.receiverHandlerMap = receiverHandlerMap;
+    this.receiverHandlerMap = new Map();
     this.thisPendingTasks = new Map();
 
-    if (receiverHandlerMap.has(IMCMessageTypeEnum.Acknowledge)) {
-      throw new Error("Acknowledgement listener should not be added here.");
-    }
-
     const receiver = new MessageReceiver(
-      receiverHandlerMap,
+      this.receiverHandlerMap,
       this.thisPendingTasks,
       this.moduleName
     );

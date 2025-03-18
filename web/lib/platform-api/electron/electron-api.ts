@@ -97,4 +97,8 @@ export class ElectronAPI extends AbstractPlatformAPI {
   async getInstallationPath(): Promise<string> {
     return await this.electronAPI.getInstallationPath();
   }
+
+  async createTerminal(): Promise<string> { 
+    return await this.electronAPI.createTerminal();
+  }
 }

@@ -1,35 +1,13 @@
-import { InterModuleCommunication } from "@pulse-editor/shared-utils";
 import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
-import { useEffect, useState } from "react";
+import useIMC from "../lib/hooks/use-imc";
 
 export default function useAgents(moduleName: string) {
-  const [imc, setImc] = useState<InterModuleCommunication | undefined>(
-    undefined
-  );
-  const [isReady, setIsReady] = useState(false);
-
   const receiverHandlerMap = new Map<
     IMCMessageTypeEnum,
     (senderWindow: Window, message: IMCMessage) => Promise<void>
   >();
 
-  const targetWindow = window.parent;
-
-  useEffect(() => {
-    // Init IMC
-    const imc = new InterModuleCommunication(moduleName);
-    imc.initThisWindow(window, receiverHandlerMap);
-    imc.initOtherWindow(targetWindow);
-    setImc(imc);
-    setIsReady(true);
-
-    console.log("Sent ready message");
-    imc.sendMessage(IMCMessageTypeEnum.Ready);
-
-    return () => {
-      imc.close();
-    };
-  }, []);
+  const { imc, isReady } = useIMC(moduleName, receiverHandlerMap);
 
   async function installAgent(config: Agent) {
     if (!imc) {
@@ -38,10 +16,8 @@ export default function useAgents(moduleName: string) {
 
     await imc
       .sendMessage(IMCMessageTypeEnum.InstallAgent, config)
-      .then((response) => {
-        if (response.type === IMCMessageTypeEnum.Error) {
-          throw new Error(response.payload);
-        }
+      .catch((error) => {
+        throw new Error(error);
       });
   }
 

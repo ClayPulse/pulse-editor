@@ -1,17 +1,17 @@
 "use client";
 
 import { Button } from "@nextui-org/react";
-import Icon from "./icon";
+import Icon from "../misc/icon";
 import { useContext, useEffect, useState } from "react";
-import PasswordScreen from "./modals/password-modal";
+import PasswordScreen from "../modals/password-modal";
 import { useTheme } from "next-themes";
 import NavMenu from "./nav-menu";
-import { EditorContext } from "./providers/editor-context-provider";
+import { EditorContext } from "../providers/editor-context-provider";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import { PlatformEnum } from "@/lib/types";
 import Loading from "./loading";
 import VoiceIndicator from "./voice-indicator";
-import ProjectTitle from "./project-title";
+import ProjectIndicator from "./project-indicator";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -55,6 +55,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
     return <Loading />;
   }
 
+
   return (
     <div className="flex h-screen w-full flex-col overflow-x-hidden">
       <PasswordScreen
@@ -66,7 +67,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
         <div className="fixed z-40 h-12 w-full">
           <div
             className={
-              "grid h-12 w-full grid-cols-3 grid-rows-1 bg-default px-2 py-1 text-default-foreground"
+              "grid h-12 w-full grid-cols-3 grid-rows-1  px-2 py-1 text-default-foreground"
             }
           >
             <div className="col-start-1">
@@ -86,7 +87,7 @@ export default function Nav({ children }: { children: React.ReactNode }) {
               </Button>
             </div>
             <div className="col-start-2 flex flex-col items-center justify-center">
-              {editorContext?.editorStates.project && <ProjectTitle />}
+              {editorContext?.editorStates.project && <ProjectIndicator />}
               <VoiceIndicator />
             </div>
             <div className="col-start-3 flex justify-end">

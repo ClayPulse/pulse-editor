@@ -5,7 +5,7 @@ import { EditorContext } from "../providers/editor-context-provider";
 import { Button } from "@nextui-org/react";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import { ContextMenuState, ProjectInfo } from "@/lib/types";
-import ContextMenu from "../context-menu";
+import ContextMenu from "../interface/context-menu";
 import ProjectSettingsModal from "../modals/project-settings-modal";
 
 function ProjectTab({

@@ -1,7 +1,6 @@
 {
   "name": "@pulse-editor/react-api",
   "version": "0.0.1",
-  "private": true,
   "main": "src/main.ts",
   "type": "module",
   "scripts": {

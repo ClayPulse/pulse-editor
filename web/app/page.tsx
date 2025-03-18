@@ -7,7 +7,7 @@ import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { CodeEditorAgent } from "@/lib/agents/code-editor-agent";
 import { BaseTTS } from "@/lib/tts/tts";
-import EditorToolbar from "@/components/editor-toolbar";
+import EditorToolbar from "@/components/interface/editor-toolbar";
 import { EditorContext } from "@/components/providers/editor-context-provider";
 import ViewDisplayArea from "@/components/views/file-view-display-area";
 import { useViewManager } from "@/lib/hooks/use-view-manager";

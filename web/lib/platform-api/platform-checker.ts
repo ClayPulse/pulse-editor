@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import isElectron from "is-electron";
-import { PlatformEnum } from "./available-platforms";
+import { PlatformEnum } from "@/lib/types";
 
 export function getPlatform() {
   // Capacitor

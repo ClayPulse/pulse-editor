@@ -23,7 +23,7 @@ const command = `npx cap run android -l --host=${localDevIp}`;
 
 // Execute the command with platform-specific syntax
 if (isWindows) {
-  execSync(command, { stdio: "inherit", shell: "powershell.exe" });
+  execSync(command, { stdio: "inherit", shell: "pwsh" });
 } else {
   execSync(command, { stdio: "inherit", shell: "bash" });
 }

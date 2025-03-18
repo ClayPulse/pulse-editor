@@ -3,13 +3,13 @@
 import { TreeViewGroupRef, FileViewModel } from "@/lib/types";
 import { useContext, useEffect, useRef, useState } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
+import { PlatformEnum } from "@/lib/types";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { Button } from "@nextui-org/react";
 import useExplorer from "@/lib/hooks/use-explorer";
 import { usePlatformApi } from "@/lib/hooks/use-platform-api";
 import ProjectSettingsModal from "../modals/project-settings-modal";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import toast from "react-hot-toast";
 import TreeViewGroup from "./tree-view";
 import { useViewManager } from "@/lib/hooks/use-view-manager";

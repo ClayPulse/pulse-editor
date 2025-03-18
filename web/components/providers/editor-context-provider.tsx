@@ -12,7 +12,6 @@ import {
   PersistentSettings,
 } from "@/lib/types";
 import React, { createContext, useEffect, useRef, useState } from "react";
-import ReactDOM from "react-dom";
 
 export const EditorContext = createContext<EditorContextType | undefined>(
   undefined,

@@ -2,14 +2,15 @@
 export enum IMCMessageTypeEnum {
   // Update view file
   WriteViewFile = "write-view-file",
-  // View file change
-  ViewFileChange = "view-file-change",
+  // Request view file
+  RequestViewFile = "request-view-file",
+
   // Network fetch request
   Fetch = "fetch",
   // Send notification
   Notification = "notification",
   // Get theme
-  GetTheme = "get-theme",
+  ThemeChange = "theme-change",
 
   /* Agents */
   // Install agent
@@ -17,9 +18,16 @@ export enum IMCMessageTypeEnum {
   // Execute agent method
   RunAgentMethod = "run-agent-method",
 
+  /* Tools */
+  InstallAgentTool = "install-agent-tool",
+
   /* Modality tools */
   OCR = "ocr",
 
+  /* Terminal */
+  RequestTerminal = "request-terminal",
+
+  /* Extension statuses */
   // Notify Pulse that extension window is available
   Ready = "ready",
   // Notify Pulse that extension has finished loading
@@ -82,8 +90,9 @@ export enum NotificationTypeEnum {
 
 /* Extension settings */
 export enum ExtensionTypeEnum {
+  Generic = "generic",
   FileView = "file-view",
-  TerminalView = "terminal-view",
+  ConsoleView = "console-view",
 }
 
 export type ExtensionConfig = {
@@ -92,9 +101,11 @@ export type ExtensionConfig = {
   author?: string;
   displayName?: string;
   description?: string;
+  materialIcon?: string;
   extensionType?: ExtensionTypeEnum;
   fileTypes?: string[];
   preview?: string;
+  enabledPlatforms?: Record<string, boolean>;
 };
 
 /* Agent config */
@@ -105,9 +116,14 @@ export type Agent = {
   availableMethods: AgentMethod[];
   LLMConfig: LLMConfig;
   description: string;
+  tools?: AgentTool[];
 };
 
+/**
+ * An agent method is a sub task that an agent can perform.
+ */
 export type AgentMethod = {
+  access: AccessEnum;
   name: string;
   parameters: Record<string, AgentVariable>;
   prompt: string;
@@ -133,9 +149,31 @@ type AgentVariableTypeArray = {
   elementType: AgentVariableType;
 };
 
+/**
+ * A tool that agent can use during method execution.
+ *
+ * This is linked to a callback function created by user,
+ * tool developer, or extension.
+ *
+ * The tool may optionally return a value to running
+ * agent method.
+ */
+export type AgentTool = {
+  access: AccessEnum;
+  name: string;
+  description: string;
+  parameters: Record<string, AgentVariable>;
+  returns: Record<string, AgentVariable>;
+};
+
 /* AI settings */
 export type LLMConfig = {
   provider: string;
   modelName: string;
   temperature: number;
 };
+
+export enum AccessEnum {
+  public = "public",
+  private = "private",
+}

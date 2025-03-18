@@ -18,13 +18,13 @@ import {
   useState,
 } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
-import { PlatformEnum } from "@/lib/platform-api/available-platforms";
 import { getPlatform } from "@/lib/platform-api/platform-checker";
 import { Button, Input } from "@nextui-org/react";
-import Icon from "../icon";
+import Icon from "../misc/icon";
 import toast from "react-hot-toast";
 import { AbstractPlatformAPI } from "@/lib/platform-api/abstract-platform-api";
-import ContextMenu from "../context-menu";
+import ContextMenu from "../interface/context-menu";
+import { PlatformEnum } from "@/lib/types";
 
 function refreshProjectContent(
   platformApi: AbstractPlatformAPI,

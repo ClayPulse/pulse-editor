@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useContext } from "react";
-import { EditorContext } from "./providers/editor-context-provider";
+import { EditorContext } from "../providers/editor-context-provider";
 import {
   BounceLoader,
   ClockLoader,

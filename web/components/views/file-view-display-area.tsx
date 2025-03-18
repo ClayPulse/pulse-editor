@@ -1,15 +1,16 @@
 import { useContext, useEffect } from "react";
 import { EditorContext } from "../providers/editor-context-provider";
 import { AnimatePresence, motion } from "framer-motion";
-// import AgentChatTerminalView from "./agent-chat-terminal-view";
+import AgenticConsolePanel from "./agentic-console-panel";
 import { useViewManager } from "@/lib/hooks/use-view-manager";
-import FileView from "./file-view";
+import FileViewLoader from "./loaders/file-view-loader";
 import { FileViewModel } from "@pulse-editor/types";
 
 export default function ViewDisplayArea() {
   const editorContext = useContext(EditorContext);
   const { updateFileView, openFileView, activeFileView } = useViewManager();
 
+  // #region VSCode Extension
   // // Initialize view manager
   // useEffect(() => {
   //   if (!editorContext?.viewManager) {
@@ -33,72 +34,73 @@ export default function ViewDisplayArea() {
   //   }
   // }, [editorContext?.viewManager]);
 
-  function notifyVSCode() {
-    window.parent.postMessage(
-      {
-        command: "pulseReady",
-        from: "pulse",
-      },
-      "*",
-    );
-  }
+  // function notifyVSCode() {
+  //   window.parent.postMessage(
+  //     {
+  //       command: "pulseReady",
+  //       from: "pulse",
+  //     },
+  //     "*",
+  //   );
+  // }
 
-  function addVSCodeHandlers() {
-    // Listen for ctrl+alt+s to switch back to VSCode original editor
-    window.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.altKey && e.code === "KeyS") {
-        // Send a message to parent iframe
-        window.parent.postMessage(
-          { command: "switchToTextEditor", from: "pulse" },
-          "*",
-        );
-      }
-    });
+  // function addVSCodeHandlers() {
+  //   // Listen for ctrl+alt+s to switch back to VSCode original editor
+  //   window.addEventListener("keydown", (e) => {
+  //     if (e.ctrlKey && e.altKey && e.code === "KeyS") {
+  //       // Send a message to parent iframe
+  //       window.parent.postMessage(
+  //         { command: "switchToTextEditor", from: "pulse" },
+  //         "*",
+  //       );
+  //     }
+  //   });
 
-    // Add a listener to listen messages from VSCode Extension
-    window.addEventListener("message", (e) => {
-      const message = e.data;
-      if (message.command === "updatePulseText") {
-        const text: string = message.text;
-        console.log("Received text from VSCode:", text);
-        if (activeFileView) {
-          const updatedFileView: FileViewModel = {
-            fileContent: text,
-            filePath: activeFileView.filePath,
-            isActive: true,
-          };
-          updateFileView(updatedFileView);
-        }
-      } else if (message.command === "openFile") {
-        const text: string = message.text;
-        const path: string = message.path;
-        console.log(
-          "Received file from VSCode. Path: " + path + " Text: " + text,
-        );
+  //   // Add a listener to listen messages from VSCode Extension
+  //   window.addEventListener("message", (e) => {
+  //     const message = e.data;
+  //     if (message.command === "updatePulseText") {
+  //       const text: string = message.text;
+  //       console.log("Received text from VSCode:", text);
+  //       if (activeFileView) {
+  //         const updatedFileView: FileViewModel = {
+  //           fileContent: text,
+  //           filePath: activeFileView.filePath,
+  //           isActive: true,
+  //         };
+  //         updateFileView(updatedFileView);
+  //       }
+  //     } else if (message.command === "openFile") {
+  //       const text: string = message.text;
+  //       const path: string = message.path;
+  //       console.log(
+  //         "Received file from VSCode. Path: " + path + " Text: " + text,
+  //       );
 
-        const file = new File([text], path);
-        openFileView(file);
+  //       const file = new File([text], path);
+  //       openFileView(file);
 
-        // Send a message to vscode parent iframe to notify changes made in Pulse
-        // const callback = (viewDocument: FileViewModel) => {
-        //   if (!viewDocument) {
-        //     return;
-        //   }
-        //   window.parent.postMessage(
-        //     {
-        //       command: "updateVSCodeText",
-        //       text: viewDocument.fileContent,
-        //       from: "pulse",
-        //     },
-        //     "*",
-        //   );
-        // };
-        // TODO: need to find a new way to set callback with modular view extension
-        // SOLUTION: listen to File Change event from file-view and send message to VSCode
-        // newView.setViewDocumentChangeCallback(callback);
-      }
-    });
-  }
+  //       // Send a message to vscode parent iframe to notify changes made in Pulse
+  //       // const callback = (viewDocument: FileViewModel) => {
+  //       //   if (!viewDocument) {
+  //       //     return;
+  //       //   }
+  //       //   window.parent.postMessage(
+  //       //     {
+  //       //       command: "updateVSCodeText",
+  //       //       text: viewDocument.fileContent,
+  //       //       from: "pulse",
+  //       //     },
+  //       //     "*",
+  //       //   );
+  //       // };
+  //       // TODO: need to find a new way to set callback with modular view extension
+  //       // SOLUTION: listen to File Change event from file-view and send message to VSCode
+  //       // newView.setViewDocumentChangeCallback(callback);
+  //     }
+  //   });
+  // }
+  // #endregion
 
   return (
     <div className="flex h-full w-full flex-col p-1">
@@ -115,16 +117,7 @@ export default function ViewDisplayArea() {
             </div>
           ) : (
             <>
-              {/* <CodeEditorView
-                key={activeFileView.filePath}
-                ref={(ref) => {
-                  if (ref) activeFileView.viewRef = ref;
-                }}
-                width="100%"
-                height="100%"
-                view={activeFileView}
-              /> */}
-              <FileView
+              <FileViewLoader
                 model={activeFileView}
                 updateFileView={updateFileView}
               />
@@ -146,11 +139,7 @@ export default function ViewDisplayArea() {
                   : "0px",
               }}
             >
-              {/* <AgentChatTerminalView
-                ref={(ref) => {
-                  // TODO: Refactor this to use view manager
-                }}
-              /> */}
+              <AgenticConsolePanel />
             </motion.div>
           )}
         </AnimatePresence>

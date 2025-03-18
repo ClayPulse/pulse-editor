@@ -1,64 +1,83 @@
-import { Extension, FileViewModel, InstalledAgent } from "@/lib/types";
+import { Extension, InstalledAgent } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
-import { EditorContext } from "../providers/editor-context-provider";
-import FileViewLayout from "./layout";
-import ViewExtensionLoader from "./view-extension-loader";
-import {
-  Agent,
-  IMCMessage,
-  IMCMessageTypeEnum,
-} from "@pulse-editor/types";
-import Loading from "../loading";
-import useIMC from "@/lib/hooks/use-imc";
+import { EditorContext } from "../../providers/editor-context-provider";
+import ExtensionLoader from "../../misc/extension-loader";
+import { Agent, IMCMessage, IMCMessageTypeEnum } from "@pulse-editor/types";
+import Loading from "../../interface/loading";
 import useAgentRunner from "@/lib/hooks/use-agent-runner";
+import { useTheme } from "next-themes";
+import { InterModuleCommunication } from "@pulse-editor/shared-utils";
+import { usePlatformApi } from "@/lib/hooks/use-platform-api";
+import { getPlatform } from "@/lib/platform-api/platform-checker";
+import { PlatformEnum } from "@/lib/types";
 
-export default function FileView({
-  model,
-  updateFileView,
+export default function ConsoleViewLoader({
+  consoleExt,
 }: {
-  model: FileViewModel;
-  updateFileView: (model: FileViewModel) => void;
+  consoleExt: Extension | undefined;
 }) {
   const editorContext = useContext(EditorContext);
   const [usedExtension, setUsedExtension] = useState<Extension | undefined>(
     undefined,
   );
-  const [hasExtension, setHasExtension] = useState(true);
+  const [hasExtension, setHasExtension] = useState(false);
 
   const [isExtensionWindowReady, setIsExtensionWindowReady] = useState(false);
   const [isExtensionLoaded, setIsExtensionLoaded] = useState(false);
 
   const { runAgentMethod } = useAgentRunner();
 
-  const { imc } = useIMC(getHandlerMap);
+  const [imc, setImc] = useState<InterModuleCommunication | undefined>(
+    undefined,
+  );
+
+  const { resolvedTheme } = useTheme();
+
+  const { platformApi } = usePlatformApi();
 
   useEffect(() => {
-    // Get the filename from the file path
-    const fileName = model.filePath.split("/").pop();
-    // Remove the first part of the filename -- remove front part of the filename
-    const fileType = fileName?.split(".").slice(1).join(".") ?? "";
-
-    // Get the extension config from the file type
-    const map = editorContext?.persistSettings?.defaultFileTypeExtensionMap;
-
-    if (map) {
-      if (map[fileType] === undefined) {
+    function getAndLoadExtension() {
+      const extension = consoleExt;
+      if (extension === undefined) {
         setHasExtension(false);
         setUsedExtension(undefined);
         return;
       }
-      const extension = map[fileType];
+
+      // Create IMC
+      const newImc = new InterModuleCommunication("Pulse Editor Main");
+      newImc.initThisWindow(window);
+      newImc.updateReceiverHandlerMap(getHandlerMap());
+      setImc(newImc);
+
       setUsedExtension(extension);
       setHasExtension(true);
     }
-  }, [model]);
+
+    if (consoleExt) {
+      // Reset the extension and IMC
+      if (imc) {
+        imc.close();
+        setImc(undefined);
+
+        setIsExtensionWindowReady(false);
+        setIsExtensionLoaded(false);
+        setUsedExtension(undefined);
+      }
+      getAndLoadExtension();
+    }
+  }, [consoleExt]);
 
   useEffect(() => {
-    // Send view file update to the extension
-    if (isExtensionLoaded && imc) {
-      imc.sendMessage(IMCMessageTypeEnum.ViewFileChange, model);
+    // Send theme update to the extension
+    if (isExtensionWindowReady && imc) {
+      imc.sendMessage(IMCMessageTypeEnum.ThemeChange, resolvedTheme);
     }
-  }, [isExtensionLoaded, imc]);
+  }, [isExtensionWindowReady, imc, resolvedTheme]);
+
+  useEffect(() => {
+    imc?.updateReceiverHandlerMap(getHandlerMap());
+  }, [editorContext, imc]);
 
   function getHandlerMap() {
     const newMap = new Map<
@@ -78,9 +97,13 @@ export default function FileView({
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
+          console.log("Extension window ready.");
+          if (!imc) {
+            throw new Error("IMC not initialized.");
+          }
+          imc.initOtherWindow(senderWindow);
           setIsExtensionWindowReady((prev) => true);
           setIsExtensionLoaded((prev) => false);
-          imc?.initOtherWindow(senderWindow);
         },
       ],
       [
@@ -90,20 +113,8 @@ export default function FileView({
           message: IMCMessage,
           abortSignal?: AbortSignal,
         ) => {
+          console.log("Extension loaded.");
           setIsExtensionLoaded((prev) => true);
-        },
-      ],
-      [
-        IMCMessageTypeEnum.WriteViewFile,
-        async (
-          senderWindow: Window,
-          message: IMCMessage,
-          abortSignal?: AbortSignal,
-        ) => {
-          if (message.payload) {
-            const payload: FileViewModel = message.payload;
-            updateFileView(payload);
-          }
         },
       ],
       [
@@ -181,12 +192,33 @@ export default function FileView({
           return result;
         },
       ],
+      [
+        IMCMessageTypeEnum.RequestTerminal,
+        async (
+          senderWindow: Window,
+          message: IMCMessage,
+          abortSignal?: AbortSignal,
+        ) => {
+          const platform = getPlatform();
+          // Get a shell terminal from native platform APIs
+          if (platform === PlatformEnum.Capacitor) {
+            return {
+              websocketUrl: editorContext?.persistSettings?.mobileHost,
+            };
+          } else {
+            const wsUrl = await platformApi?.createTerminal();
+            return {
+              websocketUrl: wsUrl,
+            };
+          }
+        },
+      ],
     ]);
     return newMap;
   }
 
   return (
-    <FileViewLayout height="100%" width="100%">
+    <div className="relative h-full w-full">
       {usedExtension ? (
         <div className="relative h-full w-full">
           {!isExtensionLoaded && (
@@ -194,24 +226,22 @@ export default function FileView({
               <Loading />
             </div>
           )}
-          <ViewExtensionLoader
-            key={model.filePath}
-            remoteOrigin={usedExtension.remoteOrigin}
-            moduleId={usedExtension.config.id}
-            moduleVersion={usedExtension.config.version}
-          />
+          {imc && (
+            <ExtensionLoader
+              key={usedExtension.config.id}
+              remoteOrigin={usedExtension.remoteOrigin}
+              moduleId={usedExtension.config.id}
+              moduleVersion={usedExtension.config.version}
+            />
+          )}
         </div>
       ) : hasExtension ? (
         <div className="absolute left-0 top-0 h-full w-full">
           <Loading />
         </div>
       ) : (
-        <div>
-          No default view found for this file type. Find a compatible extension
-          in marketplace, and enable it in settings as the default method to
-          open this file.
-        </div>
+        <div>Select a tab to view console.</div>
       )}
-    </FileViewLayout>
+    </div>
   );
 }

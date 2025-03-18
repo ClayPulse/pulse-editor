@@ -12,6 +12,8 @@ export default function useExtensions() {
     const id = extension.config.id;
     const version = extension.config.version;
 
+    console.log("Registering remote", remoteOrigin, id, version);
+
     registerRemotes([
       {
         name: id,

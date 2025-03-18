@@ -46,4 +46,7 @@ export abstract class AbstractPlatformAPI {
 
   // Get installation path
   abstract getInstallationPath(): Promise<string>;
+
+  // Create a new terminal and get socket
+  abstract createTerminal(): Promise<string>;
 }
