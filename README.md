@@ -1,4 +1,7 @@
 # Pulse Editor
+> [!IMPORTANT]
+> Pulse Editor is still in its early development stage, with a BETA release planned for the end of Q2 2025. Until then, there is no official stable support for extension marketplaces. However, you can explore the platform by developing your own extensions or running our official extensions locally. This is a great opportunity to get an early look at Pulse Editor and start experimenting with its capabilities! See [Extension Development](#pulse-editor-extension-development) below.
+
 <p align="center">
   <img alt="Pulse Editor" src="shared-assets/icons/pulse_logo.svg">
 </p>
@@ -135,8 +138,9 @@ Pulse Editor uses VSCode Webview API to create a VSCode Extension. To develop VS
 Note that you will also need to run the Nextjs server locally during development.
 
 ## Pulse Editor Extension Development
-You can use our [template repository](https://github.com/ClayPulse/pulse-editor-extension-template) to get started developing extensions for Pulse Editor.
+Pulse Editor uses [Modular Federation](https://module-federation.io/) to deliver its modular extensions.
+For guides on how to start developing and using extensions locally, check out our [React template repository](https://github.com/ClayPulse/pulse-editor-extension-template).
 
-Some official extensions are also open-source. Feel free to take examples from them and/or contribute to them.
+Some of our official extensions are also open-source. Feel free to take examples from them and/or contribute to them.
 - [Pulse Editor Code View](https://github.com/ClayPulse/pulse-editor-code-view)
 - [Pulse Editor Terminal](https://github.com/ClayPulse/pulse-editor-terminal)
