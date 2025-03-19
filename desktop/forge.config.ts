@@ -16,7 +16,8 @@ const electronModules = ["electron-serve"];
 const config: ForgeConfig = {
   outDir: "../build/desktop",
   packagerConfig: {
-    icon: path.join(__dirname, "../shared-assets/icons/electron/pulse_logo_round"),
+    name: "Pulse Editor",
+    icon: path.join(__dirname, "../shared-assets/icons/electron/pulse_editor"),
     // Copy the electron modules and the nextjs build to the electron build.
     extraResource: electronModules
       .map((module) => `../node_modules/${module}`)
@@ -26,20 +27,14 @@ const config: ForgeConfig = {
         // We need electron-serve to exist inside the electron build's node_modules.
         // All other modules from nextjs are not needed and can be removed.
         if (platform === "win32") {
-          moveModule(
-            electronModules,
-            path.join(extractPath, "resources"),
-          )
+          moveModule(electronModules, path.join(extractPath, "resources"));
         } else if (platform === "darwin") {
           moveModule(
             electronModules,
-            path.join(extractPath, "pulse-editor.app/Contents/Resources"),
-          )
+            path.join(extractPath, "pulse-editor.app/Contents/Resources")
+          );
         } else if (platform === "linux") {
-          moveModule(
-            electronModules,
-            path.join(extractPath, "resources"),
-          )
+          moveModule(electronModules, path.join(extractPath, "resources"));
         }
 
         done();
@@ -51,7 +46,10 @@ const config: ForgeConfig = {
       name: "@electron-forge/maker-deb",
       config: {
         options: {
-          icon: path.join(__dirname, "../shared-assets/icons/electron/pulse_logo_round"),
+          icon: path.join(
+            __dirname,
+            "../shared-assets/icons/electron/pulse_logo_round"
+          ),
         },
       },
     },

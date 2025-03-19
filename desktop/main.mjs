@@ -6,11 +6,11 @@ import { fileURLToPath } from "url";
 import fs from "fs";
 import { createTerminalServer } from "./lib/node-pty-server.js";
 
-// Change path to "Pulse Studio"
-app.setName("Pulse Studio");
+// Change path to "Pulse Editor"
+app.setName("Pulse Editor");
 app.setPath(
   "userData",
-  app.getPath("userData").replace("pulse-editor-desktop", "Pulse Studio")
+  app.getPath("userData").replace("pulse-editor-desktop", "Pulse Editor")
 );
 
 // Get the file path of the current module
@@ -40,7 +40,7 @@ function createWindow() {
     },
     icon: path.join(
       __dirname,
-      "../shared-assets/icons/electron/pulse_logo_round"
+      "../shared-assets/icons/electron/pulse_editor"
     ),
   });
 
